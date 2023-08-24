@@ -1,3 +1,5 @@
 {
-  "item.modernminecarts.test_item" : "Test Item"
+  "item.modernminecarts.test_item" : "Test Item",
+
+  "block.modernminecarts.swift_powered_rail": "Swift Powered Rail"
 }

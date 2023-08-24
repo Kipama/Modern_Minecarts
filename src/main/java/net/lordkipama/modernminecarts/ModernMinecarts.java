@@ -2,6 +2,7 @@ package net.lordkipama.modernminecarts;
 
 import com.mojang.logging.LogUtils;
 import net.lordkipama.modernminecarts.Item.ModItems;
+import net.lordkipama.modernminecarts.block.ModBlocks;
 import net.minecraft.world.item.CreativeModeTab;
 import net.minecraft.world.item.CreativeModeTabs;
 import net.minecraftforge.api.distmarker.Dist;
@@ -28,6 +29,7 @@ public class ModernMinecarts {
         IEventBus modEventBus = FMLJavaModLoadingContext.get().getModEventBus();
 
         ModItems.register(modEventBus);
+        ModBlocks.register(modEventBus);
 
         modEventBus.addListener(this::commonSetup);
 
@@ -42,8 +44,11 @@ public class ModernMinecarts {
 
     // Add the example block item to the building blocks tab
     private void addCreative(BuildCreativeModeTabContentsEvent event) {
-        if(event.getTabKey() == CreativeModeTabs.INGREDIENTS) {
+        if(event.getTabKey() == CreativeModeTabs.REDSTONE_BLOCKS) {
             event.accept(ModItems.TESTITEM);
+        }
+        if(event.getTabKey() == CreativeModeTabs.REDSTONE_BLOCKS) {
+            event.accept(ModBlocks.SWIFT_POWERED_RAIL);
         }
     }
 
