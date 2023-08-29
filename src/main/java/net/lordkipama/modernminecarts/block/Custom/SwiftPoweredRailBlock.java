@@ -1,24 +1,16 @@
 package net.lordkipama.modernminecarts.block.Custom;
 
-import com.google.common.base.Suppliers;
-import com.google.common.collect.BiMap;
-import com.google.common.collect.ImmutableBiMap;
 import net.lordkipama.modernminecarts.RailSpeeds;
 import net.lordkipama.modernminecarts.block.ModBlocks;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.entity.vehicle.AbstractMinecart;
+import net.minecraft.world.item.context.UseOnContext;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
-import net.minecraft.world.level.block.Block;
-import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.PoweredRailBlock;
-import net.minecraft.world.level.block.WeatheringCopper;
-import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.block.state.BlockState;
-
-import java.util.function.Supplier;
 
 public class SwiftPoweredRailBlock extends PoweredRailBlock implements WeatheringRailBlock {
     private final WeatheringRailBlock.WeatherState weatherState;
@@ -28,6 +20,8 @@ public class SwiftPoweredRailBlock extends PoweredRailBlock implements Weatherin
         this.weatherState = p_154925_;
 
     }
+
+
 
     @Override
     public boolean canMakeSlopes(BlockState state, BlockGetter world, BlockPos pos) {
@@ -47,6 +41,15 @@ public class SwiftPoweredRailBlock extends PoweredRailBlock implements Weatherin
 
     }
 
+    @Override
+    public void use(UseOnContext context) {
+        Level level = context.getLevel();
+        BlockPos blockpos = context.getClickedPos();
+        BlockState blockstate = level.getBlockState(blockpos);
+
+        System.out.println("use in WeatheringRailBlock is triggered");
+        context.getLevel().setBlock(context.getClickedPos(), ModBlocks.WAXED_EXPOSED_SWIFT_POWERED_RAIL.get().defaultBlockState(),1);
+    }
 
     //COPPER AGING
     public void randomTick(BlockState p_222665_, ServerLevel p_222666_, BlockPos p_222667_, RandomSource p_222668_) {
@@ -60,8 +63,6 @@ public class SwiftPoweredRailBlock extends PoweredRailBlock implements Weatherin
     public WeatheringRailBlock.WeatherState getAge() {
         return this.weatherState;
     }
-
-
 
 
 }

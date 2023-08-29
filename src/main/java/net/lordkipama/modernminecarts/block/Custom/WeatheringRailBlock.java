@@ -3,6 +3,10 @@ package net.lordkipama.modernminecarts.block.Custom;
 import com.google.common.base.Suppliers;
 import com.google.common.collect.ImmutableBiMap;
 import net.lordkipama.modernminecarts.block.ModBlocks;
+import net.minecraft.core.BlockPos;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.item.context.UseOnContext;
+import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.ChangeOverTimeBlock;
@@ -61,10 +65,23 @@ public interface WeatheringRailBlock extends ChangeOverTimeBlock<WeatheringRailB
         return this.getAge() == WeatheringRailBlock.WeatherState.UNAFFECTED ? 0.75F : 1.0F;
     }
 
+    default void use(UseOnContext context){
+        Level level = context.getLevel();
+        BlockPos blockpos = context.getClickedPos();
+        BlockState blockstate = level.getBlockState(blockpos);
+
+        System.out.println("use in WeatheringRailBlock is triggered");
+
+
+    }
+
+
     public static enum WeatherState {
         UNAFFECTED,
         EXPOSED,
         WEATHERED,
         OXIDIZED;
     }
+
+
 }
