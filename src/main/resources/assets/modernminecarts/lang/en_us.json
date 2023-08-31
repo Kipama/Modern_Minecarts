@@ -1,15 +1,15 @@
 {
   "item.modernminecarts.test_item" : "Test Item",
 
-  "block.modernminecarts.swift_powered_rail": "Swift Powered Rail",
-  "block.modernminecarts.waxed_swift_powered_rail": "Waxed Swift Powered Rail",
+  "block.modernminecarts.copper_rail": "Copper Rail",
+  "block.modernminecarts.waxed_copper_rail": "Waxed Copper Rail",
 
-  "block.modernminecarts.exposed_swift_powered_rail": "Exposed Swift Powered Rail",
-  "block.modernminecarts.waxed_exposed_swift_powered_rail": "Waxed Exposed Swift Powered Rail",
+  "block.modernminecarts.exposed_copper_rail": "Exposed Copper Rail",
+  "block.modernminecarts.waxed_exposed_copper_rail": "Waxed Exposed Copper Rail",
 
-  "block.modernminecarts.weathered_swift_powered_rail": "Weathered Swift Powered Rail",
-  "block.modernminecarts.waxed_weathered_swift_powered_rail": "Waxed Weathered Swift Powered Rail",
+  "block.modernminecarts.weathered_copper_rail": "Weathered Copper Rail",
+  "block.modernminecarts.waxed_weathered_copper_rail": "Waxed Weathered Copper Rail",
 
-  "block.modernminecarts.oxidized_swift_powered_rail": "Oxidized Swift Powered Rail",
-  "block.modernminecarts.waxed_oxidized_swift_powered_rail": "Waxed Oxidized Swift Powered Rail"
+  "block.modernminecarts.oxidized_copper_rail": "Oxidized Copper Rail",
+  "block.modernminecarts.waxed_oxidized_copper_rail": "Waxed Oxidized Copper Rail"
 }

@@ -51,15 +51,15 @@ public class ModernMinecarts {
         if(event.getTabKey() == CreativeModeTabs.REDSTONE_BLOCKS) {
             event.accept(ModItems.TESTITEM);
 
-            event.accept(ModBlocks.SWIFT_POWERED_RAIL);
-            event.accept(ModBlocks.EXPOSED_SWIFT_POWERED_RAIL);
-            event.accept(ModBlocks.WEATHERED_SWIFT_POWERED_RAIL);
-            event.accept(ModBlocks.OXIDIZED_SWIFT_POWERED_RAIL);
+            event.accept(ModBlocks.COPPER_RAIL);
+            event.accept(ModBlocks.EXPOSED_COPPER_RAIL);
+            event.accept(ModBlocks.WEATHERED_COPPER_RAIL);
+            event.accept(ModBlocks.OXIDIZED_COPPER_RAIL);
 
-            event.accept(ModBlocks.WAXED_SWIFT_POWERED_RAIL);
-            event.accept(ModBlocks.WAXED_EXPOSED_SWIFT_POWERED_RAIL);
-            event.accept(ModBlocks.WAXED_WEATHERED_SWIFT_POWERED_RAIL);
-            event.accept(ModBlocks.WAXED_OXIDIZED_SWIFT_POWERED_RAIL);
+            event.accept(ModBlocks.WAXED_COPPER_RAIL);
+            event.accept(ModBlocks.WAXED_EXPOSED_COPPER_RAIL);
+            event.accept(ModBlocks.WAXED_WEATHERED_COPPER_RAIL);
+            event.accept(ModBlocks.WAXED_OXIDIZED_COPPER_RAIL);
         }
 
     }

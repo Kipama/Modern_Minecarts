@@ -26,10 +26,10 @@
                   "minecraft:weathered_cut_copper_stairs",
                   "minecraft:oxidized_cut_copper_stairs",
 
-                  "modernminecarts:swift_powered_rail",
-                  "modernminecarts:exposed_swift_powered_rail",
-                  "modernminecarts:weathered_swift_powered_rail",
-                  "modernminecarts:oxidized_swift_powered_rail"
+                  "modernminecarts:copper_rail",
+                  "modernminecarts:exposed_copper_rail",
+                  "modernminecarts:weathered_copper_rail",
+                  "modernminecarts:oxidized_copper_rail"
                 ]
               }
             }

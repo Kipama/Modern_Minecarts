@@ -1,16 +1,16 @@
 {
   "replace": false,
   "values": [
-    "modernminecarts:swift_powered_rail",
-    "modernminecarts:waxed_swift_powered_rail",
+    "modernminecarts:copper_rail",
+    "modernminecarts:waxed_copper_rail",
 
-    "modernminecarts:exposed_swift_powered_rail",
-    "modernminecarts:waxed_exposed_swift_powered_rail",
+    "modernminecarts:exposed_copper_rail",
+    "modernminecarts:waxed_exposed_copper_rail",
 
-    "modernminecarts:weathered_swift_powered_rail",
-    "modernminecarts:waxed_weathered_swift_powered_rail",
+    "modernminecarts:weathered_copper_rail",
+    "modernminecarts:waxed_weathered_copper_rail",
 
-    "modernminecarts:oxidized_swift_powered_rail",
-    "modernminecarts:waxed_oxidized_swift_powered_rail"
+    "modernminecarts:oxidized_copper_rail",
+    "modernminecarts:waxed_oxidized_copper_rail"
   ]
 }

@@ -21,7 +21,7 @@ public interface WeatheringRailBlock extends ChangeOverTimeBlock<WeatheringRailB
 
 
     Supplier<BiMap<Block, Block>> NEXT_BY_BLOCK = Suppliers.memoize(() -> {
-        return ImmutableBiMap.<Block, Block>builder().put(ModBlocks.SWIFT_POWERED_RAIL.get(), ModBlocks.EXPOSED_SWIFT_POWERED_RAIL.get()).put(ModBlocks.EXPOSED_SWIFT_POWERED_RAIL.get(), ModBlocks.WEATHERED_SWIFT_POWERED_RAIL.get()).put(ModBlocks.WEATHERED_SWIFT_POWERED_RAIL.get(), ModBlocks.OXIDIZED_SWIFT_POWERED_RAIL.get()).build();
+        return ImmutableBiMap.<Block, Block>builder().put(ModBlocks.COPPER_RAIL.get(), ModBlocks.EXPOSED_COPPER_RAIL.get()).put(ModBlocks.EXPOSED_COPPER_RAIL.get(), ModBlocks.WEATHERED_COPPER_RAIL.get()).put(ModBlocks.WEATHERED_COPPER_RAIL.get(), ModBlocks.OXIDIZED_COPPER_RAIL.get()).build();
     });
     Supplier<BiMap<Block, Block>> PREVIOUS_BY_BLOCK = Suppliers.memoize(() -> {
         return NEXT_BY_BLOCK.get().inverse();
