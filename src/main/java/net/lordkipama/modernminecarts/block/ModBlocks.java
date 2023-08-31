@@ -8,7 +8,6 @@ import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
-import net.minecraft.world.level.block.WeatheringCopper;
 import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraftforge.eventbus.api.IEventBus;
 import net.minecraftforge.registries.DeferredRegister;
@@ -28,25 +27,25 @@ public class ModBlocks {
     public static final RegistryObject<Block> SWIFT_POWERED_RAIL = registerBlock("swift_powered_rail",
             () -> new SwiftPoweredRailBlock(BlockBehaviour.Properties.copy(Blocks.POWERED_RAIL), WeatheringRailBlock.WeatherState.UNAFFECTED));
     public static final RegistryObject<Block> WAXED_SWIFT_POWERED_RAIL = registerBlock("waxed_swift_powered_rail",
-            () -> new WaxedSwiftPoweredRailBlock(BlockBehaviour.Properties.copy(Blocks.POWERED_RAIL)));
+            () -> new WaxedSwiftPoweredRailBlock(BlockBehaviour.Properties.copy(Blocks.POWERED_RAIL), WaxedSwiftPoweredRailBlock.WaxedWeatherState.WAXED_UNAFFECTED));
 
     //Exposed and Waxed Exposed
     public static final RegistryObject<Block> EXPOSED_SWIFT_POWERED_RAIL = registerBlock("exposed_swift_powered_rail",
             () -> new SwiftPoweredRailBlock(BlockBehaviour.Properties.copy(Blocks.POWERED_RAIL),WeatheringRailBlock.WeatherState.EXPOSED));
     public static final RegistryObject<Block> WAXED_EXPOSED_SWIFT_POWERED_RAIL = registerBlock("waxed_exposed_swift_powered_rail",
-            () -> new WaxedExposedSwiftPoweredRailBlock(BlockBehaviour.Properties.copy(Blocks.POWERED_RAIL)));
+            () -> new WaxedSwiftPoweredRailBlock(BlockBehaviour.Properties.copy(Blocks.POWERED_RAIL), WaxedSwiftPoweredRailBlock.WaxedWeatherState.WAXED_EXPOSED));
 
     //Weathered and Waxed Weathered
     public static final RegistryObject<Block> WEATHERED_SWIFT_POWERED_RAIL = registerBlock("weathered_swift_powered_rail",
             () -> new SwiftPoweredRailBlock(BlockBehaviour.Properties.copy(Blocks.POWERED_RAIL),WeatheringRailBlock.WeatherState.WEATHERED));
     public static final RegistryObject<Block> WAXED_WEATHERED_SWIFT_POWERED_RAIL = registerBlock("waxed_weathered_swift_powered_rail",
-            () -> new WaxedWeatheredSwiftPoweredRailBlock(BlockBehaviour.Properties.copy(Blocks.POWERED_RAIL)));
+            () -> new WaxedSwiftPoweredRailBlock(BlockBehaviour.Properties.copy(Blocks.POWERED_RAIL), WaxedSwiftPoweredRailBlock.WaxedWeatherState.WAXED_WEATHERED));
 
     //Oxidized and Waxed Oxidized
     public static final RegistryObject<Block> OXIDIZED_SWIFT_POWERED_RAIL = registerBlock("oxidized_swift_powered_rail",
             () -> new SwiftPoweredRailBlock(BlockBehaviour.Properties.copy(Blocks.POWERED_RAIL),WeatheringRailBlock.WeatherState.OXIDIZED));
     public static final RegistryObject<Block> WAXED_OXIDIZED_SWIFT_POWERED_RAIL = registerBlock("waxed_oxidized_swift_powered_rail",
-            () -> new WaxedOxidizedSwiftPoweredRailBlock(BlockBehaviour.Properties.copy(Blocks.POWERED_RAIL)));
+            () -> new WaxedSwiftPoweredRailBlock(BlockBehaviour.Properties.copy(Blocks.POWERED_RAIL), WaxedSwiftPoweredRailBlock.WaxedWeatherState.WAXED_OXIDIZED));
 
     //END NEW BLOCKS
 

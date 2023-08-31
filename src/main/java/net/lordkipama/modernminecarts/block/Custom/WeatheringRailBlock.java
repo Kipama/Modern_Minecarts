@@ -82,6 +82,4 @@ public interface WeatheringRailBlock extends ChangeOverTimeBlock<WeatheringRailB
         WEATHERED,
         OXIDIZED;
     }
-
-
 }
