@@ -49,8 +49,6 @@ public class ModernMinecarts {
     // Add the example block item to the building blocks tab
     private void addCreative(BuildCreativeModeTabContentsEvent event) {
         if(event.getTabKey() == CreativeModeTabs.REDSTONE_BLOCKS) {
-            event.accept(ModItems.TESTITEM);
-
             event.accept(ModBlocks.COPPER_RAIL);
             event.accept(ModBlocks.EXPOSED_COPPER_RAIL);
             event.accept(ModBlocks.WEATHERED_COPPER_RAIL);
