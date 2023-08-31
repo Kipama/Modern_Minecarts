@@ -1,0 +1,21 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "#": {
+      "item": "minecraft:powered_rail"
+    },
+    "X": {
+      "item": "minecraft:copper_ingot"
+    }
+  },
+  "pattern": [
+    "X#X",
+    "X#X",
+    "X#X"
+  ],
+  "result": {
+    "count": 3,
+    "item": "modernminecarts:copper_rail"
+  }
+}

@@ -1,6 +1,11 @@
 package net.lordkipama.modernminecarts;
 
 import com.mojang.logging.LogUtils;
+import net.lordkipama.modernminecarts.Item.ModItems;
+import net.lordkipama.modernminecarts.block.ModBlocks;
+import net.minecraft.data.advancements.packs.VanillaHusbandryAdvancements;
+import net.minecraft.world.item.CreativeModeTab;
+import net.minecraft.world.item.CreativeModeTabs;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.BuildCreativeModeTabContentsEvent;
@@ -13,6 +18,7 @@ import net.minecraftforge.fml.event.lifecycle.FMLCommonSetupEvent;
 import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
 import org.slf4j.Logger;
 
+
 // The value here should match an entry in the META-INF/mods.toml file
 @Mod(net.lordkipama.modernminecarts.ModernMinecarts.MOD_ID)
 public class ModernMinecarts {
@@ -24,12 +30,16 @@ public class ModernMinecarts {
     public ModernMinecarts() {
         IEventBus modEventBus = FMLJavaModLoadingContext.get().getModEventBus();
 
+        ModItems.register(modEventBus);
+        ModBlocks.register(modEventBus);
 
         modEventBus.addListener(this::commonSetup);
 
 
         MinecraftForge.EVENT_BUS.register(this);
         modEventBus.addListener(this::addCreative);
+
+
     }
 
     private void commonSetup(final FMLCommonSetupEvent event) {
@@ -38,6 +48,17 @@ public class ModernMinecarts {
 
     // Add the example block item to the building blocks tab
     private void addCreative(BuildCreativeModeTabContentsEvent event) {
+        if(event.getTabKey() == CreativeModeTabs.REDSTONE_BLOCKS) {
+            event.accept(ModBlocks.COPPER_RAIL);
+            event.accept(ModBlocks.EXPOSED_COPPER_RAIL);
+            event.accept(ModBlocks.WEATHERED_COPPER_RAIL);
+            event.accept(ModBlocks.OXIDIZED_COPPER_RAIL);
+
+            event.accept(ModBlocks.WAXED_COPPER_RAIL);
+            event.accept(ModBlocks.WAXED_EXPOSED_COPPER_RAIL);
+            event.accept(ModBlocks.WAXED_WEATHERED_COPPER_RAIL);
+            event.accept(ModBlocks.WAXED_OXIDIZED_COPPER_RAIL);
+        }
 
     }
 

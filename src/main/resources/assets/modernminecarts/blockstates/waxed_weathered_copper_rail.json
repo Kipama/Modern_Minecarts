@@ -1,0 +1,18 @@
+{
+  "variants": {
+    "powered=false,shape=east_west": {
+      "model": "modernminecarts:block/weathered_copper_rail",
+      "y": 90
+    },
+    "powered=false,shape=north_south": {
+      "model": "modernminecarts:block/weathered_copper_rail"
+    },
+    "powered=true,shape=east_west": {
+      "model": "modernminecarts:block/weathered_copper_rail_on",
+      "y": 90
+    },
+    "powered=true,shape=north_south": {
+      "model": "modernminecarts:block/weathered_copper_rail_on"
+    }
+  }
+}
