@@ -47,6 +47,9 @@ public class ModBlocks {
     public static final RegistryObject<Block> WAXED_OXIDIZED_COPPER_RAIL = registerBlock("waxed_oxidized_copper_rail",
             () -> new WaxedCopperRailBlock(BlockBehaviour.Properties.copy(Blocks.POWERED_RAIL), WaxedCopperRailBlock.WaxedWeatherState.WAXED_OXIDIZED));
 
+    public static final RegistryObject<Block> RAIL_CROSSING = registerBlock("rail_crossing",
+            () -> new RailCrossingBlock(BlockBehaviour.Properties.copy(Blocks.RAIL)));
+
     //END NEW BLOCKS
 
     private static <T extends Block> RegistryObject<T> registerBlock(String name, Supplier<T> block) {
