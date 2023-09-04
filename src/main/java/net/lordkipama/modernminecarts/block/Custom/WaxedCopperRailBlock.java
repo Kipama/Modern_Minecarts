@@ -27,19 +27,34 @@ public class WaxedCopperRailBlock extends PoweredRailBlock{
 
     @Override
     public boolean canMakeSlopes(BlockState state, BlockGetter world, BlockPos pos) {
-        return false;
+        return true;
     }
 
 
     @Override
-    public float getRailMaxSpeed(BlockState state, Level world, BlockPos pos, AbstractMinecart cart) {
+    public float getRailMaxSpeed(BlockState state, Level level, BlockPos pos, AbstractMinecart cart) {
+        String version = String.valueOf(waxedWeatherState);
 
-        return switch (waxedWeatherState.toString()) {
-            case "WAXED_UNAFFECTED" -> RailSpeeds.default_copper_speed;
-            case "WAXED_EXPOSED" -> RailSpeeds.exposed_copper_speed;
-            case "WAXED_WEATHERED" -> RailSpeeds.weathered_copper_speed;
-            default -> RailSpeeds.oxidized_copper_speed;
-        };
+        float finalSpeed = 0.4f;
+
+        if(version=="WAXED_UNAFFECTED"){
+            finalSpeed = RailSpeeds.default_copper_speed;
+        }
+        else if(version=="WAXED_EXPOSED"){
+            finalSpeed = RailSpeeds.exposed_copper_speed;
+        }
+        else if(version=="WAXED_WEATHERED"){
+            finalSpeed = RailSpeeds.weathered_copper_speed;
+        }
+        else if(version=="WAXED_OXIDIZED"){
+            finalSpeed = RailSpeeds.oxidized_copper_speed;
+        }
+
+        if(getRailDirection(state, level, pos, null).isAscending() && finalSpeed>= RailSpeeds.max_ascending_speed){
+            return RailSpeeds.max_ascending_speed;
+        }
+
+        return finalSpeed;
     }
 
     @Override
