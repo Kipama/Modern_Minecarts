@@ -25,20 +25,22 @@ import net.minecraft.advancements.CriteriaTriggers;
 
 public class CopperRailBlock extends PoweredRailBlock implements WeatheringRailBlock {
     private final WeatheringRailBlock.WeatherState weatherState;
+    //private final boolean isAscending = false;
 
     public CopperRailBlock(Properties copy, WeatheringRailBlock.WeatherState weatherState) {
         super(copy, true);
         this.weatherState = weatherState;
+
     }
 
     @Override
     public InteractionResult use(BlockState state, Level level, BlockPos pos, Player player, InteractionHand interactionHand, BlockHitResult blockHitResult) {
         ItemStack itemstack = player.getItemInHand(interactionHand);
+
         if (itemstack.getItem() == Items.HONEYCOMB) {
 
             //Decrement honeycomb
             if (!player.isCreative() && !player.isSpectator()) {
-
                 itemstack.shrink(1);
             }
 
@@ -71,6 +73,7 @@ public class CopperRailBlock extends PoweredRailBlock implements WeatheringRailB
 
             //Play sound and particle events
             level.levelEvent(player, 3003, pos, 0);
+            player.swing(interactionHand);
             return super.use(state, level, pos, player, interactionHand, blockHitResult);
 
         } else if (itemstack.is(ItemTags.AXES)) {
@@ -113,20 +116,33 @@ public class CopperRailBlock extends PoweredRailBlock implements WeatheringRailB
 
     @Override
     public boolean canMakeSlopes(BlockState state, BlockGetter world, BlockPos pos) {
-        return false;
+        return true;
     }
 
     @Override
-    public float getRailMaxSpeed(BlockState state, Level world, BlockPos pos, AbstractMinecart cart) {
+    public float getRailMaxSpeed(BlockState state, Level level, BlockPos pos, AbstractMinecart cart) {
         String currentAge = String.valueOf(getAge());
 
-        return switch (currentAge) {
-            case "UNAFFECTED" -> RailSpeeds.default_copper_speed;
-            case "EXPOSED" -> RailSpeeds.exposed_copper_speed;
-            case "WEATHERED" -> RailSpeeds.weathered_copper_speed;
-            default -> RailSpeeds.oxidized_copper_speed;
-        };
+        float finalSpeed = 0.4f;
 
+        if(currentAge=="UNAFFECTED"){
+            finalSpeed = RailSpeeds.default_copper_speed;
+        }
+        else if(currentAge=="EXPOSED"){
+            finalSpeed = RailSpeeds.exposed_copper_speed;
+        }
+        else if(currentAge=="WEATHERED"){
+            finalSpeed = RailSpeeds.weathered_copper_speed;
+        }
+        else if(currentAge=="OXIDIZED"){
+            finalSpeed = RailSpeeds.oxidized_copper_speed;
+        }
+
+        if(getRailDirection(state, level, pos, null).isAscending() && finalSpeed>= RailSpeeds.max_ascending_speed){
+            return RailSpeeds.max_ascending_speed;
+        }
+
+        return finalSpeed;
     }
 
 
