@@ -16,7 +16,7 @@ public class ModItems {
             DeferredRegister.create(ForgeRegistries.ITEMS, ModernMinecarts.MOD_ID);
 
 
-
+    public static final RegistryObject<Item> CUSTOM_MINECART_ITEM = ITEMS.register("custom_minecart", () -> new CustomMinecartItem(new Item.Properties().stacksTo(1)));
 
 
 

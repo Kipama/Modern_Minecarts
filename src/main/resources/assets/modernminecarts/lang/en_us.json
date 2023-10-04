@@ -12,5 +12,7 @@
   "block.modernminecarts.waxed_oxidized_copper_rail": "Waxed Oxidized Copper Rail",
 
 
-  "block.modernminecarts.rail_crossing": "Rail Crossing"
+  "block.modernminecarts.rail_crossing": "Rail Crossing",
+
+  "item.modernminecarts.custom_minecart": "Custom Minecart"
 }
