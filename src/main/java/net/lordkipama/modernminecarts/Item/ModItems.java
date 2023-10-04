@@ -1,15 +1,15 @@
 package net.lordkipama.modernminecarts.Item;
 
-import com.google.common.util.concurrent.ClosingFuture;
+
 import net.lordkipama.modernminecarts.ModernMinecarts;
-import net.minecraft.world.item.CreativeModeTab;
+
 import net.minecraft.world.item.Item;
 import net.minecraftforge.eventbus.api.IEventBus;
 import net.minecraftforge.registries.DeferredRegister;
 import net.minecraftforge.registries.ForgeRegistries;
 import net.minecraftforge.registries.RegistryObject;
 
-import java.util.function.Supplier;
+
 
 public class ModItems {
     public static final DeferredRegister<Item> ITEMS =

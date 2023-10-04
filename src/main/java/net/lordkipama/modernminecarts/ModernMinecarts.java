@@ -5,7 +5,6 @@ import net.lordkipama.modernminecarts.block.ModBlocks;
 import net.lordkipama.modernminecarts.entity.CustomMinecartEntity;
 import net.lordkipama.modernminecarts.entity.ModEntities;
 import net.lordkipama.modernminecarts.renderer.CustomMinecartRenderer;
-import net.minecraft.client.model.geom.ModelLayerLocation;
 import net.minecraft.client.model.geom.ModelLayers;
 import net.minecraft.client.renderer.entity.EntityRenderer;
 import net.minecraft.client.renderer.entity.EntityRendererProvider;
