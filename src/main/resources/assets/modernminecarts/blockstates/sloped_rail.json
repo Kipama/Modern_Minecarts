@@ -1,0 +1,25 @@
+{
+  "variants": {
+    "shape=ascending_east": {
+      "model": "modernminecarts:block/sloped_rail_raised_ne",
+      "y": 90
+    },
+    "shape=ascending_north": {
+      "model": "modernminecarts:block/sloped_rail_raised_ne"
+    },
+    "shape=ascending_south": {
+      "model": "modernminecarts:block/sloped_rail_raised_sw"
+    },
+    "shape=ascending_west": {
+      "model": "modernminecarts:block/sloped_rail_raised_sw",
+      "y": 90
+    },
+    "shape=east_west": {
+      "model": "modernminecarts:block/sloped_rail",
+      "y": 90
+    },
+    "shape=north_south": {
+      "model": "modernminecarts:block/sloped_rail"
+    }
+  }
+}

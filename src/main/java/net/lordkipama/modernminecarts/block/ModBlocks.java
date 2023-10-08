@@ -50,6 +50,9 @@ public class ModBlocks {
     public static final RegistryObject<Block> RAIL_CROSSING = registerBlock("rail_crossing",
             () -> new RailCrossingBlock(BlockBehaviour.Properties.copy(Blocks.RAIL)));
 
+    public static final RegistryObject<Block> SLOPED_RAIL = registerBlock("sloped_rail",
+            () -> new SlopedRailBlock(BlockBehaviour.Properties.copy(Blocks.RAIL)));
+
     //END NEW BLOCKS
 
     private static <T extends Block> RegistryObject<T> registerBlock(String name, Supplier<T> block) {

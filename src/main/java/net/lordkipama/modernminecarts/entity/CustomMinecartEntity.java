@@ -1,6 +1,7 @@
 package net.lordkipama.modernminecarts.entity;
 
 import net.lordkipama.modernminecarts.Item.ModItems;
+import net.lordkipama.modernminecarts.block.ModBlocks;
 import net.minecraft.core.BlockPos;
 import net.minecraft.util.Mth;
 import net.minecraft.world.InteractionHand;
@@ -11,12 +12,15 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.vehicle.AbstractMinecart;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.RailShape;
 import net.minecraft.world.phys.Vec3;
 
 import static net.minecraft.world.level.block.Block.canSupportRigidBlock;
 
 public class CustomMinecartEntity extends AbstractMinecart {
+    private boolean jumpedOffSlope = false;
+
     public CustomMinecartEntity(EntityType<? extends AbstractMinecart> p_38470_, Level p_38471_) {
         super(p_38470_, p_38471_);
     }
@@ -83,9 +87,52 @@ public class CustomMinecartEntity extends AbstractMinecart {
     }
 
 
+    @Override
     public void comeOffTrack() {
+
         double d0 = this.onGround() ? this.getMaxSpeed() : getMaxSpeedAirLateral(); //getMaxSpeedAirLateral()
         Vec3 vec3 = this.getDeltaMovement();
+
+        //Get hindblock
+        int x = Mth.floor(this.getX());
+        int y = Mth.floor(this.getY());
+        int z = Mth.floor(this.getZ());
+        BlockState hindBlockState = null;
+        double lateralMomentum = 0.0;
+        if(vec3.x>0){
+            BlockPos blockpos = new BlockPos(x-1, y-1, z);
+            lateralMomentum = Math.abs(vec3.x);
+            hindBlockState = this.level().getBlockState(blockpos);}
+        else if(vec3.x<0){
+            BlockPos blockpos = new BlockPos(x+1, y-1, z);
+            lateralMomentum = Math.abs(vec3.x);
+            hindBlockState = this.level().getBlockState(blockpos);
+        }
+        else if(vec3.z>0){
+            BlockPos blockpos = new BlockPos(x, y-1, z-1);
+            lateralMomentum = Math.abs(vec3.z);
+            hindBlockState = this.level().getBlockState(blockpos);
+        }
+        else {
+            BlockPos blockpos = new BlockPos(x, y-1, z+1);
+            lateralMomentum = Math.abs(vec3.z);
+            hindBlockState = this.level().getBlockState(blockpos);
+        }
+
+        if(jumpedOffSlope ==false && hindBlockState.is(ModBlocks.SLOPED_RAIL.get())){
+            //modify vec3 if rail is ramp
+
+            System.out.println(vec3);
+            System.out.println(hindBlockState);
+
+            vec3 = vec3.add(0,lateralMomentum,0);
+            jumpedOffSlope = true;
+        }
+        else if(!hindBlockState.is(ModBlocks.SLOPED_RAIL.get())){
+            jumpedOffSlope = false;
+        }
+
+
         this.setDeltaMovement(Mth.clamp(vec3.x, -d0, d0), vec3.y, Mth.clamp(vec3.z, -d0, d0));
         if (this.onGround() && vec3.y <= 0) {
             this.setDeltaMovement(this.getDeltaMovement().scale(0.5D));
@@ -105,6 +152,8 @@ public class CustomMinecartEntity extends AbstractMinecart {
     }
 
 
+
+
     private boolean shouldBeRemoved(BlockPos pPos, Level pLevel, RailShape pShape) {
         if (!canSupportRigidBlock(pLevel, pPos.below())) {
             return true;
@@ -122,5 +171,27 @@ public class CustomMinecartEntity extends AbstractMinecart {
                     return false;
             }
         }
+    }
+
+
+
+
+    @Override
+    public void moveMinecartOnRail(BlockPos pos) { //Non-default because getMaximumSpeed is protected
+        CustomMinecartEntity mc = this;
+        double d24 = mc.isVehicle() ? 0.75D : 1.0D;
+        double d25 = mc.getMaxSpeedWithRail();
+        Vec3 vec3d1 = mc.getDeltaMovement();
+
+
+        if(vec3d1.x!=0){
+            vec3d1 = new Vec3(Math.min(vec3d1.x, getCurrentCartSpeedCapOnRail()),0,vec3d1.z);
+        }
+        else {
+            vec3d1 = new Vec3(vec3d1.x,0,Math.min(vec3d1.z, getCurrentCartSpeedCapOnRail()));
+        }
+
+        setDeltaMovement(vec3d1);
+        mc.move(MoverType.SELF, new Vec3(Mth.clamp(d24 * vec3d1.x, -d25, d25), 0.0D, Mth.clamp(d24 * vec3d1.z, -d25, d25)));
     }
 }

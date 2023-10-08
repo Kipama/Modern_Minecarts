@@ -14,5 +14,7 @@
 
   "block.modernminecarts.rail_crossing": "Rail Crossing",
 
-  "item.modernminecarts.custom_minecart": "Custom Minecart"
+  "item.modernminecarts.custom_minecart": "Custom Minecart",
+
+  "block.modernminecarts.sloped_rail": "Sloped Rail"
 }

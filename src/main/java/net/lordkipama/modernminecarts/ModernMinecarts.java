@@ -61,6 +61,7 @@ public class ModernMinecarts {
 
             event.accept(ModBlocks.RAIL_CROSSING);
 
+            event.accept(ModBlocks.SLOPED_RAIL);
 
             event.accept(ModItems.CUSTOM_MINECART_ITEM);
         }
