@@ -20,6 +20,7 @@ import static net.minecraft.world.level.block.Block.canSupportRigidBlock;
 
 public class CustomMinecartEntity extends AbstractMinecart {
     private boolean jumpedOffSlope = false;
+    private double maxSpeed = 8;
 
     public CustomMinecartEntity(EntityType<? extends AbstractMinecart> p_38470_, Level p_38471_) {
         super(p_38470_, p_38471_);
@@ -73,7 +74,7 @@ public class CustomMinecartEntity extends AbstractMinecart {
 
     @Override
     public double getDragAir() {
-        return 0.975f;
+        return 0.95f; //0.975f
     }
 
     @Override
@@ -83,7 +84,7 @@ public class CustomMinecartEntity extends AbstractMinecart {
 
     @Override
     protected double getMaxSpeed() {
-        return (this.isInWater() ? 8.0D : 16.0D) / 20.0D;
+        return maxSpeed;
     }
 
 
@@ -99,33 +100,37 @@ public class CustomMinecartEntity extends AbstractMinecart {
         int z = Mth.floor(this.getZ());
         BlockState hindBlockState = null;
         double lateralMomentum = 0.0;
+        Vec3 newVec3 = null;
+
         if(vec3.x>0){
             BlockPos blockpos = new BlockPos(x-1, y-1, z);
             lateralMomentum = Math.abs(vec3.x);
-            hindBlockState = this.level().getBlockState(blockpos);}
+            hindBlockState = this.level().getBlockState(blockpos);
+            newVec3 = new Vec3(Math.min(vec3.x+0.1, maxSpeed),Math.min(lateralMomentum, maxSpeed),0);
+        }
         else if(vec3.x<0){
             BlockPos blockpos = new BlockPos(x+1, y-1, z);
             lateralMomentum = Math.abs(vec3.x);
             hindBlockState = this.level().getBlockState(blockpos);
+            newVec3 = new Vec3(Math.max(vec3.x-0.1, -maxSpeed),Math.min(lateralMomentum, maxSpeed),0);
         }
         else if(vec3.z>0){
             BlockPos blockpos = new BlockPos(x, y-1, z-1);
             lateralMomentum = Math.abs(vec3.z);
             hindBlockState = this.level().getBlockState(blockpos);
+            newVec3 = new Vec3(0,Math.min(lateralMomentum, maxSpeed),Math.min(vec3.z+0.1, maxSpeed));
         }
         else {
             BlockPos blockpos = new BlockPos(x, y-1, z+1);
             lateralMomentum = Math.abs(vec3.z);
             hindBlockState = this.level().getBlockState(blockpos);
+            newVec3 = new Vec3(0,Math.min(lateralMomentum, maxSpeed),Math.max(vec3.z-0.1, -maxSpeed));
         }
 
         if(jumpedOffSlope ==false && hindBlockState.is(ModBlocks.SLOPED_RAIL.get())){
             //modify vec3 if rail is ramp
+            vec3 = newVec3;
 
-            System.out.println(vec3);
-            System.out.println(hindBlockState);
-
-            vec3 = vec3.add(0,lateralMomentum,0);
             jumpedOffSlope = true;
         }
         else if(!hindBlockState.is(ModBlocks.SLOPED_RAIL.get())){
@@ -150,8 +155,6 @@ public class CustomMinecartEntity extends AbstractMinecart {
             this.setDeltaMovement(this.getDeltaMovement().scale(getDragAir()));
         }
     }
-
-
 
 
     private boolean shouldBeRemoved(BlockPos pPos, Level pLevel, RailShape pShape) {
@@ -182,16 +185,16 @@ public class CustomMinecartEntity extends AbstractMinecart {
         double d24 = mc.isVehicle() ? 0.75D : 1.0D;
         double d25 = mc.getMaxSpeedWithRail();
         Vec3 vec3d1 = mc.getDeltaMovement();
+        maxSpeed = getMaxSpeedWithRail();
 
 
-        if(vec3d1.x!=0){
-            vec3d1 = new Vec3(Math.min(vec3d1.x, getCurrentCartSpeedCapOnRail()),0,vec3d1.z);
-        }
-        else {
-            vec3d1 = new Vec3(vec3d1.x,0,Math.min(vec3d1.z, getCurrentCartSpeedCapOnRail()));
-        }
+        vec3d1 = new Vec3(Math.min(Math.max(vec3d1.x(), -maxSpeed), maxSpeed),0,Math.min(Math.max(vec3d1.z(), -maxSpeed), maxSpeed));
+
+
 
         setDeltaMovement(vec3d1);
+        System.out.println(vec3d1);
+        System.out.println(maxSpeed);
         mc.move(MoverType.SELF, new Vec3(Mth.clamp(d24 * vec3d1.x, -d25, d25), 0.0D, Mth.clamp(d24 * vec3d1.z, -d25, d25)));
     }
 }
