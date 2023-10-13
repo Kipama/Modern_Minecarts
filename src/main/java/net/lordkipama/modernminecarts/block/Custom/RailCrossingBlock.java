@@ -39,12 +39,12 @@ public class RailCrossingBlock extends BaseRailBlock {
 
     @Override
     public @NotNull RailShape getRailDirection(@NotNull BlockState state, @NotNull BlockGetter world, @NotNull BlockPos pos, @org.jetbrains.annotations.Nullable net.minecraft.world.entity.vehicle.AbstractMinecart cart) {
-
         if (cart == null) return RailShape.NORTH_SOUTH;
 
         Vec3 movement = cart.getDeltaMovement();
         if (Math.abs(movement.x) > Math.abs(movement.z)) return RailShape.EAST_WEST;
         else return RailShape.NORTH_SOUTH;
     }
+
 
 }

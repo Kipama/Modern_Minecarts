@@ -101,4 +101,6 @@ public class WaxedCopperRailBlock extends PoweredRailBlock{
         WAXED_OXIDIZED;
 
     }
+
+
 }

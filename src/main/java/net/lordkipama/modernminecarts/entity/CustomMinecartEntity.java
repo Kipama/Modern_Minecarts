@@ -74,7 +74,7 @@ public class CustomMinecartEntity extends AbstractMinecart {
 
     @Override
     public double getDragAir() {
-        return 0.95f; //0.975f
+        return 0.9625f; //0.975f
     }
 
     @Override
@@ -193,8 +193,6 @@ public class CustomMinecartEntity extends AbstractMinecart {
 
 
         setDeltaMovement(vec3d1);
-        System.out.println(vec3d1);
-        System.out.println(maxSpeed);
         mc.move(MoverType.SELF, new Vec3(Mth.clamp(d24 * vec3d1.x, -d25, d25), 0.0D, Mth.clamp(d24 * vec3d1.z, -d25, d25)));
     }
 }

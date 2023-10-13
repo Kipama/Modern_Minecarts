@@ -29,6 +29,8 @@ public class SlopedRailBlock extends BaseRailBlock {
     * */
     public static final DirectionProperty FACING = BlockStateProperties.HORIZONTAL_FACING;
     public static final EnumProperty<RailShape> SHAPE = BlockStateProperties.RAIL_SHAPE_STRAIGHT;
+    public BlockState currentBlockState = null;
+
 
     public SlopedRailBlock(BlockBehaviour.Properties p_55395_) {
         super(true, p_55395_);
@@ -46,20 +48,20 @@ public class SlopedRailBlock extends BaseRailBlock {
         switch (direction) {
             case EAST -> {
                 blockstate = blockstate.setValue(this.getShapeProperty(), RailShape.ASCENDING_EAST).setValue(WATERLOGGED, Boolean.valueOf(flag));
-                return blockstate;
             }
             case WEST -> {
                 blockstate = blockstate.setValue(this.getShapeProperty(), RailShape.ASCENDING_WEST).setValue(WATERLOGGED, Boolean.valueOf(flag));
-                return blockstate;
             }
             case NORTH -> {
                 blockstate = blockstate.setValue(this.getShapeProperty(), RailShape.ASCENDING_NORTH).setValue(WATERLOGGED, Boolean.valueOf(flag));
-                return blockstate;
             }
             case SOUTH -> {
                 blockstate = blockstate.setValue(this.getShapeProperty(), RailShape.ASCENDING_SOUTH).setValue(WATERLOGGED, Boolean.valueOf(flag));
-                return blockstate;
             }
+        }
+
+        if(currentBlockState==null){
+            currentBlockState = blockstate;
         }
         return blockstate;
     }
@@ -67,7 +69,7 @@ public class SlopedRailBlock extends BaseRailBlock {
     //Necessary
     @Override
     protected BlockState updateDir(Level pLevel, BlockPos pPos, BlockState pState, boolean pAlwaysPlace) {
-        return pState;
+        return currentBlockState;
     }
 
     //Necessary
@@ -86,20 +88,27 @@ public class SlopedRailBlock extends BaseRailBlock {
         pBuilder.add(FACING, SHAPE, WATERLOGGED);
     }
 
-    //On itself useless
     @Override
     public void neighborChanged(BlockState pState, Level pLevel, BlockPos pPos, Block pBlock, BlockPos pFromPos, boolean pIsMoving) {
+        System.out.print("neighborChanged   ");
+        System.out.print(pState.getValue(SHAPE));
         if (!pLevel.isClientSide && pLevel.getBlockState(pPos).is(this)) {
-            //RailShape railshape = getRailDirection(pState, pLevel, pPos, null);
             if (!canSupportRigidBlock(pLevel, pPos.below())) {
                 dropResources(pState, pLevel, pPos);
                 pLevel.removeBlock(pPos, pIsMoving);
             } else {
-                this.updateState(pState, pLevel, pPos, pBlock);
+                if(pState.getValue(SHAPE).toString().equals("east_west") || pState.getValue(SHAPE).toString().equals("north_south")) {
+                    pLevel.setBlock(pPos, currentBlockState, 0);
+                }
+
+                this.updateState(currentBlockState, pLevel, pPos, pBlock);
             }
 
         }
+        System.out.println(currentBlockState.getValue(SHAPE));
     }
+
+
 
     @Override
     public float getRailMaxSpeed(BlockState state, Level level, BlockPos pos, AbstractMinecart cart) {
@@ -108,6 +117,7 @@ public class SlopedRailBlock extends BaseRailBlock {
 
     @Override
     public RailShape getRailDirection(BlockState state, BlockGetter world, BlockPos pos, @org.jetbrains.annotations.Nullable net.minecraft.world.entity.vehicle.AbstractMinecart cart) {
+
         return state.getValue(SHAPE);
     }
 }
