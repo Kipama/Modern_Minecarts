@@ -13,7 +13,7 @@ public class CustomMinecartItem extends AbstractMinecartItem {
     @Override
     void createMinecart(ItemStack stack, Level world, double posX, double posY, double posZ) {
 
-            CustomMinecartEntity minecart = new CustomMinecartEntity(world, posX, posY, posZ); //ModEntities.BETTER_MINECART.get(),
+            CustomMinecartEntity minecart = new CustomMinecartEntity(world, posX, posY, posZ);
             if (stack.hasCustomHoverName()) {
                 minecart.setCustomName(stack.getDisplayName());
             }

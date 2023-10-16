@@ -1,8 +1,13 @@
 package net.lordkipama.modernminecarts.entity;
 
 import net.lordkipama.modernminecarts.Item.ModItems;
+import net.lordkipama.modernminecarts.Item.VanillaItems;
+import net.lordkipama.modernminecarts.RailSpeeds;
+import net.lordkipama.modernminecarts.block.Custom.SlopedRailBlock;
 import net.lordkipama.modernminecarts.block.ModBlocks;
 import net.minecraft.core.BlockPos;
+import net.minecraft.tags.BlockTags;
+import net.minecraft.tags.TagKey;
 import net.minecraft.util.Mth;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
@@ -12,7 +17,11 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.vehicle.AbstractMinecart;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.BaseRailBlock;
+import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.block.state.properties.BlockStateProperties;
+import net.minecraft.world.level.block.state.properties.EnumProperty;
 import net.minecraft.world.level.block.state.properties.RailShape;
 import net.minecraft.world.phys.Vec3;
 
@@ -27,7 +36,7 @@ public class CustomMinecartEntity extends AbstractMinecart {
     }
 
     public CustomMinecartEntity(Level p_38473_, double p_38474_, double p_38475_, double p_38476_) {
-        super(ModEntities.CUSTOM_MINECART_ENTITY.get(), p_38473_, p_38474_, p_38475_, p_38476_);
+        super(VanillaEntities.MINECART_ENTITY.get(), p_38473_, p_38474_, p_38475_, p_38476_);
     }
 
     public InteractionResult interact(Player p_38483_, InteractionHand p_38484_) {
@@ -43,7 +52,7 @@ public class CustomMinecartEntity extends AbstractMinecart {
     }
 
     protected Item getDropItem() {
-        return ModItems.CUSTOM_MINECART_ITEM.get();
+        return VanillaItems.MINECART_ITEM.get();
     }
 
     public void activateMinecart(int p_38478_, int p_38479_, int p_38480_, boolean p_38481_) {
@@ -127,7 +136,8 @@ public class CustomMinecartEntity extends AbstractMinecart {
             newVec3 = new Vec3(0,Math.min(lateralMomentum, maxSpeed),Math.max(vec3.z-0.1, -maxSpeed));
         }
 
-        if(jumpedOffSlope ==false && hindBlockState.is(ModBlocks.SLOPED_RAIL.get())){
+        BlockPos belowBlock = new BlockPos(x, y-1,z);
+        if(jumpedOffSlope ==false && hindBlockState.is(ModBlocks.SLOPED_RAIL.get()) && this.level().getBlockState(belowBlock).is(Blocks.AIR)){
             //modify vec3 if rail is ramp
             vec3 = newVec3;
 
@@ -193,6 +203,55 @@ public class CustomMinecartEntity extends AbstractMinecart {
 
 
         setDeltaMovement(vec3d1);
+        System.out.println(vec3d1);
         mc.move(MoverType.SELF, new Vec3(Mth.clamp(d24 * vec3d1.x, -d25, d25), 0.0D, Mth.clamp(d24 * vec3d1.z, -d25, d25)));
+    }
+
+    @Override
+    public double getMaxSpeedWithRail() { //Non-default because getMaximumSpeed is protected
+        if (!canUseRail()) return getMaxSpeed();
+        BlockPos pos = this.getCurrentRailPosition();
+        BlockState state = this.level().getBlockState(pos);
+        if (!state.is(BlockTags.RAILS)) return getMaxSpeed();
+
+        float railMaxSpeed = ((BaseRailBlock)state.getBlock()).getRailMaxSpeed(state, this.level(), pos, this);
+
+        if(railMaxSpeed > RailSpeeds.max_ascending_speed) {
+            Vec3 vec3 = getDeltaMovement();
+            BlockState frontBlockState = state;
+            BlockPos blockpos = pos;
+            if (vec3.x > 0) {
+                blockpos = new BlockPos(pos.getX() + 1, pos.getY(), pos.getZ());
+                frontBlockState = this.level().getBlockState(blockpos);
+            } else if (vec3.x < 0) {
+                blockpos = new BlockPos(pos.getX() - 1, pos.getY(), pos.getZ());
+                frontBlockState = this.level().getBlockState(blockpos);
+            } else if (vec3.z > 0) {
+                blockpos = new BlockPos(pos.getX(), pos.getY(), pos.getZ() + 1);
+                frontBlockState = this.level().getBlockState(blockpos);
+            } else {
+                blockpos = new BlockPos(pos.getX(), pos.getY(), pos.getZ() - 1);
+                frontBlockState = this.level().getBlockState(blockpos);
+            }
+
+            if (frontBlockState.is(BlockTags.RAILS)) {
+                try {
+                    final EnumProperty<RailShape> SHAPE = BlockStateProperties.RAIL_SHAPE;
+                    if (frontBlockState.getValue(SHAPE).isAscending()) {
+                        railMaxSpeed = ((BaseRailBlock) frontBlockState.getBlock()).getRailMaxSpeed(frontBlockState, this.level(), blockpos, this);
+                    }
+                } catch (Exception e) {
+                    try {
+                        final EnumProperty<RailShape> SHAPE = BlockStateProperties.RAIL_SHAPE_STRAIGHT;
+                        if (frontBlockState.getValue(SHAPE).isAscending()) {
+                            railMaxSpeed = ((BaseRailBlock) frontBlockState.getBlock()).getRailMaxSpeed(frontBlockState, this.level(), blockpos, this); //((BaseRailBlock) state.getBlock()).getRailMaxSpeed(frontBlockState, this.level(), pos, this);
+                        }
+                    } catch (Exception f) {
+                    }
+                }
+            }
+        }
+
+        return Math.min(railMaxSpeed, getCurrentCartSpeedCapOnRail());
     }
 }

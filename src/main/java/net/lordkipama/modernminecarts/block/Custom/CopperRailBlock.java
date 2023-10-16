@@ -127,7 +127,7 @@ public class CopperRailBlock extends PoweredRailBlock implements WeatheringRailB
         float finalSpeed = 0.4f;
 
         if(currentAge=="UNAFFECTED"){
-            finalSpeed = RailSpeeds.default_copper_speed;
+            finalSpeed = RailSpeeds.fastest_speed;
         }
         else if(currentAge=="EXPOSED"){
             finalSpeed = RailSpeeds.exposed_copper_speed;

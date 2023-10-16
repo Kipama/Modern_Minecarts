@@ -1,9 +1,12 @@
 package net.lordkipama.modernminecarts;
 
 import net.lordkipama.modernminecarts.Item.ModItems;
+import net.lordkipama.modernminecarts.Item.VanillaItems;
 import net.lordkipama.modernminecarts.block.ModBlocks;
+import net.lordkipama.modernminecarts.block.VanillaBlocks;
 import net.lordkipama.modernminecarts.entity.CustomMinecartEntity;
 import net.lordkipama.modernminecarts.entity.ModEntities;
+import net.lordkipama.modernminecarts.entity.VanillaEntities;
 import net.lordkipama.modernminecarts.renderer.CustomMinecartRenderer;
 import net.minecraft.client.model.geom.ModelLayers;
 import net.minecraft.client.renderer.entity.EntityRenderer;
@@ -33,6 +36,9 @@ public class ModernMinecarts {
         ModItems.register(modEventBus);
         ModBlocks.register(modEventBus);
         ModEntities.register(modEventBus);
+        VanillaEntities.register(modEventBus);
+        VanillaItems.register(modEventBus);
+        VanillaBlocks.register(modEventBus);
 
         modEventBus.addListener(this::commonSetup);
 
@@ -60,29 +66,10 @@ public class ModernMinecarts {
             event.accept(ModBlocks.WAXED_OXIDIZED_COPPER_RAIL);
 
             event.accept(ModBlocks.RAIL_CROSSING);
-
-            event.accept(ModBlocks.SLOPED_RAIL);
-
-            event.accept(ModItems.CUSTOM_MINECART_ITEM);
         }
 
     }
 
-    // You can use EventBusSubscriber to automatically register all static methods in the class annotated with @SubscribeEvent
-   // @Mod.EventBusSubscriber(modid = MOD_ID, bus = Mod.EventBusSubscriber.Bus.MOD, value = Dist.CLIENT)
-  //  public static class ClientModEvents {
-   //     @SubscribeEvent
-  //      public static void onClientSetup(FMLClientSetupEvent event) {
-   //         EntityRenderers.register(ModEntities.CUSTOM_MINECART_ENTITY.get(), CustomMinecartRenderer::new);
-
-   //     }
-  //  }
-
-    //@SubscribeEvent
-    //public void registerEntityRenderers(EntityRenderersEvent.RegisterRenderers evt) {
-
-     //   evt.registerEntityRenderer(ModEntities.CUSTOM_MINECART_ENTITY.get() , CustomMinecartRenderer::new);
-    //}
 
     // You can use EventBusSubscriber to automatically register all static methods in the class annotated with @SubscribeEvent
     @Mod.EventBusSubscriber(modid = MOD_ID, bus = Mod.EventBusSubscriber.Bus.MOD, value = Dist.CLIENT)
@@ -90,7 +77,7 @@ public class ModernMinecarts {
 
         @SubscribeEvent
         public static void clientSetup(FMLClientSetupEvent event) {
-            EntityRenderers.register(ModEntities.CUSTOM_MINECART_ENTITY.get(), new CustomMinecartEntityRenderFactory());
+            EntityRenderers.register(VanillaEntities.MINECART_ENTITY.get(), new CustomMinecartEntityRenderFactory());
         }
 
         private static class CustomMinecartEntityRenderFactory implements EntityRendererProvider<CustomMinecartEntity> {
