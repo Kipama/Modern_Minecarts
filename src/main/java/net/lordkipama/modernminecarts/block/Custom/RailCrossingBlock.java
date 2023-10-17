@@ -1,7 +1,10 @@
 package net.lordkipama.modernminecarts.block.Custom;
 
+import net.lordkipama.modernminecarts.RailSpeeds;
 import net.minecraft.core.BlockPos;
+import net.minecraft.world.entity.vehicle.AbstractMinecart;
 import net.minecraft.world.level.BlockGetter;
+import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.BaseRailBlock;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockBehaviour;
@@ -39,7 +42,6 @@ public class RailCrossingBlock extends BaseRailBlock {
 
     @Override
     public @NotNull RailShape getRailDirection(@NotNull BlockState state, @NotNull BlockGetter world, @NotNull BlockPos pos, @org.jetbrains.annotations.Nullable net.minecraft.world.entity.vehicle.AbstractMinecart cart) {
-
         if (cart == null) return RailShape.NORTH_SOUTH;
 
         Vec3 movement = cart.getDeltaMovement();
@@ -47,4 +49,9 @@ public class RailCrossingBlock extends BaseRailBlock {
         else return RailShape.NORTH_SOUTH;
     }
 
+    @Override
+    public float getRailMaxSpeed(BlockState state, Level level, BlockPos pos, AbstractMinecart cart) {
+        return RailSpeeds.fastest_speed;
+
+    }
 }

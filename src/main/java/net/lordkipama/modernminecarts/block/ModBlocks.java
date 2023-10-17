@@ -9,6 +9,7 @@ import net.minecraft.world.item.Item;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockBehaviour;
+import net.minecraft.world.level.block.state.properties.RailShape;
 import net.minecraftforge.eventbus.api.IEventBus;
 import net.minecraftforge.registries.DeferredRegister;
 import net.minecraftforge.registries.ForgeRegistries;
@@ -52,6 +53,7 @@ public class ModBlocks {
 
     public static final RegistryObject<Block> SLOPED_RAIL = registerBlock("sloped_rail",
             () -> new SlopedRailBlock(BlockBehaviour.Properties.copy(Blocks.RAIL)));
+
 
     //END NEW BLOCKS
 

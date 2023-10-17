@@ -70,8 +70,6 @@ public interface WeatheringRailBlock extends ChangeOverTimeBlock<WeatheringRailB
         BlockPos blockpos = context.getClickedPos();
         BlockState blockstate = level.getBlockState(blockpos);
 
-        System.out.println("use in WeatheringRailBlock is triggered");
-
 
     }
 

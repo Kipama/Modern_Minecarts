@@ -1,9 +1,10 @@
 package net.lordkipama.modernminecarts;
 
 import net.lordkipama.modernminecarts.Item.ModItems;
+import net.lordkipama.modernminecarts.Item.VanillaItems;
 import net.lordkipama.modernminecarts.block.ModBlocks;
-import net.lordkipama.modernminecarts.entity.CustomMinecartEntity;
-import net.lordkipama.modernminecarts.entity.ModEntities;
+import net.lordkipama.modernminecarts.block.VanillaBlocks;
+import net.lordkipama.modernminecarts.entity.*;
 import net.lordkipama.modernminecarts.renderer.CustomMinecartRenderer;
 import net.minecraft.client.model.geom.ModelLayers;
 import net.minecraft.client.renderer.entity.EntityRenderer;
@@ -33,6 +34,9 @@ public class ModernMinecarts {
         ModItems.register(modEventBus);
         ModBlocks.register(modEventBus);
         ModEntities.register(modEventBus);
+        VanillaEntities.register(modEventBus);
+        VanillaItems.register(modEventBus);
+        VanillaBlocks.register(modEventBus);
 
         modEventBus.addListener(this::commonSetup);
 
@@ -60,29 +64,10 @@ public class ModernMinecarts {
             event.accept(ModBlocks.WAXED_OXIDIZED_COPPER_RAIL);
 
             event.accept(ModBlocks.RAIL_CROSSING);
-
-            event.accept(ModBlocks.SLOPED_RAIL);
-
-            event.accept(ModItems.CUSTOM_MINECART_ITEM);
         }
 
     }
 
-    // You can use EventBusSubscriber to automatically register all static methods in the class annotated with @SubscribeEvent
-   // @Mod.EventBusSubscriber(modid = MOD_ID, bus = Mod.EventBusSubscriber.Bus.MOD, value = Dist.CLIENT)
-  //  public static class ClientModEvents {
-   //     @SubscribeEvent
-  //      public static void onClientSetup(FMLClientSetupEvent event) {
-   //         EntityRenderers.register(ModEntities.CUSTOM_MINECART_ENTITY.get(), CustomMinecartRenderer::new);
-
-   //     }
-  //  }
-
-    //@SubscribeEvent
-    //public void registerEntityRenderers(EntityRenderersEvent.RegisterRenderers evt) {
-
-     //   evt.registerEntityRenderer(ModEntities.CUSTOM_MINECART_ENTITY.get() , CustomMinecartRenderer::new);
-    //}
 
     // You can use EventBusSubscriber to automatically register all static methods in the class annotated with @SubscribeEvent
     @Mod.EventBusSubscriber(modid = MOD_ID, bus = Mod.EventBusSubscriber.Bus.MOD, value = Dist.CLIENT)
@@ -90,13 +75,63 @@ public class ModernMinecarts {
 
         @SubscribeEvent
         public static void clientSetup(FMLClientSetupEvent event) {
-            EntityRenderers.register(ModEntities.CUSTOM_MINECART_ENTITY.get(), new CustomMinecartEntityRenderFactory());
+            EntityRenderers.register(VanillaEntities.MINECART_ENTITY.get(), new CustomMinecartEntityRenderFactory());
+            EntityRenderers.register(VanillaEntities.CHEST_MINECART_ENTITY.get(), new CustomMinecartChestEntityRenderFactory());
+            EntityRenderers.register(VanillaEntities.COMMAND_BLOCK_MINECART_ENTITY.get(), new CustomMinecartCommandBlockEntityRenderFactory());
+            EntityRenderers.register(VanillaEntities.FURNACE_MINECART_ENTITY.get(), new CustomMinecartFurnaceEntityRenderFactory());
+            EntityRenderers.register(VanillaEntities.HOPPER_MINECART_ENTITY.get(), new CustomMinecartHopperEntityRenderFactory());
+            EntityRenderers.register(VanillaEntities.SPAWNER_MINECART_ENTITY.get(), new CustomMinecartSpawnerEntityRenderFactory());
+            EntityRenderers.register(VanillaEntities.TNT_MINECART_ENTITY.get(), new CustomMinecartTNTEntityRenderFactory());
         }
+
+
 
         private static class CustomMinecartEntityRenderFactory implements EntityRendererProvider<CustomMinecartEntity> {
             @Override
             public EntityRenderer<CustomMinecartEntity> create(Context context) {
                 return new CustomMinecartRenderer(context, ModelLayers.MINECART);
+            }
+        }
+
+        private static class CustomMinecartChestEntityRenderFactory implements EntityRendererProvider<CustomMinecartChestEntity> {
+            @Override
+            public EntityRenderer<CustomMinecartChestEntity> create(Context context) {
+                return new CustomMinecartRenderer(context, ModelLayers.CHEST_MINECART);
+            }
+        }
+
+        private static class CustomMinecartCommandBlockEntityRenderFactory implements EntityRendererProvider<CustomMinecartCommandBlockEntity> {
+            @Override
+            public EntityRenderer<CustomMinecartCommandBlockEntity> create(Context context) {
+                return new CustomMinecartRenderer(context, ModelLayers.COMMAND_BLOCK_MINECART);
+            }
+        }
+
+        private static class CustomMinecartFurnaceEntityRenderFactory implements EntityRendererProvider<CustomMinecartFurnaceEntity> {
+            @Override
+            public EntityRenderer<CustomMinecartFurnaceEntity> create(Context context) {
+                return new CustomMinecartRenderer(context, ModelLayers.FURNACE_MINECART);
+            }
+        }
+
+        private static class CustomMinecartHopperEntityRenderFactory implements EntityRendererProvider<CustomMinecartHopperEntity> {
+            @Override
+            public EntityRenderer<CustomMinecartHopperEntity> create(Context context) {
+                return new CustomMinecartRenderer(context, ModelLayers.HOPPER_MINECART);
+            }
+        }
+
+        private static class CustomMinecartSpawnerEntityRenderFactory implements EntityRendererProvider<CustomMinecartSpawnerEntity> {
+            @Override
+            public EntityRenderer<CustomMinecartSpawnerEntity> create(Context context) {
+                return new CustomMinecartRenderer(context, ModelLayers.SPAWNER_MINECART);
+            }
+        }
+
+        private static class CustomMinecartTNTEntityRenderFactory implements EntityRendererProvider<CustomMinecartTNTEntity> {
+            @Override
+            public EntityRenderer<CustomMinecartTNTEntity> create(Context context) {
+                return new CustomMinecartRenderer(context, ModelLayers.TNT_MINECART);
             }
         }
 

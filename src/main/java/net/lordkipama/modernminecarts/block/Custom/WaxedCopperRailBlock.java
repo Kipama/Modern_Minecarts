@@ -38,7 +38,7 @@ public class WaxedCopperRailBlock extends PoweredRailBlock{
         float finalSpeed = 0.4f;
 
         if(version=="WAXED_UNAFFECTED"){
-            finalSpeed = RailSpeeds.default_copper_speed;
+            finalSpeed = RailSpeeds.fastest_speed;
         }
         else if(version=="WAXED_EXPOSED"){
             finalSpeed = RailSpeeds.exposed_copper_speed;
@@ -101,4 +101,6 @@ public class WaxedCopperRailBlock extends PoweredRailBlock{
         WAXED_OXIDIZED;
 
     }
+
+
 }

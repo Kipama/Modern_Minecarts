@@ -1,9 +1,11 @@
 package net.lordkipama.modernminecarts.block.Custom;
 
+import net.lordkipama.modernminecarts.RailSpeeds;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
-import net.minecraft.tags.BlockTags;
 import net.minecraft.world.entity.vehicle.AbstractMinecart;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
 import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
@@ -15,10 +17,6 @@ import net.minecraft.world.level.block.state.StateDefinition;
 import net.minecraft.world.level.block.state.properties.*;
 import net.minecraft.world.level.material.FluidState;
 import net.minecraft.world.level.material.Fluids;
-import net.minecraft.world.phys.shapes.CollisionContext;
-import net.minecraft.world.phys.shapes.VoxelShape;
-
-import javax.annotation.Nullable;
 
 public class SlopedRailBlock extends BaseRailBlock {
     /* Ascending Rail Shapes:
@@ -28,12 +26,16 @@ public class SlopedRailBlock extends BaseRailBlock {
    ASCENDING_SOUTH("ascending_south"),
     * */
     public static final DirectionProperty FACING = BlockStateProperties.HORIZONTAL_FACING;
-    public static final EnumProperty<RailShape> SHAPE = BlockStateProperties.RAIL_SHAPE_STRAIGHT;
+    public static final EnumProperty<RailShape> SHAPE = BlockStateProperties.RAIL_SHAPE;
+    public static final EnumProperty<RailShape> CONST_SHAPE = EnumProperty.create("const_shape", RailShape.class);
+
+    public BlockState currentBlockState = null;
+
 
     public SlopedRailBlock(BlockBehaviour.Properties p_55395_) {
         super(true, p_55395_);
-        this.registerDefaultState(this.stateDefinition.any().setValue(SHAPE, RailShape.NORTH_SOUTH).setValue(WATERLOGGED, Boolean.valueOf(false)));
 
+        this.registerDefaultState(this.stateDefinition.any().setValue(SHAPE, RailShape.NORTH_WEST).setValue(WATERLOGGED, Boolean.valueOf(false)));
     }
 
     @Override
@@ -46,28 +48,32 @@ public class SlopedRailBlock extends BaseRailBlock {
         switch (direction) {
             case EAST -> {
                 blockstate = blockstate.setValue(this.getShapeProperty(), RailShape.ASCENDING_EAST).setValue(WATERLOGGED, Boolean.valueOf(flag));
-                return blockstate;
             }
             case WEST -> {
                 blockstate = blockstate.setValue(this.getShapeProperty(), RailShape.ASCENDING_WEST).setValue(WATERLOGGED, Boolean.valueOf(flag));
-                return blockstate;
             }
             case NORTH -> {
                 blockstate = blockstate.setValue(this.getShapeProperty(), RailShape.ASCENDING_NORTH).setValue(WATERLOGGED, Boolean.valueOf(flag));
-                return blockstate;
             }
             case SOUTH -> {
                 blockstate = blockstate.setValue(this.getShapeProperty(), RailShape.ASCENDING_SOUTH).setValue(WATERLOGGED, Boolean.valueOf(flag));
-                return blockstate;
             }
         }
+
+        if(!blockstate.getValue(CONST_SHAPE).isAscending()){
+            blockstate = blockstate.setValue(CONST_SHAPE, blockstate.getValue(SHAPE));
+        }
+        System.out.println(blockstate.getValue(SHAPE));
+        System.out.println(blockstate.getValue(CONST_SHAPE));
+
         return blockstate;
     }
+
 
     //Necessary
     @Override
     protected BlockState updateDir(Level pLevel, BlockPos pPos, BlockState pState, boolean pAlwaysPlace) {
-        return pState;
+        return pState; //currentBlockState
     }
 
     //Necessary
@@ -83,31 +89,83 @@ public class SlopedRailBlock extends BaseRailBlock {
     }
 
     protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> pBuilder) {
-        pBuilder.add(FACING, SHAPE, WATERLOGGED);
+        pBuilder.add(FACING, SHAPE, WATERLOGGED,CONST_SHAPE);
     }
 
-    //On itself useless
+
+
     @Override
     public void neighborChanged(BlockState pState, Level pLevel, BlockPos pPos, Block pBlock, BlockPos pFromPos, boolean pIsMoving) {
+        System.out.print("neighborChanged   ");
+        System.out.print(pState.getValue(SHAPE));
         if (!pLevel.isClientSide && pLevel.getBlockState(pPos).is(this)) {
-            //RailShape railshape = getRailDirection(pState, pLevel, pPos, null);
             if (!canSupportRigidBlock(pLevel, pPos.below())) {
                 dropResources(pState, pLevel, pPos);
                 pLevel.removeBlock(pPos, pIsMoving);
             } else {
-                this.updateState(pState, pLevel, pPos, pBlock);
+                if(!pState.getValue(CONST_SHAPE).isAscending()){
+                    pState = pState.setValue(CONST_SHAPE, pState.getValue(SHAPE));
+                }
+                else{
+                    pState = pState.setValue(SHAPE, pState.getValue(CONST_SHAPE));
+                }
+
+                if(pState.getValue(SHAPE).toString().equals("east_west") || pState.getValue(SHAPE).toString().equals("north_south")) {
+                    pLevel.setBlock(pPos, pState, 0);
+                }
+
+                pLevel.setBlock(pPos, pState, 0);
+
+                System.out.print("  Serverside  ");
+                System.out.println(pState.getValue(SHAPE));
             }
 
         }
+        System.out.println(pState.getValue(SHAPE));
+    }
+
+
+    @Override
+    protected BlockState updateState(BlockState pState, Level pLevel, BlockPos pPos, boolean pMovedByPiston) {
+        return pState;
     }
 
     @Override
     public float getRailMaxSpeed(BlockState state, Level level, BlockPos pos, AbstractMinecart cart) {
-        return 8f;
+
+        boolean airInFront = false;
+
+
+        if(state.getValue(SHAPE)== RailShape.ASCENDING_NORTH){
+            airInFront = level.getBlockState(new BlockPos(pos.getX(),pos.getY(),pos.getZ()-1)).is(Blocks.AIR);
+        }
+        else if(state.getValue(SHAPE)== RailShape.ASCENDING_EAST){
+            airInFront = level.getBlockState(new BlockPos(pos.getX()+1,pos.getY(),pos.getZ())).is(Blocks.AIR);
+        }
+        else if(state.getValue(SHAPE)== RailShape.ASCENDING_SOUTH){
+            airInFront = level.getBlockState(new BlockPos(pos.getX(),pos.getY(),pos.getZ()+1)).is(Blocks.AIR);
+        }
+        else if(state.getValue(SHAPE)== RailShape.ASCENDING_WEST){
+            airInFront = level.getBlockState(new BlockPos(pos.getX()-1,pos.getY(),pos.getZ())).is(Blocks.AIR);
+        }
+
+        System.out.println(airInFront);
+        if(airInFront){
+            return RailSpeeds.fastest_speed;
+        }
+        else {
+            return RailSpeeds.max_ascending_speed;
+        }
     }
 
     @Override
     public RailShape getRailDirection(BlockState state, BlockGetter world, BlockPos pos, @org.jetbrains.annotations.Nullable net.minecraft.world.entity.vehicle.AbstractMinecart cart) {
+
         return state.getValue(SHAPE);
+    }
+
+    @Override
+    public ItemStack getCloneItemStack(BlockGetter pLevel, BlockPos pPos, BlockState pState) {
+        return new ItemStack(Items.RAIL);
     }
 }

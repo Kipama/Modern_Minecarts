@@ -19,6 +19,7 @@ import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.PoweredRailBlock;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.block.state.properties.RailShape;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.advancements.CriteriaTriggers;
 
@@ -126,7 +127,7 @@ public class CopperRailBlock extends PoweredRailBlock implements WeatheringRailB
         float finalSpeed = 0.4f;
 
         if(currentAge=="UNAFFECTED"){
-            finalSpeed = RailSpeeds.default_copper_speed;
+            finalSpeed = RailSpeeds.fastest_speed;
         }
         else if(currentAge=="EXPOSED"){
             finalSpeed = RailSpeeds.exposed_copper_speed;
@@ -159,6 +160,7 @@ public class CopperRailBlock extends PoweredRailBlock implements WeatheringRailB
     public WeatheringRailBlock.WeatherState getAge() {
         return this.weatherState;
     }
+
 
 
 }

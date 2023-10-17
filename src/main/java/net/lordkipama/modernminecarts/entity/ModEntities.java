@@ -14,12 +14,13 @@ public class ModEntities {
             DeferredRegister.create(ForgeRegistries.ENTITY_TYPES, ModernMinecarts.MOD_ID);
 
 
-    public static final RegistryObject<EntityType<CustomMinecartEntity>> CUSTOM_MINECART_ENTITY =
+    /*public static final RegistryObject<EntityType<CustomMinecartEntity>> CUSTOM_MINECART_ENTITY =
             ENTITY_TYPES.register("custom_minecart",
                     () -> EntityType.Builder.<CustomMinecartEntity>of(CustomMinecartEntity::new, MobCategory.MISC )
                             .sized(0.98F, 0.7F)
                             .clientTrackingRange(8)
                             .build("custom_minecart"));
+     */
 
 
     public static void register(IEventBus eventBus) {
