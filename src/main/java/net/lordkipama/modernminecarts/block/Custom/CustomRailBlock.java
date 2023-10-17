@@ -4,6 +4,8 @@ import net.lordkipama.modernminecarts.RailSpeeds;
 import net.lordkipama.modernminecarts.block.ModBlocks;
 import net.minecraft.core.BlockPos;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.sounds.SoundEvents;
+import net.minecraft.sounds.SoundSource;
 import net.minecraft.tags.BlockTags;
 import net.minecraft.tags.TagKey;
 import net.minecraft.world.InteractionHand;
@@ -102,6 +104,7 @@ public class CustomRailBlock extends RailBlock {
                 itemstack.shrink(1);
             }
             player.swing(interactionHand);
+            level.playSound(player, pos, SoundEvents.WOOD_PLACE, SoundSource.BLOCKS, 1.0F, 1.0F);
         }
 
         return super.use(state, level, pos, player, interactionHand, blockHitResult);
