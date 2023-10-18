@@ -4,11 +4,15 @@ package net.lordkipama.modernminecarts.entity;
 import net.lordkipama.modernminecarts.RailSpeeds;
 import net.lordkipama.modernminecarts.block.ModBlocks;
 import net.minecraft.core.BlockPos;
+import net.minecraft.nbt.CompoundTag;
 import net.minecraft.tags.BlockTags;
 import net.minecraft.util.Mth;
+import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.MoverType;
 import net.minecraft.world.entity.vehicle.AbstractMinecart;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.BaseRailBlock;
 import net.minecraft.world.level.block.Blocks;
@@ -18,9 +22,18 @@ import net.minecraft.world.level.block.state.properties.EnumProperty;
 import net.minecraft.world.level.block.state.properties.RailShape;
 import net.minecraft.world.phys.Vec3;
 
-public abstract class CustomAbstractMinecartEntity extends AbstractMinecart {
+import javax.annotation.Nullable;
+import java.util.UUID;
+
+public abstract class CustomAbstractMinecartEntity extends AbstractMinecart implements  ChainMinecartInterface{
     private boolean jumpedOffSlope = false;
     private double maxSpeed = 8;
+
+    private  @Nullable UUID parentUUID;
+    private  @Nullable UUID childUUID;
+    private int parentIdClient;
+    private int childIdClient;
+
 
     protected CustomAbstractMinecartEntity(EntityType<?> pEntityType, Level pLevel) {
         super(pEntityType, pLevel);
@@ -176,4 +189,147 @@ public abstract class CustomAbstractMinecartEntity extends AbstractMinecart {
 
         return Math.min(railMaxSpeed, getCurrentCartSpeedCapOnRail());
     }
+
+    @Override
+    public void tick() {
+        if (!this.level().isClientSide()) {
+            if (getLinkedParent() != null) {
+                double distance = getLinkedParent().distanceTo(this) - 1;
+
+                if (distance <= 4) {
+                    CustomAbstractMinecartEntity parent = getLinkedParent();
+
+                    Vec3 direction = parent.position().subtract(this.position()).normalize();
+
+                    if (distance > 1) {
+                        Vec3 parentVelocity = parent.getDeltaMovement();
+
+                        if (parentVelocity.length() == 0) {
+                            this.setDeltaMovement(direction.multiply(0.05, 0.05, 0.05));
+                        } else {
+                            this.setDeltaMovement(direction.multiply(parentVelocity.length(), parentVelocity.length(), parentVelocity.length()));
+                            this.setDeltaMovement(this.getDeltaMovement().multiply(distance, distance, distance));
+                        }
+                    } else if (distance < 0.8)
+                        this.setDeltaMovement(direction.multiply(-0.05, -0.05, -0.05));
+                    else
+                        this.setDeltaMovement(Vec3.ZERO);
+                } else {
+                    ChainMinecartInterface.unsetParentChild(this.getLinkedParent(), this);
+                    level().addFreshEntity(new ItemStack(Items.CHAIN).getEntityRepresentation());
+                    //dropStack(new ItemStack(Items.CHAIN));
+                    return;
+                }
+
+                if (getLinkedParent().isRemoved())
+                    ChainMinecartInterface.unsetParentChild(getLinkedParent(), this);
+            } else {
+                // MinecartHelper.shouldSlowDown((CustomAbstractMinecartEntity) (Object) this, world);
+            }
+
+            if (getLinkedChild() != null && getLinkedChild().isRemoved())
+                ChainMinecartInterface.unsetParentChild(this, getLinkedChild());
+        }
+        super.tick();
+    }
+
+    @Override
+    protected void readAdditionalSaveData(CompoundTag pCompound) {
+        if(pCompound.contains("ParentUuid"))
+            parentUUID = pCompound.getUUID("ParentUuid");
+        if(pCompound.contains("ChildUuid"))
+            childUUID = pCompound.getUUID("ChildUuid");
+
+        super.readAdditionalSaveData(pCompound);
+    }
+
+    @Override
+    protected void addAdditionalSaveData(CompoundTag pCompound) {
+        if(this.parentUUID != null)
+            pCompound.putUUID("ParentUuid", this.parentUUID);
+        if(this.childUUID != null)
+            pCompound.putUUID("ChildUuid", this.childUUID);
+
+        super.addAdditionalSaveData(pCompound);
+    }
+
+
+    //OVERRIDING INTERFACE
+    @Override
+    public CustomAbstractMinecartEntity getLinkedParent() {
+      //  var entity = this.world instanceof ServerWorld serverWorld && this.parentUuid != null ? serverWorld.getEntity(this.parentUuid) : this.world.getEntityById(this.parentIdClient);
+      //  return entity instanceof AbstractMinecartEntity abstractMinecartEntity ? abstractMinecartEntity : null;
+        Entity entity = null;
+
+        if(level().isClientSide())
+        {
+            entity = level().getEntity(parentIdClient);
+        }
+        else {
+            entity = level().getEntity(parentIdClient);
+        }
+
+        if(entity instanceof CustomAbstractMinecartEntity){
+            return (CustomAbstractMinecartEntity) entity;
+        }
+        else return null;
+    }
+
+    @Override
+    public void setLinkedParent(@Nullable CustomAbstractMinecartEntity parent) {
+        if (parent != null) {
+            this.parentUUID = parent.getUUID();
+            this.parentIdClient = parent.getId();
+        } else {
+            this.parentUUID = null;
+            this.parentIdClient = -1;
+        }
+
+        if (!this.level().isClientSide()) {
+           // PlayerLookup.tracking(this).forEach(player -> SyncChainedMinecartPacket.send(this.getLinkedParent(), (CustomAbstractMinecartEntity) (Object) this, player));
+        }
+    }
+
+    @Override
+    public void setLinkedParentClient(int id) {
+        this.parentIdClient = id;
+    }
+
+    @Override
+    public CustomAbstractMinecartEntity getLinkedChild() {
+        //var entity = this.world instanceof ServerWorld serverWorld && this.childUuid != null ? serverWorld.getEntity(this.childUuid) : this.world.getEntityById(this.childIdClient);
+        //return entity instanceof CustomAbstractMinecartEntity abstractMinecartEntity ? abstractMinecartEntity : null;
+
+        Entity entity = null;
+
+        if(level().isClientSide())
+        {
+            entity = level().getEntity(childIdClient);
+        }
+        else {
+            entity = level().getEntity(childIdClient);
+        }
+
+        if(entity instanceof CustomAbstractMinecartEntity){
+            return (CustomAbstractMinecartEntity) entity;
+        }
+        else return null;
+    }
+
+    @Override
+    public void setLinkedChild(@Nullable CustomAbstractMinecartEntity child) {
+        if (child != null) {
+            this.childUUID = child.getUUID();
+            this.childIdClient = child.getId();
+        } else {
+            this.childUUID = null;
+            this.childIdClient = -1;
+        }
+    }
+
+    @Override
+    public void setLinkedChildClient(int id) {
+        this.childIdClient = id;
+    }
+
 }

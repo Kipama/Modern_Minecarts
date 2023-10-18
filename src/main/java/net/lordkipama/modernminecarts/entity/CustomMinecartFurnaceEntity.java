@@ -140,7 +140,7 @@ public class CustomMinecartFurnaceEntity extends CustomAbstractMinecartEntity {
 
     @Override
     public float getMaxCartSpeedOnRail() {
-        return 0.2f;
+        return 0.4f;
     }
 
     protected void addAdditionalSaveData(CompoundTag pCompound) {
