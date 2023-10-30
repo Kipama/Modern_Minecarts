@@ -112,6 +112,14 @@ public abstract class CustomAbstractMinecartContainerEntity extends CustomAbstra
         return this.interactWithContainerVehicle(pPlayer);
     }
 
+    @Override
+    public InteractionResult interactWithContainerVehicle(Player p_270068_) {
+        if(!p_270068_.isCrouching()) {
+            p_270068_.openMenu(this);
+            return !p_270068_.level().isClientSide ? InteractionResult.CONSUME : InteractionResult.SUCCESS;
+        }
+        else return InteractionResult.PASS;
+    }
     protected void applyNaturalSlowdown() {
         float f = 0.98F;
         if (this.lootTable == null) {

@@ -7,5 +7,5 @@ public class RailSpeeds {
     public static float oxidized_copper_speed = 0.2f;
 
     //prevents minecarts from turning around when starting ascends too fast
-    public static float max_ascending_speed = 0.4f;
+    public static float max_ascending_speed = 0.53f;
 }

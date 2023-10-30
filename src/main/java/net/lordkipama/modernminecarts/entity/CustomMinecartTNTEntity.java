@@ -12,10 +12,12 @@ import net.minecraft.tags.DamageTypeTags;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.projectile.AbstractArrow;
 import net.minecraft.world.entity.vehicle.AbstractMinecart;
 import net.minecraft.world.item.Item;
+import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Explosion;
@@ -34,7 +36,7 @@ public class CustomMinecartTNTEntity extends CustomAbstractMinecartEntity {
     }
 
     public CustomMinecartTNTEntity(Level pLevel, double pX, double pY, double pZ) {
-        super(EntityType.TNT_MINECART, pLevel, pX, pY, pZ);
+        super(VanillaEntities.TNT_MINECART_ENTITY.get(), pLevel, pX, pY, pZ);
     }
 
     public AbstractMinecart.Type getMinecartType() {
@@ -95,6 +97,9 @@ public class CustomMinecartTNTEntity extends CustomAbstractMinecartEntity {
     }
 
     protected Item getDropItem() {
+        if(getLinkedParent() != null || getLinkedChild() != null){
+            level().addFreshEntity(new ItemEntity(level(),this.getX(), this.getY(), this.getZ(), new ItemStack(Items.CHAIN)));
+        }
         return Items.TNT_MINECART;
     }
 

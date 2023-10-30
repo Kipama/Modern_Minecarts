@@ -63,8 +63,6 @@ public class SlopedRailBlock extends BaseRailBlock {
         if(!blockstate.getValue(CONST_SHAPE).isAscending()){
             blockstate = blockstate.setValue(CONST_SHAPE, blockstate.getValue(SHAPE));
         }
-        System.out.println(blockstate.getValue(SHAPE));
-        System.out.println(blockstate.getValue(CONST_SHAPE));
 
         return blockstate;
     }
@@ -96,8 +94,6 @@ public class SlopedRailBlock extends BaseRailBlock {
 
     @Override
     public void neighborChanged(BlockState pState, Level pLevel, BlockPos pPos, Block pBlock, BlockPos pFromPos, boolean pIsMoving) {
-        System.out.print("neighborChanged   ");
-        System.out.print(pState.getValue(SHAPE));
         if (!pLevel.isClientSide && pLevel.getBlockState(pPos).is(this)) {
             if (!canSupportRigidBlock(pLevel, pPos.below())) {
                 dropResources(pState, pLevel, pPos);
@@ -116,12 +112,9 @@ public class SlopedRailBlock extends BaseRailBlock {
 
                 pLevel.setBlock(pPos, pState, 0);
 
-                System.out.print("  Serverside  ");
-                System.out.println(pState.getValue(SHAPE));
             }
 
         }
-        System.out.println(pState.getValue(SHAPE));
     }
 
 
@@ -149,7 +142,6 @@ public class SlopedRailBlock extends BaseRailBlock {
             airInFront = level.getBlockState(new BlockPos(pos.getX()-1,pos.getY(),pos.getZ())).is(Blocks.AIR);
         }
 
-        System.out.println(airInFront);
         if(airInFront){
             return RailSpeeds.fastest_speed;
         }

@@ -22,7 +22,6 @@ public class ModEntities {
                             .build("custom_minecart"));
      */
 
-
     public static void register(IEventBus eventBus) {
         ENTITY_TYPES.register(eventBus);
     }
