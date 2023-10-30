@@ -11,6 +11,7 @@ import net.minecraft.network.syncher.SynchedEntityData;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.vehicle.AbstractMinecart;
 import net.minecraft.world.item.Item;
@@ -36,7 +37,7 @@ public class CustomMinecartFurnaceEntity extends CustomAbstractMinecartEntity {
     }
 
     public CustomMinecartFurnaceEntity(Level pLevel, double pX, double pY, double pZ) {
-        super(EntityType.FURNACE_MINECART, pLevel, pX, pY, pZ);
+        super(VanillaEntities.FURNACE_MINECART_ENTITY.get(), pLevel, pX, pY, pZ);
     }
 
     public AbstractMinecart.Type getMinecartType() {
@@ -80,6 +81,9 @@ public class CustomMinecartFurnaceEntity extends CustomAbstractMinecartEntity {
     }
 
     protected Item getDropItem() {
+        if(getLinkedParent() != null || getLinkedChild() != null){
+            level().addFreshEntity(new ItemEntity(level(),this.getX(), this.getY(), this.getZ(), new ItemStack(Items.CHAIN)));
+        }
         return VanillaItems.FURNACE_MINECART_ITEM.get();
     }
 

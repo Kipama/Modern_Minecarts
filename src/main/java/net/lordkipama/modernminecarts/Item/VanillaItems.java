@@ -29,6 +29,7 @@ public class VanillaItems {
     public static final RegistryObject<Item> TNT_MINECART_ITEM = VANILLA_ITEMS.register("tnt_minecart", () -> new CustomMinecartTNTItem(new Item.Properties().stacksTo(1)));
 
 
+
     public static void register(IEventBus eventBus) {
         VANILLA_ITEMS.register(eventBus);
     }

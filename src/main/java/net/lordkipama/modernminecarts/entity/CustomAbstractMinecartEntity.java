@@ -1,33 +1,46 @@
 package net.lordkipama.modernminecarts.entity;
 
 
+import com.google.common.collect.Maps;
+import com.mojang.datafixers.util.Pair;
+import net.lordkipama.modernminecarts.Proxy.ModernMinecartsPacketHandler;
 import net.lordkipama.modernminecarts.RailSpeeds;
 import net.lordkipama.modernminecarts.block.ModBlocks;
+import net.minecraft.Util;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
+import net.minecraft.core.Vec3i;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.tags.BlockTags;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.MoverType;
+import net.minecraft.world.entity.item.ItemEntity;
+import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.vehicle.AbstractMinecart;
+import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.BaseRailBlock;
 import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.PoweredRailBlock;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import net.minecraft.world.level.block.state.properties.EnumProperty;
 import net.minecraft.world.level.block.state.properties.RailShape;
 import net.minecraft.world.phys.Vec3;
+import net.minecraftforge.network.PacketDistributor;
 
 import javax.annotation.Nullable;
+import java.util.Map;
 import java.util.UUID;
 
 public abstract class CustomAbstractMinecartEntity extends AbstractMinecart implements  ChainMinecartInterface{
     private boolean jumpedOffSlope = false;
-    private double maxSpeed = 8;
+    private double maxSpeed = 1;
 
     private  @Nullable UUID parentUUID;
     private  @Nullable UUID childUUID;
@@ -130,10 +143,13 @@ public abstract class CustomAbstractMinecartEntity extends AbstractMinecart impl
     @Override
     public void moveMinecartOnRail(BlockPos pos) { //Non-default because getMaximumSpeed is protected
         CustomAbstractMinecartEntity mc = this;
-        double d24 = mc.isVehicle() ? 0.75D : 1.0D;
+        double d24 =1.0D;
         double d25 = mc.getMaxSpeedWithRail();
         Vec3 vec3d1 = mc.getDeltaMovement();
-        maxSpeed = getMaxSpeedWithRail();
+        if(this.getLinkedParent()==null)
+            maxSpeed = getMaxSpeedWithRail();
+        else
+            maxSpeed= 1;
 
 
         vec3d1 = new Vec3(Math.min(Math.max(vec3d1.x(), -maxSpeed), maxSpeed),0,Math.min(Math.max(vec3d1.z(), -maxSpeed), maxSpeed));
@@ -193,42 +209,70 @@ public abstract class CustomAbstractMinecartEntity extends AbstractMinecart impl
     @Override
     public void tick() {
         if (!this.level().isClientSide()) {
+
             if (getLinkedParent() != null) {
+                //System.out.print("Minecart Parent: ");
+                //System.out.print(this.getLinkedParent().getUUID() + ", ");
+                //System.out.println(this.getLinkedParent().getId() + "\n");
+
                 double distance = getLinkedParent().distanceTo(this) - 1;
 
                 if (distance <= 4) {
-                    CustomAbstractMinecartEntity parent = getLinkedParent();
+                    ModernMinecartsPacketHandler.INSTANCE.send(PacketDistributor.TRACKING_ENTITY.with(()->this), new ModernMinecartsPacketHandler.CouplePacket(getLinkedParent().getId(), this.getId()));
 
-                    Vec3 direction = parent.position().subtract(this.position()).normalize();
+                    Vec3 direction = getLinkedParent().position().subtract(this.position()).normalize();
+                    Vec3 parentVelocity = getLinkedParent().getDeltaMovement();
 
-                    if (distance > 1) {
-                        Vec3 parentVelocity = parent.getDeltaMovement();
-
-                        if (parentVelocity.length() == 0) {
-                            this.setDeltaMovement(direction.multiply(0.05, 0.05, 0.05));
-                        } else {
-                            this.setDeltaMovement(direction.multiply(parentVelocity.length(), parentVelocity.length(), parentVelocity.length()));
-                            this.setDeltaMovement(this.getDeltaMovement().multiply(distance, distance, distance));
+                    if (parentVelocity.length() <0.06) {
+                        if(distance>1.1){
+                            this.setDeltaMovement(direction);
+                            this.setDeltaMovement(this.getDeltaMovement().multiply(0.06*distance, distance, 0.06*distance));
                         }
-                    } else if (distance < 0.8)
-                        this.setDeltaMovement(direction.multiply(-0.05, -0.05, -0.05));
-                    else
-                        this.setDeltaMovement(Vec3.ZERO);
+                        else if(distance>1.02) {
+                            this.setDeltaMovement(direction);
+                            this.setDeltaMovement(this.getDeltaMovement().multiply(0.04, distance, 0.04));
+                        }
+                        else if(distance<0.98){
+                            this.setDeltaMovement(direction);
+                            this.setDeltaMovement(this.getDeltaMovement().multiply(-0.04,distance,-0.04));
+
+                        }
+                        else{
+                            this.setDeltaMovement(direction);
+                            this.setDeltaMovement(this.getDeltaMovement().multiply(0, distance, 0));
+
+                        }
+                    }
+                    else {
+                        double newDistance = distance-0.44;
+                        this.setDeltaMovement(direction.multiply(0.99*parentVelocity.length(), parentVelocity.length(), 0.99*parentVelocity.length()));
+                        this.setDeltaMovement(this.getDeltaMovement().multiply(Math.pow(newDistance,3), newDistance, Math.pow(newDistance,3)));
+                    }
                 } else {
                     ChainMinecartInterface.unsetParentChild(this.getLinkedParent(), this);
-                    level().addFreshEntity(new ItemStack(Items.CHAIN).getEntityRepresentation());
+                    level().addFreshEntity(new ItemEntity(level(),this.getX(), this.getY(), this.getZ(), new ItemStack(Items.CHAIN)));
                     //dropStack(new ItemStack(Items.CHAIN));
                     return;
                 }
 
-                if (getLinkedParent().isRemoved())
-                    ChainMinecartInterface.unsetParentChild(getLinkedParent(), this);
-            } else {
+                if (getLinkedParent() != null) {
+                    if (getLinkedParent().isRemoved()) {
+                        ChainMinecartInterface.unsetParentChild(getLinkedParent(), this);
+                    }
+                }
+            }
+            else {
                 // MinecartHelper.shouldSlowDown((CustomAbstractMinecartEntity) (Object) this, world);
             }
 
-            if (getLinkedChild() != null && getLinkedChild().isRemoved())
-                ChainMinecartInterface.unsetParentChild(this, getLinkedChild());
+            if (getLinkedChild() != null){
+                if (getLinkedChild().isRemoved()) {
+                    ChainMinecartInterface.unsetParentChild(this, getLinkedChild());
+                }
+            }
+        }
+        if(this.getDeltaMovement().length()<0.004){
+            this.setDeltaMovement(0,this.getDeltaMovement().y,0);
         }
         super.tick();
     }
@@ -257,23 +301,33 @@ public abstract class CustomAbstractMinecartEntity extends AbstractMinecart impl
     //OVERRIDING INTERFACE
     @Override
     public CustomAbstractMinecartEntity getLinkedParent() {
-      //  var entity = this.world instanceof ServerWorld serverWorld && this.parentUuid != null ? serverWorld.getEntity(this.parentUuid) : this.world.getEntityById(this.parentIdClient);
-      //  return entity instanceof AbstractMinecartEntity abstractMinecartEntity ? abstractMinecartEntity : null;
         Entity entity = null;
 
         if(level().isClientSide())
         {
-            entity = level().getEntity(parentIdClient);
+            entity = level().getEntity(this.parentIdClient);
+            //System.out.println("Clientside  "+this.parentIdClient);
         }
         else {
-            entity = level().getEntity(parentIdClient);
+            if(level() instanceof ServerLevel server) {
+                //System.out.println("Serverside  "+this.parentUUID);
+                entity = server.getEntity(this.parentUUID);
+            }
         }
 
-        if(entity instanceof CustomAbstractMinecartEntity){
-            return (CustomAbstractMinecartEntity) entity;
+
+        if(entity instanceof CustomAbstractMinecartEntity mc){
+           // System.out.println("getLinkedParent(): True");
+            return mc;
         }
-        else return null;
+
+        else {
+            //System.out.println("getLinkedParent(): False");
+            return null;
+        }
     }
+
+    public int getParentIdClient(){return parentIdClient;}
 
     @Override
     public void setLinkedParent(@Nullable CustomAbstractMinecartEntity parent) {
@@ -286,7 +340,7 @@ public abstract class CustomAbstractMinecartEntity extends AbstractMinecart impl
         }
 
         if (!this.level().isClientSide()) {
-           // PlayerLookup.tracking(this).forEach(player -> SyncChainedMinecartPacket.send(this.getLinkedParent(), (CustomAbstractMinecartEntity) (Object) this, player));
+            ModernMinecartsPacketHandler.INSTANCE.send(PacketDistributor.TRACKING_ENTITY.with(()->this), new ModernMinecartsPacketHandler.CouplePacket(this.getParentIdClient(), this.getId()));
         }
     }
 
@@ -307,11 +361,13 @@ public abstract class CustomAbstractMinecartEntity extends AbstractMinecart impl
             entity = level().getEntity(childIdClient);
         }
         else {
-            entity = level().getEntity(childIdClient);
+            if(level() instanceof ServerLevel server) {
+                entity = server.getEntity(childUUID);
+            }
         }
 
-        if(entity instanceof CustomAbstractMinecartEntity){
-            return (CustomAbstractMinecartEntity) entity;
+        if(entity instanceof CustomAbstractMinecartEntity mc){
+            return mc;
         }
         else return null;
     }
@@ -332,4 +388,208 @@ public abstract class CustomAbstractMinecartEntity extends AbstractMinecart impl
         this.childIdClient = id;
     }
 
+    @Override
+    protected void moveAlongTrack(BlockPos pPos, BlockState pState) {
+        this.resetFallDistance();
+        double d0 = this.getX();
+        double d1 = this.getY();
+        double d2 = this.getZ();
+        Vec3 vec3 = this.getPos(d0, d1, d2);
+        d1 = (double)pPos.getY();
+        boolean flag = false;
+        boolean flag1 = false;
+        BaseRailBlock baserailblock = (BaseRailBlock) pState.getBlock();
+        if (baserailblock instanceof PoweredRailBlock && !((PoweredRailBlock) baserailblock).isActivatorRail()) {
+            flag = pState.getValue(PoweredRailBlock.POWERED);
+            flag1 = !flag;
+        }
+
+        double d3 = getSlopeAdjustment();
+        if (this.isInWater()) {
+            d3 *= 0.2D;
+        }
+
+        Vec3 vec31 = this.getDeltaMovement();
+        RailShape railshape = ((BaseRailBlock)pState.getBlock()).getRailDirection(pState, this.level(), pPos, this);
+        switch (railshape) {
+            case ASCENDING_EAST:
+                this.setDeltaMovement(vec31.add(-d3, 0.0D, 0.0D));
+                ++d1;
+                break;
+            case ASCENDING_WEST:
+                this.setDeltaMovement(vec31.add(d3, 0.0D, 0.0D));
+                ++d1;
+                break;
+            case ASCENDING_NORTH:
+                this.setDeltaMovement(vec31.add(0.0D, 0.0D, d3));
+                ++d1;
+                break;
+            case ASCENDING_SOUTH:
+                this.setDeltaMovement(vec31.add(0.0D, 0.0D, -d3));
+                ++d1;
+        }
+
+        vec31 = this.getDeltaMovement();
+        Pair<Vec3i, Vec3i> pair = exits(railshape);
+        Vec3i vec3i = pair.getFirst();
+        Vec3i vec3i1 = pair.getSecond();
+        double d4 = (double)(vec3i1.getX() - vec3i.getX());
+        double d5 = (double)(vec3i1.getZ() - vec3i.getZ());
+        double d6 = Math.sqrt(d4 * d4 + d5 * d5);
+        double d7 = vec31.x * d4 + vec31.z * d5;
+        if (d7 < 0.0D) {
+            d4 = -d4;
+            d5 = -d5;
+        }
+
+        double d8 = Math.min(2.0D, vec31.horizontalDistance());
+        vec31 = new Vec3(d8 * d4 / d6, vec31.y, d8 * d5 / d6);
+        this.setDeltaMovement(vec31);
+        Entity entity = this.getFirstPassenger();
+        if (entity instanceof Player) {
+            Vec3 vec32 = entity.getDeltaMovement();
+            double d9 = vec32.horizontalDistanceSqr();
+            double d11 = this.getDeltaMovement().length();
+            if (d9 > 1.0E-4D && d11 < 0.2D) {
+                this.setDeltaMovement(this.getDeltaMovement().add(vec32.x * 0.3D, 0.0D, vec32.z * 0.3D));
+                flag1 = false;
+            }
+        }
+
+        if (flag1 && shouldDoRailFunctions()) {
+            double d22 = this.getDeltaMovement().horizontalDistance();
+            if (d22 < 0.03D) {
+                this.setDeltaMovement(Vec3.ZERO);
+            } else {
+                this.setDeltaMovement(this.getDeltaMovement().multiply(0.5D, 0.0D, 0.5D));
+            }
+        }
+
+        double d23 = (double)pPos.getX() + 0.5D + (double)vec3i.getX() * 0.5D;
+        double d10 = (double)pPos.getZ() + 0.5D + (double)vec3i.getZ() * 0.5D;
+        double d12 = (double)pPos.getX() + 0.5D + (double)vec3i1.getX() * 0.5D;
+        double d13 = (double)pPos.getZ() + 0.5D + (double)vec3i1.getZ() * 0.5D;
+        d4 = d12 - d23;
+        d5 = d13 - d10;
+        double d14;
+        if (d4 == 0.0D) {
+            d14 = d2 - (double)pPos.getZ();
+        } else if (d5 == 0.0D) {
+            d14 = d0 - (double)pPos.getX();
+        } else {
+            double d15 = d0 - d23;
+            double d16 = d2 - d10;
+            d14 = (d15 * d4 + d16 * d5) * 2.0D;
+        }
+
+        d0 = d23 + d4 * d14;
+        d2 = d10 + d5 * d14;
+        this.setPos(d0, d1, d2);
+        this.moveMinecartOnRail(pPos);
+        if (vec3i.getY() != 0 && Mth.floor(this.getX()) - pPos.getX() == vec3i.getX() && Mth.floor(this.getZ()) - pPos.getZ() == vec3i.getZ()) {
+            this.setPos(this.getX(), this.getY() + (double)vec3i.getY(), this.getZ());
+        } else if (vec3i1.getY() != 0 && Mth.floor(this.getX()) - pPos.getX() == vec3i1.getX() && Mth.floor(this.getZ()) - pPos.getZ() == vec3i1.getZ()) {
+            this.setPos(this.getX(), this.getY() + (double)vec3i1.getY(), this.getZ());
+        }
+
+        this.applyNaturalSlowdown();
+        Vec3 vec33 = this.getPos(this.getX(), this.getY(), this.getZ());
+        if (vec33 != null && vec3 != null) {
+            double d17 = (vec3.y - vec33.y) * 0.05D;
+            Vec3 vec34 = this.getDeltaMovement();
+            double d18 = vec34.horizontalDistance();
+            if (d18 > 0.0D) {
+                this.setDeltaMovement(vec34.multiply((d18 + d17) / d18, 1.0D, (d18 + d17) / d18));
+            }
+
+            this.setPos(this.getX(), vec33.y, this.getZ());
+        }
+
+        int j = Mth.floor(this.getX());
+        int i = Mth.floor(this.getZ());
+        if (j != pPos.getX() || i != pPos.getZ()) {
+            Vec3 vec35 = this.getDeltaMovement();
+            double d26 = vec35.horizontalDistance();
+            this.setDeltaMovement(d26 * (double)(j - pPos.getX()), vec35.y, d26 * (double)(i - pPos.getZ()));
+        }
+
+        if (shouldDoRailFunctions())
+            baserailblock.onMinecartPass(pState, level(), pPos, this);
+
+        if (flag && shouldDoRailFunctions()) {
+            Vec3 vec36 = this.getDeltaMovement();
+            double d27 = vec36.horizontalDistance();
+            if (d27 > 0.01D) {
+                double d19 = 0.06D;
+                this.setDeltaMovement(vec36.add(vec36.x / d27 * 0.06D, 0.0D, vec36.z / d27 * 0.06D));
+            } else {
+                Vec3 vec37 = this.getDeltaMovement();
+                double d20 = vec37.x;
+                double d21 = vec37.z;
+                if (railshape == RailShape.EAST_WEST) {
+                    if (this.isRedstoneConductor(pPos.west())) {
+                        d20 = 0.02D;
+                    } else if (this.isRedstoneConductor(pPos.east())) {
+                        d20 = -0.02D;
+                    }
+                } else {
+                    if (railshape != RailShape.NORTH_SOUTH) {
+                        return;
+                    }
+
+                    if (this.isRedstoneConductor(pPos.north())) {
+                        d21 = 0.02D;
+                    } else if (this.isRedstoneConductor(pPos.south())) {
+                        d21 = -0.02D;
+                    }
+                }
+
+                this.setDeltaMovement(d20, vec37.y, d21);
+            }
+        }
+
+    }
+
+    private boolean isRedstoneConductor(BlockPos pPos) {
+        return this.level().getBlockState(pPos).isRedstoneConductor(this.level(), pPos);
+    }
+
+    private static Pair<Vec3i, Vec3i> exits(RailShape pShape) {
+        return EXITS.get(pShape);
+    }
+
+    private static final Map<RailShape, Pair<Vec3i, Vec3i>> EXITS = Util.make(Maps.newEnumMap(RailShape.class), (p_38135_) -> {
+        Vec3i vec3i = Direction.WEST.getNormal();
+        Vec3i vec3i1 = Direction.EAST.getNormal();
+        Vec3i vec3i2 = Direction.NORTH.getNormal();
+        Vec3i vec3i3 = Direction.SOUTH.getNormal();
+        Vec3i vec3i4 = vec3i.below();
+        Vec3i vec3i5 = vec3i1.below();
+        Vec3i vec3i6 = vec3i2.below();
+        Vec3i vec3i7 = vec3i3.below();
+        p_38135_.put(RailShape.NORTH_SOUTH, Pair.of(vec3i2, vec3i3));
+        p_38135_.put(RailShape.EAST_WEST, Pair.of(vec3i, vec3i1));
+        p_38135_.put(RailShape.ASCENDING_EAST, Pair.of(vec3i4, vec3i1));
+        p_38135_.put(RailShape.ASCENDING_WEST, Pair.of(vec3i, vec3i5));
+        p_38135_.put(RailShape.ASCENDING_NORTH, Pair.of(vec3i2, vec3i7));
+        p_38135_.put(RailShape.ASCENDING_SOUTH, Pair.of(vec3i6, vec3i3));
+        p_38135_.put(RailShape.SOUTH_EAST, Pair.of(vec3i3, vec3i1));
+        p_38135_.put(RailShape.SOUTH_WEST, Pair.of(vec3i3, vec3i));
+        p_38135_.put(RailShape.NORTH_WEST, Pair.of(vec3i2, vec3i));
+        p_38135_.put(RailShape.NORTH_EAST, Pair.of(vec3i2, vec3i1));
+    });
+
+    @Override
+    protected void applyNaturalSlowdown() {
+        double d0 = this.isVehicle() ? 0.997D : 0.96D;
+        d0 = 0.96D;
+        Vec3 vec3 = this.getDeltaMovement();
+        vec3 = vec3.multiply(d0, 0.0D, d0);
+        if (this.isInWater()) {
+            vec3 = vec3.scale((double)0.95F);
+        }
+
+        this.setDeltaMovement(vec3);
+    }
 }
+

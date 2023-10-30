@@ -1,29 +1,44 @@
 package net.lordkipama.modernminecarts.event;
 
+import net.lordkipama.modernminecarts.Item.ModItems;
 import net.lordkipama.modernminecarts.ModernMinecarts;
+import net.lordkipama.modernminecarts.Proxy.ModernMinecartsPacketHandler;
 import net.lordkipama.modernminecarts.block.ModBlocks;
+import net.lordkipama.modernminecarts.entity.ChainMinecartInterface;
+import net.lordkipama.modernminecarts.entity.CustomAbstractMinecartEntity;
 import net.minecraft.advancements.CriteriaTriggers;
 import net.minecraft.client.Minecraft;
-import net.minecraft.core.BlockPos;
+import net.minecraft.client.model.EntityModel;
+import net.minecraft.nbt.CompoundTag;
 import net.minecraft.server.ServerAdvancementManager;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.sounds.SoundEvents;
+import net.minecraft.sounds.SoundSource;
 import net.minecraft.tags.ItemTags;
+import net.minecraft.world.InteractionHand;
+import net.minecraft.world.InteractionResult;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.ai.behavior.EntityTracker;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.entity.vehicle.AbstractMinecart;
+import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
+import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
-import net.minecraft.world.level.block.RailBlock;
 import net.minecraft.world.level.block.state.BlockState;
-import net.minecraft.world.level.block.state.properties.BlockStateProperties;
-import net.minecraft.world.level.block.state.properties.RailShape;
+import net.minecraftforge.client.event.RenderLivingEvent;
 import net.minecraftforge.event.entity.player.PlayerEvent;
-
 import net.minecraftforge.event.entity.player.PlayerInteractEvent;
 import net.minecraftforge.eventbus.api.Event;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
+import net.minecraftforge.network.PacketDistributor;
 
+import java.util.HashSet;
 import java.util.Objects;
+import java.util.Set;
 
 public class ModEvents {
     @Mod.EventBusSubscriber(modid = ModernMinecarts.MOD_ID)
@@ -65,20 +80,106 @@ public class ModEvents {
         }
 
 
-
-        /** Add listeners on login */
         @SubscribeEvent
-        public void onPlayerLogin(PlayerEvent.PlayerLoggedInEvent event)
-        {
-            System.out.println("onPlayerLogin triggers");
+        public static void onInteractEntity(PlayerInteractEvent.EntityInteract event) {
+            InteractionHand hand = event.getHand();
             Player player = event.getEntity();
+            ItemStack stack = player.getItemInHand(hand);
+            Entity entity = event.getTarget();
 
-            ServerAdvancementManager manager = Objects.requireNonNull(player.getServer()).getAdvancements();
+            //CLIENTSIDE CHAIN LOGIC
+            if (entity instanceof CustomAbstractMinecartEntity mc && mc.getMinecartType() == CustomAbstractMinecartEntity.Type.RIDEABLE) {
+                CustomAbstractMinecartEntity parent = mc.getLinkedParent();
+                CustomAbstractMinecartEntity child = mc.getLinkedChild();
+                Item item = stack.getItem();
+                CustomAbstractMinecartEntity.Type type = CustomAbstractMinecartEntity.Type.RIDEABLE;
 
-            CriteriaTriggers.register(CriteriaTriggers.ITEM_USED_ON_BLOCK);
+                if (item == Items.FURNACE)
+                    type = CustomAbstractMinecartEntity.Type.FURNACE;
+                if (item == Items.CHEST)
+                    type = CustomAbstractMinecartEntity.Type.CHEST;
+                if (item == Items.TNT)
+                    type = CustomAbstractMinecartEntity.Type.TNT;
+                if (item == Items.HOPPER)
+                    type = CustomAbstractMinecartEntity.Type.HOPPER;
+
+                if (type != CustomAbstractMinecartEntity.Type.RIDEABLE) {
+                    CustomAbstractMinecartEntity minecart = (CustomAbstractMinecartEntity) CustomAbstractMinecartEntity.createMinecart(event.getLevel(), mc.getX(), mc.getY(), mc.getZ(), type);
+                    event.getLevel().addFreshEntity(minecart);
+
+                    if (parent != null) {
+                        ChainMinecartInterface.unsetParentChild(parent, mc);
+                        ChainMinecartInterface.setParentChild(parent, minecart);
+                    }
+                    if (child != null) {
+                        ChainMinecartInterface.unsetParentChild(mc, child);
+                        ChainMinecartInterface.setParentChild(minecart, child);
+                    }
+
+                    mc.remove(Entity.RemovalReason.DISCARDED);
+
+                    if (!player.isCreative())
+                        stack.shrink(1);
+
+                }
+            }
+
+            //SERVERSIDE CHAIN LOGIC
+
+            //CustomAbstractMinecartEntity parent = ((CustomAbstractMinecartEntity) entity).getLinkedParent();
+            //CustomAbstractMinecartEntity child = ((CustomAbstractMinecartEntity) entity).getLinkedChild();
+
+            if (entity instanceof CustomAbstractMinecartEntity cart) {
+                if (stack.getItem() == Items.CHAIN && player.isCrouching()) {
+                    if (event.getLevel() instanceof ServerLevel server) {
+                        CompoundTag nbt = stack.getOrCreateTag();
+
+                        if (nbt.contains("ParentEntity") && !cart.getUUID().equals(nbt.getUUID("ParentEntity"))) {
+                            if (server.getEntity(nbt.getUUID("ParentEntity")) instanceof CustomAbstractMinecartEntity parent) {
+                                Set<ChainMinecartInterface> train = new HashSet<>();
+                                train.add(parent);
+
+                                ChainMinecartInterface nextParent;
+                                while ((nextParent = parent.getLinkedParent()) instanceof ChainMinecartInterface && !train.contains(nextParent)) {
+                                    train.add(nextParent);
+                                }
+
+                                if (train.contains(cart) || parent.getLinkedChild() != null) {
+                                    // player.sendMessage(Text.translatable(MinecartTweaks.MOD_ID + ".cant_link_to_engine").formatted(Formatting.RED), true);
+                                } else {
+                                    if (cart.getLinkedParent() != null) {
+                                        ChainMinecartInterface.unsetParentChild(cart, cart.getLinkedParent());
+                                    }
+                                    ChainMinecartInterface.setParentChild(parent, cart);
+                                }
+                            }
+                            else {
+                                nbt.remove("ParentEntity");
+
+                                if (nbt.isEmpty()) {
+                                    stack.setTag(null);
+                                }
+                            }
+
+                            event.getLevel().playSound(null, entity.getX(), entity.getY(), entity.getZ(), SoundEvents.CHAIN_PLACE, SoundSource.NEUTRAL, 1F, 1F);
+
+                            if (!player.isCreative())
+                                stack.shrink(1);
+
+                            nbt.remove("ParentEntity");
+
+                            if (nbt.isEmpty())
+                                stack.setTag(null);
+                        }
+                        else {
+                            nbt.putUUID("ParentEntity", cart.getUUID());
+                            event.getLevel().playSound(null, entity.getX(), entity.getY(), entity.getZ(), SoundEvents.CHAIN_HIT, SoundSource.NEUTRAL, 1F, 1F);
+                        }
+
+                    }
+                }
+            }
         }
-
-
-
     }
 }
+

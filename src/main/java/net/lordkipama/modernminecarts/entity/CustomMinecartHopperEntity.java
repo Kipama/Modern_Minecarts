@@ -12,6 +12,7 @@ import net.minecraft.world.entity.vehicle.AbstractMinecartContainer;
 import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.inventory.HopperMenu;
 import net.minecraft.world.item.Item;
+import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Blocks;
@@ -27,7 +28,7 @@ public class CustomMinecartHopperEntity extends CustomAbstractMinecartContainerE
     }
 
     public CustomMinecartHopperEntity(Level pLevel, double pX, double pY, double pZ) {
-        super(EntityType.HOPPER_MINECART, pX, pY, pZ, pLevel);
+        super(VanillaEntities.HOPPER_MINECART_ENTITY.get(), pX, pY, pZ, pLevel);
     }
 
     public AbstractMinecart.Type getMinecartType() {
@@ -121,6 +122,9 @@ public class CustomMinecartHopperEntity extends CustomAbstractMinecartContainerE
     }
 
     protected Item getDropItem() {
+        if(getLinkedParent() != null || getLinkedChild() != null){
+            level().addFreshEntity(new ItemEntity(level(),this.getX(), this.getY(), this.getZ(), new ItemStack(Items.CHAIN)));
+        }
         return VanillaItems.HOPPER_MINECART_ITEM.get();
     }
 

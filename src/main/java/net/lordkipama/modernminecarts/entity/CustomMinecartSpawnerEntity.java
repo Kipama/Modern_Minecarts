@@ -5,8 +5,10 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.vehicle.AbstractMinecart;
 import net.minecraft.world.item.Item;
+import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.BaseSpawner;
 import net.minecraft.world.level.Level;
@@ -33,11 +35,14 @@ public class CustomMinecartSpawnerEntity extends CustomAbstractMinecartEntity {
     }
 
     public CustomMinecartSpawnerEntity(Level pLevel, double pX, double pY, double pZ) {
-        super(EntityType.SPAWNER_MINECART, pLevel, pX, pY, pZ);
+        super(VanillaEntities.SPAWNER_MINECART_ENTITY.get(), pLevel, pX, pY, pZ);
         this.ticker = this.createTicker(pLevel);
     }
 
     protected Item getDropItem() {
+        if(getLinkedParent() != null || getLinkedChild() != null){
+            level().addFreshEntity(new ItemEntity(level(),this.getX(), this.getY(), this.getZ(), new ItemStack(Items.CHAIN)));
+        }
         return VanillaItems.SPAWNER_MINECART_ITEM.get();
     }
 
