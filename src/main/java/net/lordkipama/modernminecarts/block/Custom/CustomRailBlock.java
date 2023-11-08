@@ -4,6 +4,7 @@ import net.lordkipama.modernminecarts.RailSpeeds;
 import net.lordkipama.modernminecarts.block.ModBlocks;
 import net.minecraft.core.BlockPos;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.tags.BlockTags;
@@ -43,70 +44,110 @@ public class CustomRailBlock extends RailBlock {
 
     @Override
     public InteractionResult use(BlockState state, Level level, BlockPos pos, Player player, InteractionHand interactionHand, BlockHitResult blockHitResult) {
-        ItemStack itemstack = player.getItemInHand(interactionHand);
-        boolean gotReplaced = false;
+        if (level instanceof ServerLevel) {
+            ItemStack itemstack = player.getItemInHand(interactionHand);
+            boolean gotReplaced = false;
 
-        if (state.getValue(BlockStateProperties.RAIL_SHAPE) == RailShape.ASCENDING_NORTH) {
-            level.setBlock(pos, ModBlocks.SLOPED_RAIL.get().withPropertiesOf(state), 1);
-            gotReplaced = true;
-
-        } else if (state.getValue(BlockStateProperties.RAIL_SHAPE) == RailShape.ASCENDING_SOUTH) {
-            level.setBlock(pos, ModBlocks.SLOPED_RAIL.get().withPropertiesOf(state), 1);
-            gotReplaced = true;
-
-        } else if (state.getValue(BlockStateProperties.RAIL_SHAPE) == RailShape.ASCENDING_EAST) {
-            level.setBlock(pos, ModBlocks.SLOPED_RAIL.get().withPropertiesOf(state), 1);
-            gotReplaced = true;
-
-        } else if (state.getValue(BlockStateProperties.RAIL_SHAPE) == RailShape.ASCENDING_WEST) {
-            level.setBlock(pos, ModBlocks.SLOPED_RAIL.get().withPropertiesOf(state), 1);
-            gotReplaced = true;
-        }
-
-
-        //EXPERIMENTAL!!
-        else if (state.getValue(BlockStateProperties.RAIL_SHAPE) == RailShape.NORTH_SOUTH) {
-            BlockState northernBlockState = level.getBlockState(new BlockPos(pos.getX(),pos.getY(),pos.getZ()-1));
-            BlockState northernBelowBlockState = level.getBlockState(new BlockPos(pos.getX(),pos.getY()-1,pos.getZ()-1));
-            BlockState southernBlockState = level.getBlockState(new BlockPos(pos.getX(),pos.getY(),pos.getZ()+1));
-            BlockState southernBelowBlockState = level.getBlockState(new BlockPos(pos.getX(),pos.getY()-1,pos.getZ()+1));
-
-            if((southernBlockState.is(BlockTags.RAILS) || southernBelowBlockState.is(BlockTags.RAILS)) && !(northernBlockState.is(BlockTags.RAILS) || northernBelowBlockState.is(BlockTags.RAILS))){
-                level.setBlock(pos, ModBlocks.SLOPED_RAIL.get().withPropertiesOf(state.setValue(SHAPE,RailShape.ASCENDING_NORTH)), 1);
+            if (state.getValue(BlockStateProperties.RAIL_SHAPE) == RailShape.ASCENDING_NORTH) {
+                level.setBlock(pos, ModBlocks.SLOPED_RAIL.get().withPropertiesOf(state), 3);
                 gotReplaced = true;
-            }
-            else if(!(southernBlockState.is(BlockTags.RAILS) || southernBelowBlockState.is(BlockTags.RAILS)) && (northernBlockState.is(BlockTags.RAILS) || northernBelowBlockState.is(BlockTags.RAILS))){
-                level.setBlock(pos, ModBlocks.SLOPED_RAIL.get().withPropertiesOf(state.setValue(SHAPE,RailShape.ASCENDING_SOUTH)), 1);
-                gotReplaced = true;
-            }
-        }
 
-        else if (state.getValue(BlockStateProperties.RAIL_SHAPE) == RailShape.EAST_WEST) {
-            BlockState westernBlockState = level.getBlockState(new BlockPos(pos.getX()-1,pos.getY(),pos.getZ()));
-            BlockState westernBelowBlockState = level.getBlockState(new BlockPos(pos.getX()-1,pos.getY()-1,pos.getZ()));
-            BlockState easternBlockState = level.getBlockState(new BlockPos(pos.getX()+1,pos.getY(),pos.getZ()));
-            BlockState easternBelowBlockState = level.getBlockState(new BlockPos(pos.getX()+1,pos.getY()-1,pos.getZ()));
+            } else if (state.getValue(BlockStateProperties.RAIL_SHAPE) == RailShape.ASCENDING_SOUTH) {
+                level.setBlock(pos, ModBlocks.SLOPED_RAIL.get().withPropertiesOf(state), 3);
+                gotReplaced = true;
 
-            if((easternBlockState.is(BlockTags.RAILS) || easternBelowBlockState.is(BlockTags.RAILS)) && !(westernBlockState.is(BlockTags.RAILS) || westernBelowBlockState.is(BlockTags.RAILS))){
-                level.setBlock(pos, ModBlocks.SLOPED_RAIL.get().withPropertiesOf(state.setValue(SHAPE,RailShape.ASCENDING_WEST)), 1);
+            } else if (state.getValue(BlockStateProperties.RAIL_SHAPE) == RailShape.ASCENDING_EAST) {
+                level.setBlock(pos, ModBlocks.SLOPED_RAIL.get().withPropertiesOf(state), 3);
                 gotReplaced = true;
-            }
-            else if(!(easternBlockState.is(BlockTags.RAILS) || easternBelowBlockState.is(BlockTags.RAILS)) && (westernBlockState.is(BlockTags.RAILS) || westernBelowBlockState.is(BlockTags.RAILS))){
-                level.setBlock(pos, ModBlocks.SLOPED_RAIL.get().withPropertiesOf(state.setValue(SHAPE,RailShape.ASCENDING_EAST)), 1);
+
+            } else if (state.getValue(BlockStateProperties.RAIL_SHAPE) == RailShape.ASCENDING_WEST) {
+                level.setBlock(pos, ModBlocks.SLOPED_RAIL.get().withPropertiesOf(state), 3);
                 gotReplaced = true;
+            } else if (state.getValue(BlockStateProperties.RAIL_SHAPE) == RailShape.NORTH_SOUTH) {
+                BlockState northernBlockState = level.getBlockState(new BlockPos(pos.getX(), pos.getY(), pos.getZ() - 1));
+                BlockState northernBelowBlockState = level.getBlockState(new BlockPos(pos.getX(), pos.getY() - 1, pos.getZ() - 1));
+                BlockState southernBlockState = level.getBlockState(new BlockPos(pos.getX(), pos.getY(), pos.getZ() + 1));
+                BlockState southernBelowBlockState = level.getBlockState(new BlockPos(pos.getX(), pos.getY() - 1, pos.getZ() + 1));
+
+                if ((southernBlockState.is(BlockTags.RAILS) || southernBelowBlockState.is(BlockTags.RAILS)) && !(northernBlockState.is(BlockTags.RAILS) || northernBelowBlockState.is(BlockTags.RAILS))) {
+                    level.setBlock(pos, ModBlocks.SLOPED_RAIL.get().withPropertiesOf(state.setValue(SHAPE, RailShape.ASCENDING_NORTH)), 3);
+                    gotReplaced = true;
+                } else if (!(southernBlockState.is(BlockTags.RAILS) || southernBelowBlockState.is(BlockTags.RAILS)) && (northernBlockState.is(BlockTags.RAILS) || northernBelowBlockState.is(BlockTags.RAILS))) {
+                    level.setBlock(pos, ModBlocks.SLOPED_RAIL.get().withPropertiesOf(state.setValue(SHAPE, RailShape.ASCENDING_SOUTH)), 3);
+                    gotReplaced = true;
+                }
+            } else if (state.getValue(BlockStateProperties.RAIL_SHAPE) == RailShape.EAST_WEST) {
+                BlockState westernBlockState = level.getBlockState(new BlockPos(pos.getX() - 1, pos.getY(), pos.getZ()));
+                BlockState westernBelowBlockState = level.getBlockState(new BlockPos(pos.getX() - 1, pos.getY() - 1, pos.getZ()));
+                BlockState easternBlockState = level.getBlockState(new BlockPos(pos.getX() + 1, pos.getY(), pos.getZ()));
+                BlockState easternBelowBlockState = level.getBlockState(new BlockPos(pos.getX() + 1, pos.getY() - 1, pos.getZ()));
+
+                if ((easternBlockState.is(BlockTags.RAILS) || easternBelowBlockState.is(BlockTags.RAILS)) && !(westernBlockState.is(BlockTags.RAILS) || westernBelowBlockState.is(BlockTags.RAILS))) {
+                    level.setBlock(pos, ModBlocks.SLOPED_RAIL.get().withPropertiesOf(state.setValue(SHAPE, RailShape.ASCENDING_WEST)), 3);
+                    gotReplaced = true;
+                } else if (!(easternBlockState.is(BlockTags.RAILS) || easternBelowBlockState.is(BlockTags.RAILS)) && (westernBlockState.is(BlockTags.RAILS) || westernBelowBlockState.is(BlockTags.RAILS))) {
+                    level.setBlock(pos, ModBlocks.SLOPED_RAIL.get().withPropertiesOf(state.setValue(SHAPE, RailShape.ASCENDING_EAST)), 3);
+                    gotReplaced = true;
+                }
             }
-        }
             //Unchanged Shapes:
-        //else if (state.getValue(BlockStateProperties.RAIL_SHAPE) == RailShape.NORTH_EAST) {} else if (state.getValue(BlockStateProperties.RAIL_SHAPE) == RailShape.NORTH_WEST) {} else if (state.getValue(BlockStateProperties.RAIL_SHAPE) == RailShape.SOUTH_EAST) {} else if (state.getValue(BlockStateProperties.RAIL_SHAPE) == RailShape.SOUTH_WEST) {}
+            //else if (state.getValue(BlockStateProperties.RAIL_SHAPE) == RailShape.NORTH_EAST) {} else if (state.getValue(BlockStateProperties.RAIL_SHAPE) == RailShape.NORTH_WEST) {} else if (state.getValue(BlockStateProperties.RAIL_SHAPE) == RailShape.SOUTH_EAST) {} else if (state.getValue(BlockStateProperties.RAIL_SHAPE) == RailShape.SOUTH_WEST) {}
 
-        if(gotReplaced == true){
-            if (!player.isCreative() && !player.isSpectator()) {
-                itemstack.shrink(1);
+            if (gotReplaced == true) {
+                if (!player.isCreative() && !player.isSpectator()) {
+                    itemstack.shrink(1);
+                }
+                player.swing(interactionHand);
+                level.playSound(player, pos, SoundEvents.WOOD_PLACE, SoundSource.BLOCKS, 1.0F, 1.0F);
             }
-            player.swing(interactionHand);
-            level.playSound(player, pos, SoundEvents.WOOD_PLACE, SoundSource.BLOCKS, 1.0F, 1.0F);
         }
+        else{
+            ItemStack itemstack = player.getItemInHand(interactionHand);
+            boolean gotReplaced = false;
 
-        return super.use(state, level, pos, player, interactionHand, blockHitResult);
+            if (state.getValue(BlockStateProperties.RAIL_SHAPE) == RailShape.ASCENDING_NORTH) {
+                gotReplaced = true;
+
+            } else if (state.getValue(BlockStateProperties.RAIL_SHAPE) == RailShape.ASCENDING_SOUTH) {
+                gotReplaced = true;
+            } else if (state.getValue(BlockStateProperties.RAIL_SHAPE) == RailShape.ASCENDING_EAST) {
+                gotReplaced = true;
+            } else if (state.getValue(BlockStateProperties.RAIL_SHAPE) == RailShape.ASCENDING_WEST) {
+                gotReplaced = true;
+            } else if (state.getValue(BlockStateProperties.RAIL_SHAPE) == RailShape.NORTH_SOUTH) {
+                BlockState northernBlockState = level.getBlockState(new BlockPos(pos.getX(), pos.getY(), pos.getZ() - 1));
+                BlockState northernBelowBlockState = level.getBlockState(new BlockPos(pos.getX(), pos.getY() - 1, pos.getZ() - 1));
+                BlockState southernBlockState = level.getBlockState(new BlockPos(pos.getX(), pos.getY(), pos.getZ() + 1));
+                BlockState southernBelowBlockState = level.getBlockState(new BlockPos(pos.getX(), pos.getY() - 1, pos.getZ() + 1));
+
+                if ((southernBlockState.is(BlockTags.RAILS) || southernBelowBlockState.is(BlockTags.RAILS)) && !(northernBlockState.is(BlockTags.RAILS) || northernBelowBlockState.is(BlockTags.RAILS))) {
+                    gotReplaced = true;
+                } else if (!(southernBlockState.is(BlockTags.RAILS) || southernBelowBlockState.is(BlockTags.RAILS)) && (northernBlockState.is(BlockTags.RAILS) || northernBelowBlockState.is(BlockTags.RAILS))) {
+                    gotReplaced = true;
+                }
+            } else if (state.getValue(BlockStateProperties.RAIL_SHAPE) == RailShape.EAST_WEST) {
+                BlockState westernBlockState = level.getBlockState(new BlockPos(pos.getX() - 1, pos.getY(), pos.getZ()));
+                BlockState westernBelowBlockState = level.getBlockState(new BlockPos(pos.getX() - 1, pos.getY() - 1, pos.getZ()));
+                BlockState easternBlockState = level.getBlockState(new BlockPos(pos.getX() + 1, pos.getY(), pos.getZ()));
+                BlockState easternBelowBlockState = level.getBlockState(new BlockPos(pos.getX() + 1, pos.getY() - 1, pos.getZ()));
+
+                if ((easternBlockState.is(BlockTags.RAILS) || easternBelowBlockState.is(BlockTags.RAILS)) && !(westernBlockState.is(BlockTags.RAILS) || westernBelowBlockState.is(BlockTags.RAILS))) {
+                    gotReplaced = true;
+                } else if (!(easternBlockState.is(BlockTags.RAILS) || easternBelowBlockState.is(BlockTags.RAILS)) && (westernBlockState.is(BlockTags.RAILS) || westernBelowBlockState.is(BlockTags.RAILS))) {
+                    gotReplaced = true;
+                }
+            }
+            //Unchanged Shapes:
+            //else if (state.getValue(BlockStateProperties.RAIL_SHAPE) == RailShape.NORTH_EAST) {} else if (state.getValue(BlockStateProperties.RAIL_SHAPE) == RailShape.NORTH_WEST) {} else if (state.getValue(BlockStateProperties.RAIL_SHAPE) == RailShape.SOUTH_EAST) {} else if (state.getValue(BlockStateProperties.RAIL_SHAPE) == RailShape.SOUTH_WEST) {}
+
+            if (gotReplaced == true) {
+                if (!player.isCreative() && !player.isSpectator()) {
+                    itemstack.shrink(1);
+                }
+                player.swing(interactionHand);
+                level.playSound(player, pos, SoundEvents.WOOD_PLACE, SoundSource.BLOCKS, 1.0F, 1.0F);
+            }
+        }
+        return InteractionResult.PASS;//super.use(state, level, pos, player, interactionHand, blockHitResult);
     }
 }
