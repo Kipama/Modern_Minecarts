@@ -3,8 +3,10 @@ package net.lordkipama.modernminecarts.entity;
 
 import com.google.common.collect.Maps;
 import com.mojang.datafixers.util.Pair;
+import net.lordkipama.modernminecarts.ModernMinecarts;
 import net.lordkipama.modernminecarts.Proxy.ModernMinecartsPacketHandler;
 import net.lordkipama.modernminecarts.RailSpeeds;
+import net.lordkipama.modernminecarts.block.Custom.CopperRailBlock;
 import net.lordkipama.modernminecarts.block.ModBlocks;
 import net.minecraft.Util;
 import net.minecraft.core.BlockPos;
@@ -13,6 +15,7 @@ import net.minecraft.core.Vec3i;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.tags.BlockTags;
+import net.minecraft.tags.TagKey;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
@@ -40,7 +43,7 @@ import java.util.UUID;
 
 public abstract class CustomAbstractMinecartEntity extends AbstractMinecart implements  ChainMinecartInterface{
     private boolean jumpedOffSlope = false;
-    private double maxSpeed = 1;
+    private double maxSpeed = 0.8;
 
     private  @Nullable UUID parentUUID;
     private  @Nullable UUID childUUID;
@@ -146,13 +149,10 @@ public abstract class CustomAbstractMinecartEntity extends AbstractMinecart impl
         double d24 =1.0D;
         double d25 = mc.getMaxSpeedWithRail();
         Vec3 vec3d1 = mc.getDeltaMovement();
-        if(this.getLinkedParent()==null)
-            maxSpeed = getMaxSpeedWithRail();
-        else
-            maxSpeed= 1;
+        maxSpeed = d25;
 
 
-        vec3d1 = new Vec3(Math.min(Math.max(vec3d1.x(), -maxSpeed), maxSpeed),0,Math.min(Math.max(vec3d1.z(), -maxSpeed), maxSpeed));
+        vec3d1 = new Vec3(Math.min(Math.max(vec3d1.x(), -d25), d25),0,Math.min(Math.max(vec3d1.z(), -d25), d25));
 
         setDeltaMovement(vec3d1);
         mc.move(MoverType.SELF, new Vec3(Mth.clamp(d24 * vec3d1.x, -d25, d25), 0.0D, Mth.clamp(d24 * vec3d1.z, -d25, d25)));
@@ -166,6 +166,10 @@ public abstract class CustomAbstractMinecartEntity extends AbstractMinecart impl
         if (!state.is(BlockTags.RAILS)) return getMaxSpeed();
 
         float railMaxSpeed = ((BaseRailBlock)state.getBlock()).getRailMaxSpeed(state, this.level(), pos, this);
+
+        if(this.isInWater() && !state.is(Blocks.POWERED_RAIL)){
+            railMaxSpeed = railMaxSpeed/2;
+        }
 
         if(railMaxSpeed > RailSpeeds.max_ascending_speed) {
             Vec3 vec3 = getDeltaMovement();
@@ -211,9 +215,6 @@ public abstract class CustomAbstractMinecartEntity extends AbstractMinecart impl
         if (!this.level().isClientSide()) {
 
             if (getLinkedParent() != null) {
-                //System.out.print("Minecart Parent: ");
-                //System.out.print(this.getLinkedParent().getUUID() + ", ");
-                //System.out.println(this.getLinkedParent().getId() + "\n");
 
                 double distance = getLinkedParent().distanceTo(this) - 1;
 
