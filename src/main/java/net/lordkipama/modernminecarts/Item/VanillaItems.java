@@ -2,7 +2,11 @@ package net.lordkipama.modernminecarts.Item;
 
 
 import net.lordkipama.modernminecarts.ModernMinecarts;
+import net.lordkipama.modernminecarts.block.Custom.CustomSmithingTableBlock;
 import net.minecraft.world.item.Item;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraftforge.eventbus.api.IEventBus;
 import net.minecraftforge.registries.DeferredRegister;
 import net.minecraftforge.registries.ForgeRegistries;
@@ -27,7 +31,6 @@ public class VanillaItems {
     public static final RegistryObject<Item> SPAWNER_MINECART_ITEM = VANILLA_ITEMS.register("spawner_minecart", () -> new CustomMinecartSpawnerItem(new Item.Properties().stacksTo(1)));
 
     public static final RegistryObject<Item> TNT_MINECART_ITEM = VANILLA_ITEMS.register("tnt_minecart", () -> new CustomMinecartTNTItem(new Item.Properties().stacksTo(1)));
-
 
 
     public static void register(IEventBus eventBus) {

@@ -1,0 +1,25 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "#": {
+      "item": "minecraft:diamond"
+    },
+    "C": {
+      "item": "minecraft:copper_block"
+    },
+    "S": {
+      "tag": "modernminecarts:copper_templates"
+    }
+  },
+  "pattern": [
+    "#S#",
+    "#C#",
+    "###"
+  ],
+  "result": {
+    "count": 1,
+    "item": "modernminecarts:copper_upgrade_smithing_template"
+  },
+  "show_notification": true
+}

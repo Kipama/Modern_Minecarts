@@ -5,11 +5,13 @@ import net.lordkipama.modernminecarts.Item.VanillaItems;
 import net.lordkipama.modernminecarts.ModernMinecarts;
 import net.lordkipama.modernminecarts.block.Custom.CopperRailBlock;
 import net.lordkipama.modernminecarts.block.Custom.CustomRailBlock;
+import net.lordkipama.modernminecarts.block.Custom.CustomSmithingTableBlock;
 import net.lordkipama.modernminecarts.block.Custom.WeatheringRailBlock;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.SmithingTableBlock;
 import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraftforge.eventbus.api.IEventBus;
 import net.minecraftforge.registries.DeferredRegister;
@@ -22,11 +24,11 @@ public class VanillaBlocks {
     public static final DeferredRegister<Block> VANILLA_BLOCKS =
             DeferredRegister.create(ForgeRegistries.BLOCKS, "minecraft");
 
-
     public static final RegistryObject<Block> VANILLA_RAIL = registerBlock("rail",
             () -> new CustomRailBlock(BlockBehaviour.Properties.copy(Blocks.RAIL)));
 
-
+    public static final RegistryObject<Block> VANILLA_SMITHING_TABLE = registerBlock("smithing_table",
+            () -> new CustomSmithingTableBlock(BlockBehaviour.Properties.copy(Blocks.SMITHING_TABLE)));
 
 
 

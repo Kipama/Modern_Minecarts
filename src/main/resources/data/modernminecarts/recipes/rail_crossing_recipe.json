@@ -2,14 +2,17 @@
   "type": "minecraft:crafting_shaped",
   "category": "misc",
   "key": {
-    "#": {
-      "item": "minecraft:rail"
+    "i": {
+      "item": "minecraft:iron_ingot"
+    },
+    "/": {
+      "item": "minecraft:stick"
     }
   },
   "pattern": [
-    " # ",
-    "###",
-    " # "
+    "i/i",
+    "///",
+    "i/i"
   ],
   "result": {
     "count": 2,

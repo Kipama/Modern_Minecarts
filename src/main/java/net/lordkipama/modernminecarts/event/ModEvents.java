@@ -6,8 +6,12 @@ import net.lordkipama.modernminecarts.Proxy.ModernMinecartsPacketHandler;
 import net.lordkipama.modernminecarts.block.ModBlocks;
 import net.lordkipama.modernminecarts.entity.ChainMinecartInterface;
 import net.lordkipama.modernminecarts.entity.CustomAbstractMinecartEntity;
+import net.lordkipama.modernminecarts.inventory.CustomSmithingMenu;
+import net.lordkipama.modernminecarts.inventory.CustomSmithingScreen;
+import net.lordkipama.modernminecarts.inventory.ModMenus;
 import net.minecraft.advancements.CriteriaTriggers;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.screens.MenuScreens;
 import net.minecraft.client.model.EntityModel;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.server.ServerAdvancementManager;
@@ -21,6 +25,7 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.ai.behavior.EntityTracker;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.vehicle.AbstractMinecart;
+import net.minecraft.world.inventory.MenuType;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
@@ -29,11 +34,13 @@ import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraftforge.client.event.RenderLivingEvent;
+import net.minecraftforge.client.event.ScreenEvent;
 import net.minecraftforge.event.entity.player.PlayerEvent;
 import net.minecraftforge.event.entity.player.PlayerInteractEvent;
 import net.minecraftforge.eventbus.api.Event;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
+import net.minecraftforge.fml.event.lifecycle.FMLClientSetupEvent;
 import net.minecraftforge.network.PacketDistributor;
 
 import java.util.HashSet;
@@ -44,36 +51,35 @@ public class ModEvents {
     @Mod.EventBusSubscriber(modid = ModernMinecarts.MOD_ID)
     public static class ForgeEvents {
 
+
+
         @SubscribeEvent
         public static void PlayerInteractEvent(PlayerInteractEvent.RightClickBlock event) {
             BlockState pBlockstate = Minecraft.getInstance().level.getBlockState(event.getPos());
             Block targetedBlock = pBlockstate.getBlock();
 
             //Wax/Deage Rail
-            if(targetedBlock.equals(ModBlocks.COPPER_RAIL.get()) || targetedBlock.equals(ModBlocks.EXPOSED_COPPER_RAIL.get()) || targetedBlock.equals(ModBlocks.WEATHERED_COPPER_RAIL.get()) || targetedBlock.equals(ModBlocks.OXIDIZED_COPPER_RAIL.get())){
-                if(event.getItemStack().getItem() == Items.HONEYCOMB || event.getItemStack().is(ItemTags.AXES)) {
+            if (targetedBlock.equals(ModBlocks.COPPER_RAIL.get()) || targetedBlock.equals(ModBlocks.EXPOSED_COPPER_RAIL.get()) || targetedBlock.equals(ModBlocks.WEATHERED_COPPER_RAIL.get()) || targetedBlock.equals(ModBlocks.OXIDIZED_COPPER_RAIL.get())) {
+                if (event.getItemStack().getItem() == Items.HONEYCOMB || event.getItemStack().is(ItemTags.AXES)) {
                     event.setUseBlock(Event.Result.ALLOW);
-                }
-                else{
+                } else {
                     event.setUseBlock(Event.Result.DENY);
                 }
             }
             //Dewaxx Rail
-            else if(targetedBlock.equals(ModBlocks.WAXED_COPPER_RAIL.get()) || targetedBlock.equals(ModBlocks.WAXED_EXPOSED_COPPER_RAIL.get()) || targetedBlock.equals(ModBlocks.WAXED_WEATHERED_COPPER_RAIL.get()) || targetedBlock.equals(ModBlocks.WAXED_OXIDIZED_COPPER_RAIL.get())){
-                if(event.getItemStack().is(ItemTags.AXES)) {
+            else if (targetedBlock.equals(ModBlocks.WAXED_COPPER_RAIL.get()) || targetedBlock.equals(ModBlocks.WAXED_EXPOSED_COPPER_RAIL.get()) || targetedBlock.equals(ModBlocks.WAXED_WEATHERED_COPPER_RAIL.get()) || targetedBlock.equals(ModBlocks.WAXED_OXIDIZED_COPPER_RAIL.get())) {
+                if (event.getItemStack().is(ItemTags.AXES)) {
                     event.setUseBlock(Event.Result.ALLOW);
-                }
-                else{
+                } else {
                     event.setUseBlock(Event.Result.DENY);
                 }
             }
             //Place sloped rail.
-            else if(targetedBlock.equals(Blocks.RAIL)){
-                if(event.getItemStack().getItem() == Items.STICK) {
+            else if (targetedBlock.equals(Blocks.RAIL)) {
+                if (event.getItemStack().getItem() == Items.STICK) {
                     event.setUseBlock(Event.Result.ALLOW);
                     event.setUseItem(Event.Result.DENY);
-                }
-                else{
+                } else {
                     event.setUseBlock(Event.Result.DENY);
                 }
             }
@@ -152,8 +158,7 @@ public class ModEvents {
                                     }
                                     ChainMinecartInterface.setParentChild(parent, cart);
                                 }
-                            }
-                            else {
+                            } else {
                                 nbt.remove("ParentEntity");
 
                                 if (nbt.isEmpty()) {
@@ -170,8 +175,7 @@ public class ModEvents {
 
                             if (nbt.isEmpty())
                                 stack.setTag(null);
-                        }
-                        else {
+                        } else {
                             nbt.putUUID("ParentEntity", cart.getUUID());
                             event.getLevel().playSound(null, entity.getX(), entity.getY(), entity.getZ(), SoundEvents.CHAIN_HIT, SoundSource.NEUTRAL, 1F, 1F);
                         }
@@ -182,4 +186,5 @@ public class ModEvents {
         }
     }
 }
+
 
