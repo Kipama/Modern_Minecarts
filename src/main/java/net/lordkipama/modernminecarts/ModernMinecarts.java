@@ -7,7 +7,10 @@ import net.lordkipama.modernminecarts.Proxy.ModernMinecartsPacketHandler;
 import net.lordkipama.modernminecarts.block.ModBlocks;
 import net.lordkipama.modernminecarts.block.VanillaBlocks;
 import net.lordkipama.modernminecarts.entity.*;
+import net.lordkipama.modernminecarts.inventory.CustomSmithingScreen;
+import net.lordkipama.modernminecarts.inventory.ModMenus;
 import net.lordkipama.modernminecarts.renderer.CustomMinecartRenderer;
+import net.minecraft.client.gui.screens.MenuScreens;
 import net.minecraft.client.model.geom.ModelLayers;
 import net.minecraft.client.renderer.entity.EntityRenderer;
 import net.minecraft.client.renderer.entity.EntityRendererProvider;
@@ -23,15 +26,11 @@ import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.event.lifecycle.FMLClientSetupEvent;
 import net.minecraftforge.fml.event.lifecycle.FMLCommonSetupEvent;
 import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
-import net.minecraftforge.network.MCRegisterPacketHandler;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import net.lordkipama.modernminecarts.Proxy.ClientProxy;
 import net.lordkipama.modernminecarts.Proxy.ServerProxy;
-import org.checkerframework.checker.signature.qual.Identifier;
 
-import java.util.List;
-import java.util.UUID;
 // The value here should match an entry in the META-INF/mods.toml file
 @Mod(net.lordkipama.modernminecarts.ModernMinecarts.MOD_ID)
 public class ModernMinecarts {
@@ -51,6 +50,7 @@ public class ModernMinecarts {
         VanillaEntities.register(modEventBus);
         VanillaItems.register(modEventBus);
         VanillaBlocks.register(modEventBus);
+        ModMenus.register(modEventBus);
 
         modEventBus.addListener(this::commonSetup);
 
@@ -81,7 +81,11 @@ public class ModernMinecarts {
             event.accept(ModBlocks.RAIL_CROSSING);
 
         }
-
+        else if (event.getTabKey() == CreativeModeTabs.INGREDIENTS) {
+            event.accept(ModItems.COPPER_UPGRADE_SMITHING_TEMPLATE);
+            event.accept(ModItems.CHIPPED_COPPER_UPGRADE_SMITHING_TEMPLATE);
+            event.accept(ModItems.DAMAGED_COPPER_UPGRADE_SMITHING_TEMPLATE);
+        }
     }
 
 
@@ -98,9 +102,13 @@ public class ModernMinecarts {
             EntityRenderers.register(VanillaEntities.HOPPER_MINECART_ENTITY.get(), new CustomMinecartHopperEntityRenderFactory());
             EntityRenderers.register(VanillaEntities.SPAWNER_MINECART_ENTITY.get(), new CustomMinecartSpawnerEntityRenderFactory());
             EntityRenderers.register(VanillaEntities.TNT_MINECART_ENTITY.get(), new CustomMinecartTNTEntityRenderFactory());
+            event.enqueueWork(
+                    // Assume RegistryObject<MenuType<MyMenu>> MY_MENU
+                    // Assume MyContainerScreen<MyMenu> which takes in three parameters
+                    () -> MenuScreens.register(ModMenus.CUSTOM_SMITHING_MENU.get(), CustomSmithingScreen::new)
+            );
+
         }
-
-
 
         private static class CustomMinecartEntityRenderFactory implements EntityRendererProvider<CustomMinecartEntity> {
             @Override

@@ -1,0 +1,15 @@
+{
+  "type": "minecraft:smithing_transform",
+  "addition": {
+    "item": "minecraft:copper_ingot"
+  },
+  "base": {
+    "item": "minecraft:powered_rail"
+  },
+  "result": {
+    "item": "modernminecarts:copper_rail"
+  },
+  "template": {
+    "item": "modernminecarts:damaged_copper_upgrade_smithing_template"
+  }
+}
