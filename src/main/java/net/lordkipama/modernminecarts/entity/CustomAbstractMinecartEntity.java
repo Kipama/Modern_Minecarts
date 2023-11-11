@@ -3,10 +3,9 @@ package net.lordkipama.modernminecarts.entity;
 
 import com.google.common.collect.Maps;
 import com.mojang.datafixers.util.Pair;
-import net.lordkipama.modernminecarts.ModernMinecarts;
 import net.lordkipama.modernminecarts.Proxy.ModernMinecartsPacketHandler;
 import net.lordkipama.modernminecarts.RailSpeeds;
-import net.lordkipama.modernminecarts.block.Custom.CopperRailBlock;
+import net.lordkipama.modernminecarts.block.Custom.PoweredDetectorRailBlock;
 import net.lordkipama.modernminecarts.block.ModBlocks;
 import net.minecraft.Util;
 import net.minecraft.core.BlockPos;
@@ -15,7 +14,6 @@ import net.minecraft.core.Vec3i;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.tags.BlockTags;
-import net.minecraft.tags.TagKey;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
@@ -23,7 +21,6 @@ import net.minecraft.world.entity.MoverType;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.vehicle.AbstractMinecart;
-import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.Level;
@@ -400,11 +397,49 @@ public abstract class CustomAbstractMinecartEntity extends AbstractMinecart impl
         boolean flag = false;
         boolean flag1 = false;
         BaseRailBlock baserailblock = (BaseRailBlock) pState.getBlock();
-        if (baserailblock instanceof PoweredRailBlock && !((PoweredRailBlock) baserailblock).isActivatorRail()) {
+        if ((baserailblock instanceof PoweredRailBlock && !((PoweredRailBlock) baserailblock).isActivatorRail())) {
             flag = pState.getValue(PoweredRailBlock.POWERED);
             flag1 = !flag;
         }
-
+        else if(baserailblock instanceof PoweredDetectorRailBlock weightedState) {
+            flag = pState.getValue(PoweredRailBlock.POWERED);
+            flag1 = !flag;
+            //Add "start boost"
+            Vec3 deltaMovementSpeed = this.getDeltaMovement();
+            if (weightedState.getDirInverted(pState)) {
+                if (weightedState.getRailShape(pState).equals(RailShape.NORTH_SOUTH) || weightedState.getRailShape(pState).equals(RailShape.ASCENDING_NORTH) || weightedState.getRailShape(pState).equals(RailShape.ASCENDING_SOUTH)) {
+                    if (deltaMovementSpeed.z < -0.2) {
+                        this.setDeltaMovement(new Vec3(deltaMovementSpeed.x(), deltaMovementSpeed.y(), deltaMovementSpeed.z() / 8 + 0.1));
+                    } else if (flag) {
+                        this.setDeltaMovement(new Vec3(deltaMovementSpeed.x(), deltaMovementSpeed.y(), deltaMovementSpeed.z() + 0.02));
+                    }
+                    else {this.setDeltaMovement(new Vec3(deltaMovementSpeed.x(), deltaMovementSpeed.y(), deltaMovementSpeed.z() / 7));}
+                } else {
+                    if (deltaMovementSpeed.x > 0.2) {
+                        this.setDeltaMovement(new Vec3(deltaMovementSpeed.x() / 8 - 0.1, deltaMovementSpeed.y(), deltaMovementSpeed.z()));
+                    } else if (flag) {
+                        this.setDeltaMovement(new Vec3(deltaMovementSpeed.x() - 0.02, deltaMovementSpeed.y(), deltaMovementSpeed.z()));
+                    }
+                    else {this.setDeltaMovement(new Vec3(deltaMovementSpeed.x() / 7, deltaMovementSpeed.y(), deltaMovementSpeed.z()));}
+                }
+            } else {
+                if (weightedState.getRailShape(pState).equals(RailShape.NORTH_SOUTH) || weightedState.getRailShape(pState).equals(RailShape.ASCENDING_NORTH) || weightedState.getRailShape(pState).equals(RailShape.ASCENDING_SOUTH)) {
+                    if (deltaMovementSpeed.z > 0.2) {
+                        this.setDeltaMovement(new Vec3(deltaMovementSpeed.x(), deltaMovementSpeed.y(), deltaMovementSpeed.z() / 8 - 0.1));
+                    } else if (flag) {
+                        this.setDeltaMovement(new Vec3(deltaMovementSpeed.x(), deltaMovementSpeed.y(), deltaMovementSpeed.z() - 0.02));
+                    }
+                    else {this.setDeltaMovement(new Vec3(deltaMovementSpeed.x(), deltaMovementSpeed.y(), deltaMovementSpeed.z() / 7));}
+                } else {
+                    if (deltaMovementSpeed.x < -0.2) {
+                        this.setDeltaMovement(new Vec3(deltaMovementSpeed.x() / 8 + 0.1, deltaMovementSpeed.y(), deltaMovementSpeed.z()));
+                    } else if (flag) {
+                        this.setDeltaMovement(new Vec3(deltaMovementSpeed.x() + 0.02, deltaMovementSpeed.y(), deltaMovementSpeed.z()));
+                    }
+                    else{this.setDeltaMovement(new Vec3(deltaMovementSpeed.x() / 7, deltaMovementSpeed.y(), deltaMovementSpeed.z()));}
+                }
+            }
+        }
         double d3 = getSlopeAdjustment();
         if (this.isInWater()) {
             d3 *= 0.2D;
@@ -550,6 +585,7 @@ public abstract class CustomAbstractMinecartEntity extends AbstractMinecart impl
         }
 
     }
+
 
     private boolean isRedstoneConductor(BlockPos pPos) {
         return this.level().getBlockState(pPos).isRedstoneConductor(this.level(), pPos);

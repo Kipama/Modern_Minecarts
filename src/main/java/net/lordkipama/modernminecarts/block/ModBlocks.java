@@ -3,21 +3,16 @@ package net.lordkipama.modernminecarts.block;
 
 import net.lordkipama.modernminecarts.Item.ModItems;
 import net.lordkipama.modernminecarts.ModernMinecarts;
-import net.lordkipama.modernminecarts.Proxy.IProxy;
 import net.lordkipama.modernminecarts.block.Custom.*;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockBehaviour;
-import net.minecraft.world.level.block.state.properties.RailShape;
 import net.minecraftforge.eventbus.api.IEventBus;
-import net.minecraftforge.fml.DistExecutor;
 import net.minecraftforge.registries.DeferredRegister;
 import net.minecraftforge.registries.ForgeRegistries;
 import net.minecraftforge.registries.RegistryObject;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 
 
 import java.util.function.Supplier;
@@ -58,6 +53,9 @@ public class ModBlocks {
 
     public static final RegistryObject<Block> SLOPED_RAIL = registerBlock("sloped_rail",
             () -> new SlopedRailBlock(BlockBehaviour.Properties.copy(Blocks.RAIL)));
+
+    public static final RegistryObject<Block> POWERED_DETECTOR_RAIL = registerBlock("powered_detector_rail",
+            () -> new PoweredDetectorRailBlock(BlockBehaviour.Properties.copy(Blocks.DETECTOR_RAIL)));
 
 
     //END NEW BLOCKS

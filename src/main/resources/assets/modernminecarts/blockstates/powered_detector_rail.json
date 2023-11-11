@@ -1,0 +1,196 @@
+{
+  "variants": {
+    "powered=false,shape=ascending_east,inverted=false,weight_inverted=false": {
+      "model": "modernminecarts:block/powered_detector_rail_raised_ne",
+      "y": 90
+    },
+    "powered=false,shape=ascending_north,inverted=false,weight_inverted=false": {
+      "model": "modernminecarts:block/powered_detector_rail_raised_ne"
+    },
+    "powered=false,shape=ascending_south,inverted=false,weight_inverted=false": {
+      "model": "modernminecarts:block/powered_detector_rail_raised_sw"
+    },
+    "powered=false,shape=ascending_west,inverted=false,weight_inverted=false": {
+      "model": "modernminecarts:block/powered_detector_rail_raised_sw",
+      "y": 90
+    },
+    "powered=false,shape=east_west,inverted=false,weight_inverted=false": {
+      "model": "modernminecarts:block/powered_detector_rail",
+      "y": 90
+    },
+    "powered=false,shape=north_south,inverted=false,weight_inverted=false": {
+      "model": "modernminecarts:block/powered_detector_rail"
+    },
+
+    "powered=false,shape=ascending_east,inverted=true,weight_inverted=false": {
+      "model": "modernminecarts:block/powered_detector_rail_raised_sw",
+      "y": -90
+    },
+    "powered=false,shape=ascending_north,inverted=true,weight_inverted=false": {
+      "model": "modernminecarts:block/powered_detector_rail_raised_sw",
+      "y": 180
+    },
+    "powered=false,shape=ascending_south,inverted=true,weight_inverted=false": {
+      "model": "modernminecarts:block/powered_detector_rail_raised_ne",
+      "y": 180
+    },
+    "powered=false,shape=ascending_west,inverted=true,weight_inverted=false": {
+      "model": "modernminecarts:block/powered_detector_rail_raised_ne",
+      "y": -90
+    },
+    "powered=false,shape=east_west,inverted=true,weight_inverted=false": {
+      "model": "modernminecarts:block/powered_detector_rail",
+      "y": -90
+    },
+    "powered=false,shape=north_south,inverted=true,weight_inverted=false": {
+      "model": "modernminecarts:block/powered_detector_rail",
+      "y": 180
+    },
+
+      "powered=true,shape=ascending_east,inverted=false,weight_inverted=false": {
+        "model": "modernminecarts:block/powered_detector_rail_on_raised_ne",
+        "y": 90
+      },
+      "powered=true,shape=ascending_north,inverted=false,weight_inverted=false": {
+        "model": "modernminecarts:block/powered_detector_rail_on_raised_ne"
+      },
+      "powered=true,shape=ascending_south,inverted=false,weight_inverted=false": {
+        "model": "modernminecarts:block/powered_detector_rail_on_raised_sw"
+      },
+      "powered=true,shape=ascending_west,inverted=false,weight_inverted=false": {
+        "model": "modernminecarts:block/powered_detector_rail_on_raised_sw",
+        "y": 90
+      },
+      "powered=true,shape=east_west,inverted=false,weight_inverted=false": {
+        "model": "modernminecarts:block/powered_detector_rail_on",
+        "y": 90
+      },
+      "powered=true,shape=north_south,inverted=false,weight_inverted=false": {
+        "model": "modernminecarts:block/powered_detector_rail_on"
+      },
+
+      "powered=true,shape=ascending_east,inverted=true,weight_inverted=false": {
+        "model": "modernminecarts:block/powered_detector_rail_on_raised_sw",
+        "y": -90
+      },
+      "powered=true,shape=ascending_north,inverted=true,weight_inverted=false": {
+        "model": "modernminecarts:block/powered_detector_rail_on_raised_sw",
+        "y": 180
+      },
+      "powered=true,shape=ascending_south,inverted=true,weight_inverted=false": {
+        "model": "modernminecarts:block/powered_detector_rail_on_raised_ne",
+        "y": 180
+      },
+      "powered=true,shape=ascending_west,inverted=true,weight_inverted=false": {
+        "model": "modernminecarts:block/powered_detector_rail_on_raised_ne",
+        "y": -90
+      },
+      "powered=true,shape=east_west,inverted=true,weight_inverted=false": {
+        "model": "modernminecarts:block/powered_detector_rail_on",
+        "y": -90
+      },
+      "powered=true,shape=north_south,inverted=true,weight_inverted=false": {
+        "model": "modernminecarts:block/powered_detector_rail_on",
+        "y": 180
+      },
+
+
+
+
+
+
+    "powered=false,shape=ascending_east,inverted=false,weight_inverted=true": {
+      "model": "modernminecarts:block/powered_detector_rail_inverted_raised_ne",
+      "y": 90
+    },
+    "powered=false,shape=ascending_north,inverted=false,weight_inverted=true": {
+      "model": "modernminecarts:block/powered_detector_rail_inverted_raised_ne"
+    },
+    "powered=false,shape=ascending_south,inverted=false,weight_inverted=true": {
+      "model": "modernminecarts:block/powered_detector_rail_inverted_raised_sw"
+    },
+    "powered=false,shape=ascending_west,inverted=false,weight_inverted=true": {
+      "model": "modernminecarts:block/powered_detector_rail_inverted_raised_sw",
+      "y": 90
+    },
+    "powered=false,shape=east_west,inverted=false,weight_inverted=true": {
+      "model": "modernminecarts:block/powered_detector_rail_inverted",
+      "y": 90
+    },
+    "powered=false,shape=north_south,inverted=false,weight_inverted=true": {
+      "model": "modernminecarts:block/powered_detector_rail_inverted"
+    },
+
+    "powered=false,shape=ascending_east,inverted=true,weight_inverted=true": {
+      "model": "modernminecarts:block/powered_detector_rail_inverted_raised_sw",
+      "y": -90
+    },
+    "powered=false,shape=ascending_north,inverted=true,weight_inverted=true": {
+      "model": "modernminecarts:block/powered_detector_rail_inverted_raised_sw",
+      "y": 180
+    },
+    "powered=false,shape=ascending_south,inverted=true,weight_inverted=true": {
+      "model": "modernminecarts:block/powered_detector_rail_inverted_raised_ne",
+      "y": 180
+    },
+    "powered=false,shape=ascending_west,inverted=true,weight_inverted=true": {
+      "model": "modernminecarts:block/powered_detector_rail_inverted_raised_ne",
+      "y": -90
+    },
+    "powered=false,shape=east_west,inverted=true,weight_inverted=true": {
+      "model": "modernminecarts:block/powered_detector_rail_inverted",
+      "y": -90
+    },
+    "powered=false,shape=north_south,inverted=true,weight_inverted=true": {
+      "model": "modernminecarts:block/powered_detector_rail_inverted",
+      "y": 180
+    },
+
+    "powered=true,shape=ascending_east,inverted=false,weight_inverted=true": {
+      "model": "modernminecarts:block/powered_detector_rail_on_inverted_raised_ne",
+      "y": 90
+    },
+    "powered=true,shape=ascending_north,inverted=false,weight_inverted=true": {
+      "model": "modernminecarts:block/powered_detector_rail_on_inverted_raised_ne"
+    },
+    "powered=true,shape=ascending_south,inverted=false,weight_inverted=true": {
+      "model": "modernminecarts:block/powered_detector_rail_on_inverted_raised_sw"
+    },
+    "powered=true,shape=ascending_west,inverted=false,weight_inverted=true": {
+      "model": "modernminecarts:block/powered_detector_rail_on_inverted_raised_sw",
+      "y": 90
+    },
+    "powered=true,shape=east_west,inverted=false,weight_inverted=true": {
+      "model": "modernminecarts:block/powered_detector_rail_on_inverted",
+      "y": 90
+    },
+    "powered=true,shape=north_south,inverted=false,weight_inverted=true": {
+      "model": "modernminecarts:block/powered_detector_rail_on_inverted"
+    },
+
+    "powered=true,shape=ascending_east,inverted=true,weight_inverted=true": {
+      "model": "modernminecarts:block/powered_detector_rail_on_inverted_raised_sw",
+      "y": -90
+    },
+    "powered=true,shape=ascending_north,inverted=true,weight_inverted=true": {
+      "model": "modernminecarts:block/powered_detector_rail_on_inverted_raised_sw",
+      "y": 180
+    },
+    "powered=true,shape=ascending_south,inverted=true,weight_inverted=true": {
+      "model": "modernminecarts:block/powered_detector_rail_on_inverted_raised_ne",
+      "y": 180
+    },
+    "powered=true,shape=ascending_west,inverted=true,weight_inverted=true": {
+      "model": "modernminecarts:block/powered_detector_rail_on_inverted_raised_ne",
+      "y": -90
+    },
+    "powered=true,shape=east_west,inverted=true,weight_inverted=true": {
+      "model": "modernminecarts:block/powered_detector_rail_on_inverted",
+      "y": -90
+    },
+    "powered=true,shape=north_south,inverted=true,weight_inverted=true": {
+      "model": "modernminecarts:block/powered_detector_rail_on_inverted",
+      "y": 180
+    }
+    }
+}
