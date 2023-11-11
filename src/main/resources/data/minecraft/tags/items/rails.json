@@ -16,6 +16,7 @@
 
     "modernminecarts:rail_crossing",
 
-    "modernminecarts:sloped_rail"
+    "modernminecarts:sloped_rail",
+    "modernminecarts:powered_detector_rail"
   ]
 }

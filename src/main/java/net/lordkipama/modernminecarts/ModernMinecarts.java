@@ -80,11 +80,28 @@ public class ModernMinecarts {
 
             event.accept(ModBlocks.RAIL_CROSSING);
 
+            event.accept(ModBlocks.POWERED_DETECTOR_RAIL);
+
         }
         else if (event.getTabKey() == CreativeModeTabs.INGREDIENTS) {
             event.accept(ModItems.COPPER_UPGRADE_SMITHING_TEMPLATE);
             event.accept(ModItems.CHIPPED_COPPER_UPGRADE_SMITHING_TEMPLATE);
             event.accept(ModItems.DAMAGED_COPPER_UPGRADE_SMITHING_TEMPLATE);
+        }
+        else if (event.getTabKey() == CreativeModeTabs.TOOLS_AND_UTILITIES) {
+            event.accept(ModBlocks.COPPER_RAIL);
+            event.accept(ModBlocks.EXPOSED_COPPER_RAIL);
+            event.accept(ModBlocks.WEATHERED_COPPER_RAIL);
+            event.accept(ModBlocks.OXIDIZED_COPPER_RAIL);
+
+            event.accept(ModBlocks.WAXED_COPPER_RAIL);
+            event.accept(ModBlocks.WAXED_EXPOSED_COPPER_RAIL);
+            event.accept(ModBlocks.WAXED_WEATHERED_COPPER_RAIL);
+            event.accept(ModBlocks.WAXED_OXIDIZED_COPPER_RAIL);
+
+            event.accept(ModBlocks.RAIL_CROSSING);
+
+            event.accept(ModBlocks.POWERED_DETECTOR_RAIL);
         }
     }
 

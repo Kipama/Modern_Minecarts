@@ -50,9 +50,6 @@ import java.util.Set;
 public class ModEvents {
     @Mod.EventBusSubscriber(modid = ModernMinecarts.MOD_ID)
     public static class ForgeEvents {
-
-
-
         @SubscribeEvent
         public static void PlayerInteractEvent(PlayerInteractEvent.RightClickBlock event) {
             BlockState pBlockstate = Minecraft.getInstance().level.getBlockState(event.getPos());
@@ -66,7 +63,7 @@ public class ModEvents {
                     event.setUseBlock(Event.Result.DENY);
                 }
             }
-            //Dewaxx Rail
+            //Dewax Rail
             else if (targetedBlock.equals(ModBlocks.WAXED_COPPER_RAIL.get()) || targetedBlock.equals(ModBlocks.WAXED_EXPOSED_COPPER_RAIL.get()) || targetedBlock.equals(ModBlocks.WAXED_WEATHERED_COPPER_RAIL.get()) || targetedBlock.equals(ModBlocks.WAXED_OXIDIZED_COPPER_RAIL.get())) {
                 if (event.getItemStack().is(ItemTags.AXES)) {
                     event.setUseBlock(Event.Result.ALLOW);
@@ -82,6 +79,9 @@ public class ModEvents {
                 } else {
                     event.setUseBlock(Event.Result.DENY);
                 }
+            }
+            else if (targetedBlock.equals(ModBlocks.POWERED_DETECTOR_RAIL.get())) {
+                if(event.getHand()==InteractionHand.MAIN_HAND){event.setUseBlock(Event.Result.ALLOW);}
             }
         }
 
