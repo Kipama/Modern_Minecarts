@@ -7,6 +7,8 @@ import net.lordkipama.modernminecarts.entity.CustomAbstractMinecartEntity;
 import net.lordkipama.modernminecarts.entity.CustomMinecartCommandBlockEntity;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.resources.ResourceKey;
+import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
@@ -80,22 +82,20 @@ public class PoweredDetectorRailBlock extends BaseRailBlock {
 
     @Override
     public InteractionResult use(BlockState state, Level level, BlockPos pos, Player player, InteractionHand interactionHand, BlockHitResult blockHitResult) {
-        //if (level instanceof ServerLevel) {
-            ItemStack itemstack = player.getItemInHand(interactionHand);
-            if(itemstack.getItem() instanceof AbstractMinecartItem || itemstack.is(Items.HOPPER) || itemstack.is(Items.CHEST)|| itemstack.is(Items.BARREL)){
-                return super.use(state, level, pos, player, interactionHand, blockHitResult);
-            }
-            if (player.isCrouching()) {
-                state = state.setValue(INVERTED, !state.getValue(INVERTED));
-                level.setBlock(pos, ModBlocks.POWERED_DETECTOR_RAIL.get().withPropertiesOf(state), 1);
-                level.playSound((Entity) player, pos, SoundEvents.ITEM_FRAME_PLACE, SoundSource.BLOCKS, 0.3F,0.6F);
-            } else {
-                state = state.setValue(WEIGHT_INVERTED, !state.getValue(WEIGHT_INVERTED));
-                state = state.setValue(POWERED, state.getValue(WEIGHT_INVERTED));
-                level.setBlock(pos, ModBlocks.POWERED_DETECTOR_RAIL.get().withPropertiesOf(state), 1);
-                level.playSound((Entity) player, pos, SoundEvents.COMPARATOR_CLICK, SoundSource.BLOCKS, 0.3F, state.getValue(WEIGHT_INVERTED)? 0.55F : 0.5F);
-            }
-        //}
+        ItemStack itemstack = player.getItemInHand(interactionHand);
+        if (itemstack.getItem() instanceof AbstractMinecartItem || itemstack.is(Items.HOPPER) || itemstack.is(Items.CHEST) || itemstack.is(Items.BARREL)) {
+            return super.use(state, level, pos, player, interactionHand, blockHitResult);
+        }
+        if (player.isCrouching()) {
+            state = state.setValue(INVERTED, !state.getValue(INVERTED));
+            level.setBlock(pos, ModBlocks.POWERED_DETECTOR_RAIL.get().withPropertiesOf(state), 1);
+            level.playSound((Entity) player, pos, SoundEvents.ITEM_FRAME_PLACE, SoundSource.BLOCKS, 0.3F, 0.6F);
+        } else {
+            state = state.setValue(WEIGHT_INVERTED, !state.getValue(WEIGHT_INVERTED));
+            state = state.setValue(POWERED, state.getValue(WEIGHT_INVERTED));
+            level.setBlock(pos, ModBlocks.POWERED_DETECTOR_RAIL.get().withPropertiesOf(state), 1);
+            level.playSound((Entity) player, pos, SoundEvents.COMPARATOR_CLICK, SoundSource.BLOCKS, 0.3F, state.getValue(WEIGHT_INVERTED) ? 0.55F : 0.5F);
+        }
         return InteractionResult.SUCCESS;
     }
     @Override

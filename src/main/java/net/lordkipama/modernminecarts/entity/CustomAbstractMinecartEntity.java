@@ -12,15 +12,20 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.Vec3i;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.resources.ResourceKey;
+import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.tags.BlockTags;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.EntitySelector;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.MoverType;
+import net.minecraft.world.entity.animal.IronGolem;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.vehicle.AbstractMinecart;
+import net.minecraft.world.entity.vehicle.ContainerEntity;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.Level;
@@ -31,12 +36,15 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import net.minecraft.world.level.block.state.properties.EnumProperty;
 import net.minecraft.world.level.block.state.properties.RailShape;
+import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.network.PacketDistributor;
 
 import javax.annotation.Nullable;
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+import java.util.stream.Stream;
 
 public abstract class CustomAbstractMinecartEntity extends AbstractMinecart implements  ChainMinecartInterface{
     private boolean jumpedOffSlope = false;
@@ -46,6 +54,19 @@ public abstract class CustomAbstractMinecartEntity extends AbstractMinecart impl
     private  @Nullable UUID childUUID;
     private int parentIdClient;
     private int childIdClient;
+
+
+    private boolean flipped;
+    private boolean onRails;
+    private int lSteps;
+    private double lx;
+    private double ly;
+    private double lz;
+    private double lyr;
+    private double lxr;
+    private double lxd;
+    private double lyd;
+    private double lzd;
 
 
     protected CustomAbstractMinecartEntity(EntityType<?> pEntityType, Level pLevel) {
@@ -272,7 +293,107 @@ public abstract class CustomAbstractMinecartEntity extends AbstractMinecart impl
         if(this.getDeltaMovement().length()<0.004){
             this.setDeltaMovement(0,this.getDeltaMovement().y,0);
         }
-        super.tick();
+        //Super's tick modified
+        if (this.getHurtTime() > 0) {
+            this.setHurtTime(this.getHurtTime() - 1);
+        }
+
+        if (this.getDamage() > 0.0F) {
+            this.setDamage(this.getDamage() - 1.0F);
+        }
+
+        this.checkBelowWorld();
+        this.handleNetherPortal();
+        if (this.level().isClientSide) {
+            if (this.lSteps > 0) {
+                double d5 = this.getX() + (this.lx - this.getX()) / (double)this.lSteps;
+                double d6 = this.getY() + (this.ly - this.getY()) / (double)this.lSteps;
+                double d7 = this.getZ() + (this.lz - this.getZ()) / (double)this.lSteps;
+                double d2 = Mth.wrapDegrees(this.lyr - (double)this.getYRot());
+                this.setYRot(this.getYRot() + (float)d2 / (float)this.lSteps);
+                this.setXRot(this.getXRot() + (float)(this.lxr - (double)this.getXRot()) / (float)this.lSteps);
+                --this.lSteps;
+                this.setPos(d5, d6, d7);
+                this.setRot(this.getYRot(), this.getXRot());
+            } else {
+                this.reapplyPosition();
+                this.setRot(this.getYRot(), this.getXRot());
+            }
+
+        } else {
+            if (!this.isNoGravity()) {
+                double d0 = this.isInWater() ? -0.005D : -0.04D;
+                this.setDeltaMovement(this.getDeltaMovement().add(0.0D, d0, 0.0D));
+            }
+
+            int k = Mth.floor(this.getX());
+            int i = Mth.floor(this.getY());
+            int j = Mth.floor(this.getZ());
+            if (this.level().getBlockState(new BlockPos(k, i - 1, j)).is(BlockTags.RAILS)) {
+                --i;
+            }
+
+            BlockPos blockpos = new BlockPos(k, i, j);
+            BlockState blockstate = this.level().getBlockState(blockpos);
+            this.onRails = BaseRailBlock.isRail(blockstate);
+            if (canUseRail() && this.onRails) {
+                this.moveAlongTrack(blockpos, blockstate);
+                if (blockstate.getBlock() instanceof PoweredRailBlock && ((PoweredRailBlock) blockstate.getBlock()).isActivatorRail()) {
+                    this.activateMinecart(k, i, j, blockstate.getValue(PoweredRailBlock.POWERED));
+                }
+            } else {
+                this.comeOffTrack();
+            }
+
+            this.checkInsideBlocks();
+            this.setXRot(0.0F);
+            double d1 = this.xo - this.getX();
+            double d3 = this.zo - this.getZ();
+            if (d1 * d1 + d3 * d3 > 0.001D) {
+                this.setYRot((float)(Mth.atan2(d3, d1) * 180.0D / Math.PI));
+                if (this.flipped) {
+                    this.setYRot(this.getYRot() + 180.0F);
+                }
+            }
+
+            double d4 = (double)Mth.wrapDegrees(this.getYRot() - this.yRotO);
+            if (d4 < -170.0D || d4 >= 170.0D) {
+                this.setYRot(this.getYRot() + 180.0F);
+                this.flipped = !this.flipped;
+            }
+
+            this.setRot(this.getYRot(), this.getXRot());
+            AABB box;
+            if (getCollisionHandler() != null) box = getCollisionHandler().getMinecartCollisionBox(this);
+            else                               box = this.getBoundingBox().inflate(0.2F, 0.0D, 0.2F);
+            if (canBeRidden() && this.getDeltaMovement().horizontalDistanceSqr() > 0.01D) {
+                List<Entity> list = this.level().getEntities(this, box, EntitySelector.pushableBy(this));
+                if (!list.isEmpty()) {
+                    for(int l = 0; l < list.size(); ++l) {
+                        Entity entity1 = list.get(l);
+                        if (!(entity1 instanceof Player) && !(entity1 instanceof IronGolem) && !(entity1 instanceof AbstractMinecart) && !this.isVehicle() && !entity1.isPassenger()) {
+                            entity1.startRiding(this);
+                        } else {
+                            entity1.push(this);
+                        }
+                    }
+                }
+            } else {
+                for(Entity entity : this.level().getEntities(this, box)) {
+                    if (!this.hasPassenger(entity) && entity.isPushable() && entity instanceof AbstractMinecart) {
+                        entity.push(this);
+                    }
+                }
+            }
+
+            this.updateInWaterStateAndDoFluidPushing();
+            if (this.isInLava()) {
+                this.lavaHurt();
+                this.fallDistance *= 0.5F;
+            }
+
+            this.firstTick = false;
+        }
     }
 
     @Override
@@ -340,6 +461,7 @@ public abstract class CustomAbstractMinecartEntity extends AbstractMinecart impl
         if (!this.level().isClientSide()) {
             ModernMinecartsPacketHandler.INSTANCE.send(PacketDistributor.TRACKING_ENTITY.with(()->this), new ModernMinecartsPacketHandler.CouplePacket(this.getParentIdClient(), this.getId()));
         }
+        this.startRefreshTrain();
     }
 
     @Override
@@ -379,6 +501,7 @@ public abstract class CustomAbstractMinecartEntity extends AbstractMinecart impl
             this.childUUID = null;
             this.childIdClient = -1;
         }
+        this.startRefreshTrain();
     }
 
     @Override
@@ -627,6 +750,122 @@ public abstract class CustomAbstractMinecartEntity extends AbstractMinecart impl
         }
 
         this.setDeltaMovement(vec3);
+    }
+
+    @Override
+    public void lerpTo(double pX, double pY, double pZ, float pYaw, float pPitch, int pPosRotationIncrements, boolean pTeleport) {
+        this.lx = pX;
+        this.ly = pY;
+        this.lz = pZ;
+        this.lyr = (double)pYaw;
+        this.lxr = (double)pPitch;
+        this.lSteps = pPosRotationIncrements + 2;
+        this.setDeltaMovement(this.lxd, this.lyd, this.lzd);
+        super.lerpTo(pX,pY,pZ,pYaw,pPitch, pPosRotationIncrements, pTeleport);
+    }
+
+    @Override
+    public void lerpMotion(double pX, double pY, double pZ) {
+        this.lxd = pX;
+        this.lyd = pY;
+        this.lzd = pZ;
+        this.setDeltaMovement(this.lxd, this.lyd, this.lzd);
+        super.lerpMotion(pX, pY, pZ);
+    }
+
+    @Override
+    public void handleNetherPortal() {
+        if (this.level() instanceof ServerLevel) {
+            int i = this.getPortalWaitTime();
+            ServerLevel serverlevel = (ServerLevel)this.level();
+            if (this.isInsidePortal) {
+                MinecraftServer minecraftserver = serverlevel.getServer();
+                ResourceKey<Level> resourcekey = this.level().dimension() == Level.NETHER ? Level.OVERWORLD : Level.NETHER;
+                ServerLevel serverlevel1 = minecraftserver.getLevel(resourcekey);
+                if(this.isVehicle()){
+                    Entity passenger = this.getFirstPassenger();
+                    int x = Mth.floor(this.getX());
+                    int y = Mth.floor(this.getY());
+                    int z = Mth.floor(this.getZ());
+                    this.activateMinecart(x, y, z, true);
+                }
+
+                if (serverlevel1 != null && minecraftserver.isNetherEnabled() && !this.isPassenger() && this.portalTime++ >= i && !this.isVehicle()) {
+                    this.level().getProfiler().push("portal");
+                    this.portalTime = i;
+                    this.setPortalCooldown();
+                    this.changeDimension(serverlevel1);
+                    this.level().getProfiler().pop();
+                }
+                else if(serverlevel1 != null && minecraftserver.isNetherEnabled() && this.isVehicle() && this.portalTime++ >= i){
+                    System.out.println("triggers");
+                    Entity passenger = this.getFirstPassenger();
+                    int x = Mth.floor(this.getX());
+                    int y = Mth.floor(this.getY());
+                    int z = Mth.floor(this.getZ());
+                    this.activateMinecart(x, y, z, true);
+
+
+                    this.level().getProfiler().push("portal");
+                    this.portalTime = i;
+                    this.setPortalCooldown();
+                    this.changeDimension(serverlevel1);
+                    this.getFirstPassenger().changeDimension(serverlevel1);
+                    this.level().getProfiler().pop();
+                }
+
+                this.isInsidePortal = false;
+            } else {
+                if (this.portalTime > 0) {
+                    this.portalTime -= 4;
+                }
+
+                if (this.portalTime < 0) {
+                    this.portalTime = 0;
+                }
+            }
+
+            this.processPortalCooldown();
+        }
+    }
+
+    public List<ContainerEntity> getContainerMinecartItemstacks(List<ContainerEntity> entries, boolean directionUp){
+        CustomAbstractMinecartEntity parent = this.getLinkedParent();
+        CustomAbstractMinecartEntity child = this.getLinkedChild();
+
+
+
+        if(directionUp && parent!=null){
+            entries.addAll(parent.getContainerMinecartItemstacks(entries, true));
+        }
+        else if(!directionUp && child!=null){
+            entries.addAll(child.getContainerMinecartItemstacks(entries, false));
+        }
+
+        if(this instanceof CustomMinecartHopperEntity){
+            return entries;
+        }
+        else if(this instanceof ContainerEntity imacontainer){
+            entries.add((ContainerEntity)imacontainer);
+        }
+        return entries;
+    }
+
+    public void startRefreshTrain(){
+        refreshTrain(true);
+        refreshTrain(false);
+    }
+
+    public void refreshTrain(boolean directionUp){
+        if(!directionUp && this.getLinkedChild()!=null){
+            this.getLinkedChild().refreshTrain(false);
+        }
+        else if(this.getLinkedParent()!=null) {
+            this.getLinkedParent().refreshTrain(true);
+        }
+        if(this instanceof CustomMinecartHopperEntity hopperMc){
+            hopperMc.getChainInventories();
+        }
     }
 }
 
