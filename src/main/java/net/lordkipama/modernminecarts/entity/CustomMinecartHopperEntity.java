@@ -8,9 +8,10 @@ import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.vehicle.AbstractMinecart;
-import net.minecraft.world.entity.vehicle.AbstractMinecartContainer;
+import net.minecraft.world.entity.vehicle.ContainerEntity;
 import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.inventory.HopperMenu;
+import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
@@ -20,8 +21,12 @@ import net.minecraft.world.level.block.entity.Hopper;
 import net.minecraft.world.level.block.entity.HopperBlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
 public class CustomMinecartHopperEntity extends CustomAbstractMinecartContainerEntity implements Hopper {
     private boolean enabled = true;
+    private List<ContainerEntity> otherContainers;
 
     public CustomMinecartHopperEntity(EntityType<? extends net.lordkipama.modernminecarts.entity.CustomMinecartHopperEntity> pEntityType, Level pLevel) {
         super(pEntityType, pLevel);
@@ -106,6 +111,17 @@ public class CustomMinecartHopperEntity extends CustomAbstractMinecartContainerE
         }
 
     }
+    @Override
+    public void setChestVehicleItem(int pSlot, ItemStack pStack) {
+        super.setChestVehicleItem(pSlot, pStack);
+        System.out.println(AbstractContainerMenu.getRedstoneSignalFromContainer(this));
+        if(AbstractContainerMenu.getRedstoneSignalFromContainer(this)>=3){
+            moveToStorage();
+        }
+        else {
+            getFromStorage();
+        }
+    }
 
     public boolean suckInItems() {
         if (HopperBlockEntity.suckInItems(this.level(), this)) {
@@ -116,9 +132,67 @@ public class CustomMinecartHopperEntity extends CustomAbstractMinecartContainerE
                     return true;
                 }
             }
-
             return false;
         }
+    }
+
+    public List<ContainerEntity> getChainInventories(){
+        otherContainers = this.getContainerMinecartItemstacks(new ArrayList<>(),true);
+        otherContainers.addAll(this.getContainerMinecartItemstacks(new ArrayList<>(),false));
+        return otherContainers;
+    }
+
+    public void moveToStorage(){
+        if(otherContainers==null){
+            getChainInventories();
+        }
+        ItemStack sourceStack=null;
+        for(int i=0; i<4; i++){
+            ItemStack currentStack = this.getItem(i);// .getChestVehicleItem(i);
+            if(currentStack.getMaxStackSize()==currentStack.getCount() && otherContainers!=null) {
+                sourceStack=currentStack.copy();
+
+                //Find empty slot in train
+                for(ContainerEntity currentContainer : otherContainers){
+                    for(int j=0; j<27;j++){
+                        if(currentContainer.canPlaceItem(j,sourceStack) && currentContainer.getItem(j).isEmpty()){
+                            currentContainer.getItemStacks().set(j, sourceStack); //.setChestVehicleItem(i,sourceStack);
+                            this.setChestVehicleItem(i, ItemStack.EMPTY);
+                            return;
+                        }
+                    }
+                }
+            }
+        }
+
+
+    }
+    public void getFromStorage() {
+        if (otherContainers == null) {
+            getChainInventories();
+        }
+        ItemStack currentStack = this.getItem(4);
+        if (currentStack.isEmpty() && otherContainers != null) {
+            //Find empty slot in train
+            for (ContainerEntity currentContainer : otherContainers) {
+                for (int j = 0; j < 27; j++) {
+                    if (currentContainer.getItem(j).getCount() == currentContainer.getItem(j).getMaxStackSize()) {
+                        this.setChestVehicleItem(4, currentContainer.getItem(j));
+                        currentContainer.setItem(j, ItemStack.EMPTY);
+                        currentContainer.setChanged();
+                        break;
+                    }
+                }
+                break;
+            }
+        }
+
+    }
+
+    @Override
+    public void setChanged(){
+        super.setChanged();
+        getFromStorage();
     }
 
     protected Item getDropItem() {
@@ -143,5 +217,10 @@ public class CustomMinecartHopperEntity extends CustomAbstractMinecartContainerE
 
     public AbstractContainerMenu createMenu(int pId, Inventory pPlayerInventory) {
         return new HopperMenu(pId, pPlayerInventory, this);
+    }
+    @Override
+    public ItemStack removeItem(int pIndex, int pCount) {
+        this.getFromStorage();
+        return this.removeChestVehicleItem(pIndex, pCount);
     }
 }
