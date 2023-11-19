@@ -8,6 +8,7 @@ import net.lordkipama.modernminecarts.block.ModBlocks;
 import net.lordkipama.modernminecarts.block.VanillaBlocks;
 import net.lordkipama.modernminecarts.entity.*;
 import net.lordkipama.modernminecarts.inventory.CustomSmithingScreen;
+import net.lordkipama.modernminecarts.inventory.FurnaceMinecartScreen;
 import net.lordkipama.modernminecarts.inventory.ModMenus;
 import net.lordkipama.modernminecarts.renderer.CustomMinecartRenderer;
 import net.minecraft.client.gui.screens.MenuScreens;
@@ -120,9 +121,10 @@ public class ModernMinecarts {
             EntityRenderers.register(VanillaEntities.SPAWNER_MINECART_ENTITY.get(), new CustomMinecartSpawnerEntityRenderFactory());
             EntityRenderers.register(VanillaEntities.TNT_MINECART_ENTITY.get(), new CustomMinecartTNTEntityRenderFactory());
             event.enqueueWork(
-                    // Assume RegistryObject<MenuType<MyMenu>> MY_MENU
-                    // Assume MyContainerScreen<MyMenu> which takes in three parameters
                     () -> MenuScreens.register(ModMenus.CUSTOM_SMITHING_MENU.get(), CustomSmithingScreen::new)
+            );
+            event.enqueueWork(
+                    () -> MenuScreens.register(ModMenus.FURNACE_MINECART_MENU.get(), FurnaceMinecartScreen::new)
             );
 
         }
