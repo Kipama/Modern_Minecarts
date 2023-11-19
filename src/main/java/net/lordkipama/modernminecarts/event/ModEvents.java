@@ -154,7 +154,7 @@ public class ModEvents {
                                     // player.sendMessage(Text.translatable(MinecartTweaks.MOD_ID + ".cant_link_to_engine").formatted(Formatting.RED), true);
                                 } else {
                                     if (cart.getLinkedParent() != null) {
-                                        ChainMinecartInterface.unsetParentChild(cart, cart.getLinkedParent());
+                                        ChainMinecartInterface.unsetParentChild(cart.getLinkedParent(),cart);
                                     }
                                     ChainMinecartInterface.setParentChild(parent, cart);
                                 }

@@ -136,10 +136,9 @@ public class CustomMinecartHopperEntity extends CustomAbstractMinecartContainerE
         }
     }
 
-    public List<ContainerEntity> getChainInventories(){
-        otherContainers = this.getContainerMinecartItemstacks(new ArrayList<>(),true);
-        otherContainers.addAll(this.getContainerMinecartItemstacks(new ArrayList<>(),false));
-        return otherContainers;
+    public void getChainInventories(){
+        otherContainers = this.getContainerMinecartItemstacks(new ArrayList<>(),true, false);
+        otherContainers.addAll(this.getContainerMinecartItemstacks(new ArrayList<>(),false, false));
     }
 
     public void moveToStorage(){
@@ -183,7 +182,6 @@ public class CustomMinecartHopperEntity extends CustomAbstractMinecartContainerE
                         break;
                     }
                 }
-                break;
             }
         }
 

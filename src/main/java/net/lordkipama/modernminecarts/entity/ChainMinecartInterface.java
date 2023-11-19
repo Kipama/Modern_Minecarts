@@ -22,7 +22,7 @@ public interface ChainMinecartInterface {
 
     static void setParentChild(@NotNull ChainMinecartInterface parent, @NotNull ChainMinecartInterface child) {
         unsetParentChild(parent, parent.getLinkedChild());
-        unsetParentChild(child, child.getLinkedParent());
+        //unsetParentChild(child, child.getLinkedParent()); This line leads to bugs when connecting to the front of trains
         parent.setLinkedChild(child.asCustomAbstractMinecartEntity());
         child.setLinkedParent(parent.asCustomAbstractMinecartEntity());
     }
