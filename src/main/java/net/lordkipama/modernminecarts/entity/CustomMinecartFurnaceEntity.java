@@ -6,36 +6,23 @@ import net.lordkipama.modernminecarts.inventory.FurnaceMinecartMenu;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.particles.ParticleTypes;
-import net.minecraft.nbt.CompoundTag;
-import net.minecraft.network.syncher.EntityDataAccessor;
-import net.minecraft.network.syncher.EntityDataSerializers;
-import net.minecraft.network.syncher.SynchedEntityData;
 import net.minecraft.tags.BlockTags;
-import net.minecraft.world.InteractionHand;
-import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.EntityType;
-import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.player.Inventory;
-import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.vehicle.AbstractMinecart;
 import net.minecraft.world.entity.vehicle.ContainerEntity;
 import net.minecraft.world.inventory.AbstractContainerMenu;
-import net.minecraft.world.inventory.ChestMenu;
 import net.minecraft.world.inventory.ContainerData;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
-import net.minecraft.world.item.crafting.Ingredient;
 import net.minecraft.world.item.crafting.RecipeType;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.*;
 import net.minecraft.world.level.block.entity.AbstractFurnaceBlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
-import net.minecraft.world.level.gameevent.GameEvent;
 import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.common.ForgeHooks;
-
-import java.awt.*;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -52,18 +39,12 @@ public class CustomMinecartFurnaceEntity extends CustomAbstractMinecartContainer
 
     protected final ContainerData dataAccess = new ContainerData() {
         public int get(int p_58431_) {
-            switch (p_58431_) {
-                case 0:
-                    return CustomMinecartFurnaceEntity.this.fuel;
-                case 1:
-                    return CustomMinecartFurnaceEntity.this.fuelBurnTime;
-                case 2:
-                    return (CustomMinecartFurnaceEntity.this.calculateActualSpeedForDisplay());
-                //case 3:
-                //   return CustomMinecartFurnaceEntity.this.cookingTotalTime;
-                default:
-                    return 0;
-            }
+            return switch (p_58431_) {
+                case 0 -> CustomMinecartFurnaceEntity.this.fuel;
+                case 1 -> CustomMinecartFurnaceEntity.this.fuelBurnTime;
+                case 2 -> (CustomMinecartFurnaceEntity.this.calculateActualSpeedForDisplay());
+                default -> 0;
+            };
         }
         @Override
         public void set(int pIndex, int pValue) {
@@ -85,11 +66,9 @@ public class CustomMinecartFurnaceEntity extends CustomAbstractMinecartContainer
             return furnaceMC.calculateActualSpeedForDisplay();
         }
         if(this.getDeltaMovement().length()> ((double) speedForDisplay /80)){
-            //System.out.println(speedForDisplay);
             return speedForDisplay;
         }
         else{
-            //System.out.println(this.getDeltaMovement().length()*80);
             return (int)Math.round(this.getDeltaMovement().length()*80+0.2);
         }
     }
@@ -122,7 +101,7 @@ public class CustomMinecartFurnaceEntity extends CustomAbstractMinecartContainer
     }
 
     public BlockState getDefaultDisplayBlockState() {
-        return Blocks.FURNACE.defaultBlockState().setValue(FurnaceBlock.FACING, Direction.NORTH).setValue(FurnaceBlock.LIT, Boolean.valueOf(false));//this.hasFuel()));
+        return Blocks.FURNACE.defaultBlockState().setValue(FurnaceBlock.FACING, Direction.NORTH).setValue(FurnaceBlock.LIT, Boolean.FALSE);//this.hasFuel()));
     }
 
     public void tick() {
@@ -136,12 +115,9 @@ public class CustomMinecartFurnaceEntity extends CustomAbstractMinecartContainer
             }
             else if (this.getLinkedChild() != null) {
                 Block block = level().getBlockState(this.getOnPos()).getBlock();
-                boolean consumeFuel=true;
-                if((((block instanceof PoweredRailBlock && !((PoweredRailBlock) block).isActivatorRail()) || block instanceof PoweredDetectorRailBlock) && !level().getBlockState(this.getOnPos()).getValue(PoweredRailBlock.POWERED))
-                        || !level().getBlockState(this.getOnPos()).is(BlockTags.RAILS)
-                        || this.getLinkedParent()!=null) {
-                    consumeFuel =false;
-                }
+                boolean consumeFuel = (((!(block instanceof PoweredRailBlock) || ((PoweredRailBlock) block).isActivatorRail()) && !(block instanceof PoweredDetectorRailBlock)) || level().getBlockState(this.getOnPos()).getValue(PoweredRailBlock.POWERED))
+                        && level().getBlockState(this.getOnPos()).is(BlockTags.RAILS)
+                        && this.getLinkedParent() == null;
                 if(consumeFuel) {
                     numBurningFurni = tryBurnFuel();
                 }
@@ -149,12 +125,12 @@ public class CustomMinecartFurnaceEntity extends CustomAbstractMinecartContainer
             if (this.fuel > 0 && this.getLinkedChild()!=null && this.xPush==0 && this.zPush==0) {
                 this.xPush = this.getX() - this.getLinkedChild().getX();
                 this.zPush = this.getZ() - this.getLinkedChild().getZ();
-                this.setDisplayBlockState(Blocks.FURNACE.defaultBlockState().setValue(FurnaceBlock.FACING, Direction.NORTH).setValue(FurnaceBlock.LIT, Boolean.valueOf(true)));
+                this.setDisplayBlockState(Blocks.FURNACE.defaultBlockState().setValue(FurnaceBlock.FACING, Direction.NORTH).setValue(FurnaceBlock.LIT, Boolean.TRUE));
             }
             if (this.fuel <= 0) {
                 this.xPush = 0.0D;
                 this.zPush = 0.0D;
-                this.setDisplayBlockState(Blocks.FURNACE.defaultBlockState().setValue(FurnaceBlock.FACING, Direction.NORTH).setValue(FurnaceBlock.LIT, Boolean.valueOf(false)));
+                this.setDisplayBlockState(Blocks.FURNACE.defaultBlockState().setValue(FurnaceBlock.FACING, Direction.NORTH).setValue(FurnaceBlock.LIT, Boolean.FALSE));
             }
         }
         //Clientside
@@ -286,25 +262,15 @@ public class CustomMinecartFurnaceEntity extends CustomAbstractMinecartContainer
         }
     }
 
-    public int getFuel(){
-        return fuel;
-    }
-
-    public int fuelBurnTime(){
-        return fuelBurnTime;
-    }
-
     protected void moveAlongTrack(BlockPos pPos, BlockState pState) {
         BaseRailBlock baserailblock = (BaseRailBlock) pState.getBlock();
-        if((baserailblock instanceof PoweredRailBlock && !((PoweredRailBlock) baserailblock).isActivatorRail()) || baserailblock instanceof PoweredDetectorRailBlock weightedState){
+        if((baserailblock instanceof PoweredRailBlock && !((PoweredRailBlock) baserailblock).isActivatorRail()) || baserailblock instanceof PoweredDetectorRailBlock){
             if(!pState.getValue(PoweredRailBlock.POWERED)){
                 this.xPush = 0;
                 this.zPush = 0;
                 this.setDeltaMovement(0,0,0);
             }
         }
-        double d0 = 1.0E-4D;
-        double d1 = 0.001D;
         super.moveAlongTrack(pPos, pState);
         Vec3 vec3 = this.getDeltaMovement();
         double d2 = vec3.horizontalDistanceSqr();
