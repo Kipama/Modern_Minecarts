@@ -12,8 +12,6 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.Vec3i;
 import net.minecraft.nbt.CompoundTag;
-import net.minecraft.resources.ResourceKey;
-import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.tags.BlockTags;
 import net.minecraft.util.Mth;
@@ -44,7 +42,6 @@ import javax.annotation.Nullable;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
-import java.util.stream.Stream;
 
 public abstract class CustomAbstractMinecartEntity extends AbstractMinecart implements  ChainMinecartInterface{
     private boolean jumpedOffSlope = false;
@@ -55,7 +52,6 @@ public abstract class CustomAbstractMinecartEntity extends AbstractMinecart impl
     private int parentIdClient;
     private int childIdClient;
     private boolean flipped;
-    private boolean onRails;
     private int lSteps;
     private double lx;
     private double ly;
@@ -86,9 +82,9 @@ public abstract class CustomAbstractMinecartEntity extends AbstractMinecart impl
         int x = Mth.floor(this.getX());
         int y = Mth.floor(this.getY());
         int z = Mth.floor(this.getZ());
-        BlockState hindBlockState = null;
-        double lateralMomentum = 0.0;
-        Vec3 newVec3 = null;
+        BlockState hindBlockState;
+        double lateralMomentum;
+        Vec3 newVec3;
 
         if(vec3.x>0){
             BlockPos blockpos = new BlockPos(x-1, y-1, z);
@@ -116,7 +112,7 @@ public abstract class CustomAbstractMinecartEntity extends AbstractMinecart impl
         }
 
         BlockPos belowBlock = new BlockPos(x, y-1,z);
-        if(jumpedOffSlope ==false && hindBlockState.is(ModBlocks.SLOPED_RAIL.get()) && this.level().getBlockState(belowBlock).is(Blocks.AIR)){
+        if(!jumpedOffSlope && hindBlockState.is(ModBlocks.SLOPED_RAIL.get()) && this.level().getBlockState(belowBlock).is(Blocks.AIR)){
             //modify vec3 if rail is ramp
             vec3 = newVec3;
 
@@ -167,8 +163,12 @@ public abstract class CustomAbstractMinecartEntity extends AbstractMinecart impl
         double d25 = mc.getMaxSpeedWithRail();
         Vec3 vec3d1 = mc.getDeltaMovement();
         maxSpeed = d25;
-
-
+        if(this.getLinkedParent()!=null) {
+            double distance = getLinkedParent().distanceTo(this) - 1;
+            if (distance > 1.5) {
+                d25=d25*1.2;
+            }
+        }
         vec3d1 = new Vec3(Math.min(Math.max(vec3d1.x(), -d25), d25),0,Math.min(Math.max(vec3d1.z(), -d25), d25));
 
         setDeltaMovement(vec3d1);
@@ -190,8 +190,8 @@ public abstract class CustomAbstractMinecartEntity extends AbstractMinecart impl
 
         if(railMaxSpeed > RailSpeeds.max_ascending_speed) {
             Vec3 vec3 = getDeltaMovement();
-            BlockState frontBlockState = state;
-            BlockPos blockpos = pos;
+            BlockState frontBlockState;
+            BlockPos blockpos;
             if (vec3.x > 0) {
                 blockpos = new BlockPos(pos.getX() + 1, pos.getY(), pos.getZ());
                 frontBlockState = this.level().getBlockState(blockpos);
@@ -218,7 +218,7 @@ public abstract class CustomAbstractMinecartEntity extends AbstractMinecart impl
                         if (frontBlockState.getValue(SHAPE).isAscending()) {
                             railMaxSpeed = ((BaseRailBlock) frontBlockState.getBlock()).getRailMaxSpeed(frontBlockState, this.level(), blockpos, this); //((BaseRailBlock) state.getBlock()).getRailMaxSpeed(frontBlockState, this.level(), pos, this);
                         }
-                    } catch (Exception f) {
+                    } catch (Exception ignored) {
                     }
                 }
             }
@@ -234,6 +234,8 @@ public abstract class CustomAbstractMinecartEntity extends AbstractMinecart impl
             if (getLinkedParent() != null) {
 
                 double distance = getLinkedParent().distanceTo(this) - 1;
+                if(this.isVehicle()){System.out.println(distance);}
+
 
                 if (distance <= 4) {
                     ModernMinecartsPacketHandler.INSTANCE.send(PacketDistributor.TRACKING_ENTITY.with(()->this), new ModernMinecartsPacketHandler.CouplePacket(getLinkedParent().getId(), this.getId()));
@@ -242,28 +244,27 @@ public abstract class CustomAbstractMinecartEntity extends AbstractMinecart impl
                     Vec3 parentVelocity = getLinkedParent().getDeltaMovement();
 
                     if (parentVelocity.length() <0.06) {
+                        this.setDeltaMovement(direction);
                         if(distance>1.1){
-                            this.setDeltaMovement(direction);
                             this.setDeltaMovement(this.getDeltaMovement().multiply(0.06*distance, distance, 0.06*distance));
                         }
                         else if(distance>1.02) {
-                            this.setDeltaMovement(direction);
                             this.setDeltaMovement(this.getDeltaMovement().multiply(0.04, distance, 0.04));
                         }
+                        else if(distance<0.9){
+                            this.setDeltaMovement(this.getDeltaMovement().multiply(-0.08,distance,-0.08));
+                        }
                         else if(distance<0.98){
-                            this.setDeltaMovement(direction);
                             this.setDeltaMovement(this.getDeltaMovement().multiply(-0.04,distance,-0.04));
-
                         }
                         else{
-                            this.setDeltaMovement(direction);
                             this.setDeltaMovement(this.getDeltaMovement().multiply(0, distance, 0));
-
                         }
                     }
                     else {
-                        double newDistance = distance-0.44;
-                        this.setDeltaMovement(direction.multiply(0.99*parentVelocity.length(), parentVelocity.length(), 0.99*parentVelocity.length()));
+                        double newDistance = distance-0.33;
+
+                        this.setDeltaMovement(direction.multiply(parentVelocity.length(), parentVelocity.length(), parentVelocity.length()));
                         this.setDeltaMovement(this.getDeltaMovement().multiply(Math.pow(newDistance,3), newDistance, Math.pow(newDistance,3)));
                     }
                 } else {
@@ -289,7 +290,7 @@ public abstract class CustomAbstractMinecartEntity extends AbstractMinecart impl
             }
 
             if (getLinkedChild() != null){
-                if (getLinkedChild().isRemoved()) {
+                                if (getLinkedChild().isRemoved()) {
 
                     ChainMinecartInterface.unsetParentChild(this, getLinkedChild());
                     refreshTrain(true);
@@ -345,8 +346,8 @@ public abstract class CustomAbstractMinecartEntity extends AbstractMinecart impl
 
             BlockPos blockpos = new BlockPos(k, i, j);
             BlockState blockstate = this.level().getBlockState(blockpos);
-            this.onRails = BaseRailBlock.isRail(blockstate);
-            if (canUseRail() && this.onRails) {
+            boolean onRails = BaseRailBlock.isRail(blockstate);
+            if (canUseRail() && onRails) {
                 this.moveAlongTrack(blockpos, blockstate);
                 if (blockstate.getBlock() instanceof PoweredRailBlock && ((PoweredRailBlock) blockstate.getBlock()).isActivatorRail()) {
                     this.activateMinecart(k, i, j, blockstate.getValue(PoweredRailBlock.POWERED));
@@ -366,7 +367,7 @@ public abstract class CustomAbstractMinecartEntity extends AbstractMinecart impl
                 }
             }
 
-            double d4 = (double)Mth.wrapDegrees(this.getYRot() - this.yRotO);
+            double d4 = Mth.wrapDegrees(this.getYRot() - this.yRotO);
             if (d4 < -170.0D || d4 >= 170.0D) {
                 this.setYRot(this.getYRot() + 180.0F);
                 this.flipped = !this.flipped;
@@ -374,13 +375,12 @@ public abstract class CustomAbstractMinecartEntity extends AbstractMinecart impl
 
             this.setRot(this.getYRot(), this.getXRot());
             AABB box;
-            if (getCollisionHandler() != null) box = getCollisionHandler().getMinecartCollisionBox(this);
-            else                               box = this.getBoundingBox().inflate(0.2F, 0.0D, 0.2F);
+
+            box = getCollisionHandler().getMinecartCollisionBox(this);
             if (canBeRidden() && this.getDeltaMovement().horizontalDistanceSqr() > 0.01D) {
                 List<Entity> list = this.level().getEntities(this, box, EntitySelector.pushableBy(this));
                 if (!list.isEmpty()) {
-                    for(int l = 0; l < list.size(); ++l) {
-                        Entity entity1 = list.get(l);
+                    for (Entity entity1 : list) {
                         if (!(entity1 instanceof Player) && !(entity1 instanceof IronGolem) && !(entity1 instanceof AbstractMinecart) && !this.isVehicle() && !entity1.isPassenger()) {
                             entity1.startRiding(this);
                         } else {
@@ -521,7 +521,7 @@ public abstract class CustomAbstractMinecartEntity extends AbstractMinecart impl
         double d1 = this.getY();
         double d2 = this.getZ();
         Vec3 vec3 = this.getPos(d0, d1, d2);
-        d1 = (double)pPos.getY();
+        d1 = pPos.getY();
         boolean flag = false;
         boolean flag1 = false;
         BaseRailBlock baserailblock = (BaseRailBlock) pState.getBlock();
@@ -576,29 +576,30 @@ public abstract class CustomAbstractMinecartEntity extends AbstractMinecart impl
         Vec3 vec31 = this.getDeltaMovement();
         RailShape railshape = ((BaseRailBlock)pState.getBlock()).getRailDirection(pState, this.level(), pPos, this);
         switch (railshape) {
-            case ASCENDING_EAST:
+            case ASCENDING_EAST -> {
                 this.setDeltaMovement(vec31.add(-d3, 0.0D, 0.0D));
                 ++d1;
-                break;
-            case ASCENDING_WEST:
+            }
+            case ASCENDING_WEST -> {
                 this.setDeltaMovement(vec31.add(d3, 0.0D, 0.0D));
                 ++d1;
-                break;
-            case ASCENDING_NORTH:
+            }
+            case ASCENDING_NORTH -> {
                 this.setDeltaMovement(vec31.add(0.0D, 0.0D, d3));
                 ++d1;
-                break;
-            case ASCENDING_SOUTH:
+            }
+            case ASCENDING_SOUTH -> {
                 this.setDeltaMovement(vec31.add(0.0D, 0.0D, -d3));
                 ++d1;
+            }
         }
 
         vec31 = this.getDeltaMovement();
         Pair<Vec3i, Vec3i> pair = exits(railshape);
         Vec3i vec3i = pair.getFirst();
         Vec3i vec3i1 = pair.getSecond();
-        double d4 = (double)(vec3i1.getX() - vec3i.getX());
-        double d5 = (double)(vec3i1.getZ() - vec3i.getZ());
+        double d4 = (vec3i1.getX() - vec3i.getX());
+        double d5 = (vec3i1.getZ() - vec3i.getZ());
         double d6 = Math.sqrt(d4 * d4 + d5 * d5);
         double d7 = vec31.x * d4 + vec31.z * d5;
         if (d7 < 0.0D) {
@@ -684,7 +685,6 @@ public abstract class CustomAbstractMinecartEntity extends AbstractMinecart impl
             Vec3 vec36 = this.getDeltaMovement();
             double d27 = vec36.horizontalDistance();
             if (d27 > 0.01D) {
-                double d19 = 0.06D;
                 this.setDeltaMovement(vec36.add(vec36.x / d27 * 0.06D, 0.0D, vec36.z / d27 * 0.06D));
             } else {
                 Vec3 vec37 = this.getDeltaMovement();
@@ -746,12 +746,11 @@ public abstract class CustomAbstractMinecartEntity extends AbstractMinecart impl
 
     @Override
     protected void applyNaturalSlowdown() {
-        double d0 = this.isVehicle() ? 0.997D : 0.96D;
-        d0 = 0.96D;
+        double d0 = 0.96D;
         Vec3 vec3 = this.getDeltaMovement();
         vec3 = vec3.multiply(d0, 0.0D, d0);
         if (this.isInWater()) {
-            vec3 = vec3.scale((double)0.95F);
+            vec3 = vec3.scale(0.95F);
         }
 
         this.setDeltaMovement(vec3);
@@ -762,8 +761,8 @@ public abstract class CustomAbstractMinecartEntity extends AbstractMinecart impl
         this.lx = pX;
         this.ly = pY;
         this.lz = pZ;
-        this.lyr = (double)pYaw;
-        this.lxr = (double)pPitch;
+        this.lyr = pYaw;
+        this.lxr = pPitch;
         this.lSteps = pPosRotationIncrements + 2;
         this.setDeltaMovement(this.lxd, this.lyd, this.lzd);
         super.lerpTo(pX,pY,pZ,pYaw,pPitch, pPosRotationIncrements, pTeleport);
@@ -795,7 +794,7 @@ public abstract class CustomAbstractMinecartEntity extends AbstractMinecart impl
             return entries;
         }
         else if(this instanceof ContainerEntity imacontainer){
-            entries.add((ContainerEntity)imacontainer);
+            entries.add(imacontainer);
         }
         return entries;
     }

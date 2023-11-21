@@ -83,6 +83,8 @@ public class ModernMinecarts {
 
             event.accept(ModBlocks.POWERED_DETECTOR_RAIL);
 
+            event.accept(ModBlocks.SLOPED_RAIL);
+
         }
         else if (event.getTabKey() == CreativeModeTabs.INGREDIENTS) {
             event.accept(ModItems.COPPER_UPGRADE_SMITHING_TEMPLATE);
