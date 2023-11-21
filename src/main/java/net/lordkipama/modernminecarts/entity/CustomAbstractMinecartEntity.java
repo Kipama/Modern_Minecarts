@@ -376,7 +376,8 @@ public abstract class CustomAbstractMinecartEntity extends AbstractMinecart impl
             this.setRot(this.getYRot(), this.getXRot());
             AABB box;
 
-            box = getCollisionHandler().getMinecartCollisionBox(this);
+            if (getCollisionHandler() != null) box = getCollisionHandler().getMinecartCollisionBox(this);
+            else                               box = this.getBoundingBox().inflate(0.2F, 0.0D, 0.2F);
             if (canBeRidden() && this.getDeltaMovement().horizontalDistanceSqr() > 0.01D) {
                 List<Entity> list = this.level().getEntities(this, box, EntitySelector.pushableBy(this));
                 if (!list.isEmpty()) {
