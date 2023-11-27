@@ -12,6 +12,8 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.Vec3i;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.resources.ResourceKey;
+import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.tags.BlockTags;
 import net.minecraft.util.Mth;
@@ -238,7 +240,7 @@ public abstract class CustomAbstractMinecartEntity extends AbstractMinecart impl
 
 
                 if (distance <= 4) {
-                    ModernMinecartsPacketHandler.INSTANCE.send(PacketDistributor.TRACKING_ENTITY.with(()->this), new ModernMinecartsPacketHandler.CouplePacket(getLinkedParent().getId(), this.getId()));
+                    //ModernMinecartsPacketHandler.INSTANCE.send(PacketDistributor.TRACKING_ENTITY.with(()->this), new ModernMinecartsPacketHandler.CouplePacket(getLinkedParent().getId(), this.getId()));
 
                     Vec3 direction = getLinkedParent().position().subtract(this.position()).normalize();
                     Vec3 parentVelocity = getLinkedParent().getDeltaMovement();
@@ -376,6 +378,7 @@ public abstract class CustomAbstractMinecartEntity extends AbstractMinecart impl
             this.setRot(this.getYRot(), this.getXRot());
             AABB box;
 
+            //Don't trust IntelliJ! This condition is in fact not always true.
             if (getCollisionHandler() != null) box = getCollisionHandler().getMinecartCollisionBox(this);
             else                               box = this.getBoundingBox().inflate(0.2F, 0.0D, 0.2F);
             if (canBeRidden() && this.getDeltaMovement().horizontalDistanceSqr() > 0.01D) {
