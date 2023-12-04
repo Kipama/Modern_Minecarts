@@ -17,6 +17,9 @@ import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.tags.BlockTags;
 import net.minecraft.util.Mth;
+import net.minecraft.world.damagesource.DamageSource;
+import net.minecraft.world.effect.MobEffectInstance;
+import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntitySelector;
 import net.minecraft.world.entity.EntityType;
@@ -36,16 +39,18 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import net.minecraft.world.level.block.state.properties.EnumProperty;
 import net.minecraft.world.level.block.state.properties.RailShape;
+import net.minecraft.world.level.gameevent.GameEvent;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.network.PacketDistributor;
+import org.jetbrains.annotations.NotNull;
 
 import javax.annotation.Nullable;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
-public abstract class CustomAbstractMinecartEntity extends AbstractMinecart implements  ChainMinecartInterface{
+public abstract class CustomAbstractMinecartEntity extends AbstractMinecart implements ChainMinecartInterface{
     private boolean jumpedOffSlope = false;
     private double maxSpeed = 0.8;
 
@@ -145,7 +150,7 @@ public abstract class CustomAbstractMinecartEntity extends AbstractMinecart impl
 
     @Override
     public double getDragAir() {
-        return 0.9625f; //Original 0.95f
+        return 0.975f; //Original 0.95f
     }
 
     @Override
@@ -236,11 +241,9 @@ public abstract class CustomAbstractMinecartEntity extends AbstractMinecart impl
             if (getLinkedParent() != null) {
 
                 double distance = getLinkedParent().distanceTo(this) - 1;
-                if(this.isVehicle()){System.out.println(distance);}
-
 
                 if (distance <= 4) {
-                    //ModernMinecartsPacketHandler.INSTANCE.send(PacketDistributor.TRACKING_ENTITY.with(()->this), new ModernMinecartsPacketHandler.CouplePacket(getLinkedParent().getId(), this.getId()));
+                    ModernMinecartsPacketHandler.INSTANCE.send(PacketDistributor.TRACKING_ENTITY.with(()->this), new ModernMinecartsPacketHandler.CouplePacket(getLinkedParent().getId(), this.getId()));
 
                     Vec3 direction = getLinkedParent().position().subtract(this.position()).normalize();
                     Vec3 parentVelocity = getLinkedParent().getDeltaMovement();
@@ -292,8 +295,7 @@ public abstract class CustomAbstractMinecartEntity extends AbstractMinecart impl
             }
 
             if (getLinkedChild() != null){
-                                if (getLinkedChild().isRemoved()) {
-
+                if (getLinkedChild().isRemoved()) {
                     ChainMinecartInterface.unsetParentChild(this, getLinkedChild());
                     refreshTrain(true);
                 }
@@ -431,8 +433,7 @@ public abstract class CustomAbstractMinecartEntity extends AbstractMinecart impl
     }
 
 
-    //OVERRIDING INTERFACE
-    @Override
+
     public CustomAbstractMinecartEntity getLinkedParent() {
         Entity entity = null;
 
@@ -457,7 +458,7 @@ public abstract class CustomAbstractMinecartEntity extends AbstractMinecart impl
 
     public int getParentIdClient(){return parentIdClient;}
 
-    @Override
+
     public void setLinkedParent(@Nullable CustomAbstractMinecartEntity parent) {
         if (parent != null) {
             this.parentUUID = parent.getUUID();
@@ -473,12 +474,12 @@ public abstract class CustomAbstractMinecartEntity extends AbstractMinecart impl
         this.startRefreshTrain();
     }
 
-    @Override
+
     public void setLinkedParentClient(int id) {
         this.parentIdClient = id;
     }
 
-    @Override
+
     public CustomAbstractMinecartEntity getLinkedChild() {
         //var entity = this.world instanceof ServerWorld serverWorld && this.childUuid != null ? serverWorld.getEntity(this.childUuid) : this.world.getEntityById(this.childIdClient);
         //return entity instanceof CustomAbstractMinecartEntity abstractMinecartEntity ? abstractMinecartEntity : null;
@@ -501,7 +502,6 @@ public abstract class CustomAbstractMinecartEntity extends AbstractMinecart impl
         else return null;
     }
 
-    @Override
     public void setLinkedChild(@Nullable CustomAbstractMinecartEntity child) {
         if (child != null) {
             this.childUUID = child.getUUID();
@@ -513,7 +513,7 @@ public abstract class CustomAbstractMinecartEntity extends AbstractMinecart impl
         this.startRefreshTrain();
     }
 
-    @Override
+
     public void setLinkedChildClient(int id) {
         this.childIdClient = id;
     }
@@ -816,6 +816,7 @@ public abstract class CustomAbstractMinecartEntity extends AbstractMinecart impl
                 this.getLinkedParent().refreshTrain(true);
         }
 
+
         if(this instanceof CustomMinecartHopperEntity hopperMc){
             hopperMc.getChainInventories();
         }
@@ -831,6 +832,39 @@ public abstract class CustomAbstractMinecartEntity extends AbstractMinecart impl
         }
         else{
             return 0;
+        }
+    }
+
+    @Override
+    public boolean hurt(DamageSource pSource, float pAmount) {
+        if (!this.level().isClientSide && !this.isRemoved()) {
+            if (this.isInvulnerableTo(pSource)) {
+                return false;
+            } else {
+                this.setHurtDir(-this.getHurtDir());
+                this.setHurtTime(10);
+                this.markHurt();
+                this.setDamage(this.getDamage() + pAmount * 10.0F);
+                this.gameEvent(GameEvent.ENTITY_DAMAGE, pSource.getEntity());
+                boolean flag = pSource.getEntity() instanceof Player && ((Player)pSource.getEntity()).getAbilities().instabuild;
+                if(this.getLinkedChild()!=null){
+                    ChainMinecartInterface.unsetParentChild(this, this.getLinkedChild());
+                    level().addFreshEntity(new ItemEntity(level(),this.getX(), this.getY(), this.getZ(), new ItemStack(Items.CHAIN)));
+                }
+
+                if (flag || this.getDamage() > 40.0F) {
+                    this.ejectPassengers();
+                    if (flag && !this.hasCustomName()) {
+                        this.discard();
+                    } else {
+                        this.destroy(pSource);
+                    }
+                }
+
+                return true;
+            }
+        } else {
+            return true;
         }
     }
 }

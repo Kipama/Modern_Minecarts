@@ -5,6 +5,7 @@ import net.lordkipama.modernminecarts.block.ModBlocks;
 import net.lordkipama.modernminecarts.entity.ChainMinecartInterface;
 import net.lordkipama.modernminecarts.entity.CustomAbstractMinecartEntity;
 import net.minecraft.client.Minecraft;
+import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvents;
@@ -14,6 +15,7 @@ import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.ai.behavior.EntityTracker;
+import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.vehicle.AbstractMinecart;
 import net.minecraft.world.inventory.MenuType;
@@ -26,6 +28,7 @@ import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraftforge.client.event.RenderLivingEvent;
 import net.minecraftforge.client.event.ScreenEvent;
+import net.minecraftforge.event.entity.living.LivingHurtEvent;
 import net.minecraftforge.event.entity.player.PlayerEvent;
 import net.minecraftforge.event.entity.player.PlayerInteractEvent;
 import net.minecraftforge.eventbus.api.Event;
@@ -45,7 +48,6 @@ public class ModEvents {
         public static void PlayerInteractEvent(PlayerInteractEvent.RightClickBlock event) {
                 BlockState pBlockstate =  event.getLevel().getBlockState(event.getPos());
                 Block targetedBlock = pBlockstate.getBlock();
-
                 //Wax/Deage Rail
                 if (targetedBlock.equals(ModBlocks.COPPER_RAIL.get()) || targetedBlock.equals(ModBlocks.EXPOSED_COPPER_RAIL.get()) || targetedBlock.equals(ModBlocks.WEATHERED_COPPER_RAIL.get()) || targetedBlock.equals(ModBlocks.OXIDIZED_COPPER_RAIL.get())) {
                     if (event.getItemStack().getItem() == Items.HONEYCOMB || event.getItemStack().is(ItemTags.AXES)) {
@@ -76,7 +78,6 @@ public class ModEvents {
                     }
                 }
         }
-
 
         @SubscribeEvent
         public static void onInteractEntity(PlayerInteractEvent.EntityInteract event) {
@@ -130,23 +131,51 @@ public class ModEvents {
                         if (event.getLevel() instanceof ServerLevel server) {
                             CompoundTag nbt = stack.getOrCreateTag();
 
-                            if (nbt.contains("ParentEntity") && !cart.getUUID().equals(nbt.getUUID("ParentEntity"))) {
-                                if (server.getEntity(nbt.getUUID("ParentEntity")) instanceof CustomAbstractMinecartEntity parent) {
-                                    Set<ChainMinecartInterface> train = new HashSet<>();
+                            if (nbt.contains("ParentEntity")) {
+                                if(nbt.getUUID("ParentEntity")==cart.getUUID()){
+                                }
+                                else if (server.getEntity(nbt.getUUID("ParentEntity")) instanceof CustomAbstractMinecartEntity parent) {
+                                    Set<CustomAbstractMinecartEntity> train = new HashSet<>();
                                     train.add(parent);
 
-                                    ChainMinecartInterface nextParent;
-                                    while ((nextParent = parent.getLinkedParent()) instanceof ChainMinecartInterface && !train.contains(nextParent)) {
+                                    CustomAbstractMinecartEntity nextParent;
+                                    while ((nextParent = parent.getLinkedParent()) instanceof CustomAbstractMinecartEntity && !train.contains(nextParent)) {
                                         train.add(nextParent);
                                     }
 
-                                    if (train.contains(cart) || parent.getLinkedChild() != null) {
-                                        // player.sendMessage(Text.translatable(MinecartTweaks.MOD_ID + ".cant_link_to_engine").formatted(Formatting.RED), true);
-                                    } else {
-                                        if (cart.getLinkedParent() != null) {
-                                            ChainMinecartInterface.unsetParentChild(cart.getLinkedParent(), cart);
+                                    if (train.contains(cart)) {
+                                        if(parent.getLinkedParent()==cart){
+                                            if(cart.getLinkedParent()!=null){
+                                                BlockPos pos = cart.getLinkedParent().blockPosition();
+                                                event.getLevel().addFreshEntity(new ItemEntity(event.getLevel(), pos.getX(), pos.getY(), pos.getZ(), new ItemStack(Items.CHAIN)));
+                                                ChainMinecartInterface.unsetParentChild(cart.getLinkedParent(),cart);
+                                            }
+                                            if(parent.getLinkedChild()!=null){
+                                                BlockPos pos = parent.getLinkedChild().blockPosition();
+                                                event.getLevel().addFreshEntity(new ItemEntity(event.getLevel(), pos.getX(), pos.getY(), pos.getZ(), new ItemStack(Items.CHAIN)));
+                                                ChainMinecartInterface.unsetParentChild(parent, parent.getLinkedChild());
+                                            }
+
+                                            ChainMinecartInterface.unsetParentChild(cart,parent);
+                                            ChainMinecartInterface.setParentChild(parent, cart);
                                         }
-                                        ChainMinecartInterface.setParentChild(parent, cart);
+                                    }
+                                    else {
+                                        if(cart.getLinkedParent()!=parent) {
+                                            if (cart.getLinkedParent() != null) {
+                                                ChainMinecartInterface.unsetParentChild(cart.getLinkedParent(), cart);
+                                                BlockPos pos = event.getPos();
+                                                event.getLevel().addFreshEntity(new ItemEntity(event.getLevel(), pos.getX(), pos.getY(), pos.getZ(), new ItemStack(Items.CHAIN)));
+                                            }
+                                            if (parent.getLinkedChild() != null) {
+                                                BlockPos pos = parent.getLinkedChild().blockPosition();
+                                                event.getLevel().addFreshEntity(new ItemEntity(event.getLevel(), pos.getX(), pos.getY(), pos.getZ(), new ItemStack(Items.CHAIN)));
+                                                ChainMinecartInterface.unsetParentChild(parent, parent.getLinkedChild());
+                                            }
+                                            if (!player.isCreative())
+                                                stack.shrink(1);
+                                            ChainMinecartInterface.setParentChild(parent, cart);
+                                        }
                                     }
                                 } else {
                                     nbt.remove("ParentEntity");
@@ -158,8 +187,7 @@ public class ModEvents {
 
                                 event.getLevel().playSound(null, entity.getX(), entity.getY(), entity.getZ(), SoundEvents.CHAIN_PLACE, SoundSource.NEUTRAL, 1F, 1F);
 
-                                if (!player.isCreative())
-                                    stack.shrink(1);
+
 
                                 nbt.remove("ParentEntity");
 
