@@ -118,8 +118,14 @@ public class CustomMinecartFurnaceEntity extends CustomAbstractMinecartContainer
                 boolean consumeFuel = (((!(block instanceof PoweredRailBlock) || ((PoweredRailBlock) block).isActivatorRail()) && !(block instanceof PoweredDetectorRailBlock)) || level().getBlockState(this.getOnPos()).getValue(PoweredRailBlock.POWERED))
                         && level().getBlockState(this.getOnPos()).is(BlockTags.RAILS)
                         && this.getLinkedParent() == null;
+
+
                 if(consumeFuel) {
                     numBurningFurni = tryBurnFuel();
+                }
+                ItemStack fuelSlot = this.getSlot(0).get();
+                if(AbstractFurnaceBlockEntity.isFuel(fuelSlot) && fuelSlot.getCount()<fuelSlot.getMaxStackSize()){
+                    fillFuelSlot(fuelSlot);
                 }
             }
             if (this.fuel > 0 && this.getLinkedChild()!=null && this.xPush==0 && this.zPush==0) {
@@ -157,10 +163,17 @@ public class CustomMinecartFurnaceEntity extends CustomAbstractMinecartContainer
         }
         else if (AbstractFurnaceBlockEntity.isFuel(fuelSlot)) {
             this.getNumberOfChildren();
-            fillFuelSlot(fuelSlot);
+            ItemStack tempFuelSlot = fuelSlot.copy();
+
+
             fuel = ForgeHooks.getBurnTime(fuelSlot, RecipeType.SMELTING);
             fuelBurnTime = fuel;
             fuelSlot.setCount(fuelSlot.getCount() - 1);
+            if(fuelSlot.getCount()<1){
+                fuelSlot = fillFuelSlot(tempFuelSlot);
+                fuelSlot.setCount(fuelSlot.getCount() - 1);
+            }
+
             this.getSlot(0).set(fuelSlot);
             if(getLinkedChild() instanceof CustomMinecartFurnaceEntity childFurnace){
                 return childFurnace.tryBurnFuel() + 1;
@@ -170,7 +183,7 @@ public class CustomMinecartFurnaceEntity extends CustomAbstractMinecartContainer
         return 1;
     }
 
-    public void fillFuelSlot(ItemStack fuelSlot) {
+    public ItemStack fillFuelSlot(ItemStack fuelSlot) {
         if (otherContainers == null) {
             getChainInventories();
         }
@@ -195,6 +208,7 @@ public class CustomMinecartFurnaceEntity extends CustomAbstractMinecartContainer
                 }
             }
         }
+        return fuelSlot;
     }
 
     public void replaceEmptyBucket(){
