@@ -12,14 +12,10 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.Vec3i;
 import net.minecraft.nbt.CompoundTag;
-import net.minecraft.resources.ResourceKey;
-import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.tags.BlockTags;
 import net.minecraft.util.Mth;
 import net.minecraft.world.damagesource.DamageSource;
-import net.minecraft.world.effect.MobEffectInstance;
-import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntitySelector;
 import net.minecraft.world.entity.EntityType;
@@ -43,7 +39,6 @@ import net.minecraft.world.level.gameevent.GameEvent;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.network.PacketDistributor;
-import org.jetbrains.annotations.NotNull;
 
 import javax.annotation.Nullable;
 import java.util.List;
@@ -190,6 +185,9 @@ public abstract class CustomAbstractMinecartEntity extends AbstractMinecart impl
         if (!state.is(BlockTags.RAILS)) return getMaxSpeed();
 
         float railMaxSpeed = ((BaseRailBlock)state.getBlock()).getRailMaxSpeed(state, this.level(), pos, this);
+        if(getLinkedParent()!=null){
+            railMaxSpeed= 0.8F;
+        }
 
         if(this.isInWater() && !state.is(Blocks.POWERED_RAIL)){
             railMaxSpeed = railMaxSpeed/2;
@@ -237,10 +235,12 @@ public abstract class CustomAbstractMinecartEntity extends AbstractMinecart impl
     @Override
     public void tick() {
         if (!this.level().isClientSide()) {
-
             if (getLinkedParent() != null) {
-
                 double distance = getLinkedParent().distanceTo(this) - 1;
+
+                if(this.isVehicle()){
+                    System.out.println(distance);
+                }
 
                 if (distance <= 4) {
                     ModernMinecartsPacketHandler.INSTANCE.send(PacketDistributor.TRACKING_ENTITY.with(()->this), new ModernMinecartsPacketHandler.CouplePacket(getLinkedParent().getId(), this.getId()));
@@ -257,7 +257,7 @@ public abstract class CustomAbstractMinecartEntity extends AbstractMinecart impl
                             this.setDeltaMovement(this.getDeltaMovement().multiply(0.04, distance, 0.04));
                         }
                         else if(distance<0.9){
-                            this.setDeltaMovement(this.getDeltaMovement().multiply(-0.08,distance,-0.08));
+                            this.setDeltaMovement(this.getDeltaMovement().multiply(-0.3,distance,-0.15));
                         }
                         else if(distance<0.98){
                             this.setDeltaMovement(this.getDeltaMovement().multiply(-0.04,distance,-0.04));
@@ -270,7 +270,7 @@ public abstract class CustomAbstractMinecartEntity extends AbstractMinecart impl
                         double newDistance = distance-0.33;
 
                         this.setDeltaMovement(direction.multiply(parentVelocity.length(), parentVelocity.length(), parentVelocity.length()));
-                        this.setDeltaMovement(this.getDeltaMovement().multiply(Math.pow(newDistance,3), newDistance, Math.pow(newDistance,3)));
+                        this.setDeltaMovement(this.getDeltaMovement().multiply(Math.pow(newDistance,2), newDistance, Math.pow(newDistance,2)));
                     }
                 } else {
                     ChainMinecartInterface.unsetParentChild(this.getLinkedParent(), this);

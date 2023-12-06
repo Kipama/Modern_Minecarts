@@ -1,11 +1,11 @@
 package net.lordkipama.modernminecarts.block.Custom;
 
 import net.lordkipama.modernminecarts.RailSpeeds;
+import net.lordkipama.modernminecarts.block.ModBlocks;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.world.entity.vehicle.AbstractMinecart;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.Items;
 import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
@@ -19,12 +19,6 @@ import net.minecraft.world.level.material.FluidState;
 import net.minecraft.world.level.material.Fluids;
 
 public class SlopedRailBlock extends BaseRailBlock {
-    /* Ascending Rail Shapes:
-   ASCENDING_EAST("ascending_east"),
-   ASCENDING_WEST("ascending_west"),
-   ASCENDING_NORTH("ascending_north"),
-   ASCENDING_SOUTH("ascending_south"),
-    * */
     public static final DirectionProperty FACING = BlockStateProperties.HORIZONTAL_FACING;
     public static final EnumProperty<RailShape> SHAPE = BlockStateProperties.RAIL_SHAPE;
     public static final EnumProperty<RailShape> CONST_SHAPE = EnumProperty.create("const_shape", RailShape.class);
@@ -158,6 +152,6 @@ public class SlopedRailBlock extends BaseRailBlock {
 
     @Override
     public ItemStack getCloneItemStack(BlockGetter pLevel, BlockPos pPos, BlockState pState) {
-        return new ItemStack(Items.RAIL);
+        return new ItemStack(ModBlocks.SLOPED_RAIL.get());
     }
 }
