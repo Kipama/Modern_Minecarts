@@ -172,14 +172,14 @@ public class CustomMinecartHopperEntity extends CustomAbstractMinecartContainerE
         }
         ItemStack currentStack = this.getItem(4);
         if (currentStack.isEmpty() && otherContainers != null) {
-            //Find empty slot in train
+            //Find full slot in train
             for (ContainerEntity currentContainer : otherContainers) {
                 for (int j = 0; j < 27; j++) {
                     if (currentContainer.getItem(j).getCount() == currentContainer.getItem(j).getMaxStackSize()) {
                         this.setChestVehicleItem(4, currentContainer.getItem(j));
                         currentContainer.setItem(j, ItemStack.EMPTY);
                         currentContainer.setChanged();
-                        break;
+                        return;
                     }
                 }
             }
