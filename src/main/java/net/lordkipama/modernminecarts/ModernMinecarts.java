@@ -32,14 +32,9 @@ import org.apache.logging.log4j.Logger;
 import net.lordkipama.modernminecarts.Proxy.ClientProxy;
 import net.lordkipama.modernminecarts.Proxy.ServerProxy;
 
-// The value here should match an entry in the META-INF/mods.toml file
 @Mod(net.lordkipama.modernminecarts.ModernMinecarts.MOD_ID)
 public class ModernMinecarts {
-    // Define mod id in a common place for everything to reference
     public static final String MOD_ID = "modernminecarts";
-    // Directly reference a slf4j logger
-
-    public static Logger LOGGER = LogManager.getLogger();
     public static IProxy PROXY = DistExecutor.runForDist(() -> ClientProxy::new, () -> ServerProxy::new);
     public ModernMinecarts() {
         IEventBus modEventBus = FMLJavaModLoadingContext.get().getModEventBus();
