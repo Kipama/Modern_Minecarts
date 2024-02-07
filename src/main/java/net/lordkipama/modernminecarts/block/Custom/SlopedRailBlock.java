@@ -23,7 +23,6 @@ public class SlopedRailBlock extends BaseRailBlock {
     public static final EnumProperty<RailShape> SHAPE = BlockStateProperties.RAIL_SHAPE;
     public static final EnumProperty<RailShape> CONST_SHAPE = EnumProperty.create("const_shape", RailShape.class);
 
-    public BlockState currentBlockState = null;
 
 
     public SlopedRailBlock(BlockBehaviour.Properties p_55395_) {
