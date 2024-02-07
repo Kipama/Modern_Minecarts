@@ -190,7 +190,7 @@ public class CustomMinecartFurnaceEntity extends CustomAbstractMinecartContainer
         //Find same item in train
         if(otherContainers!=null) {
             for (ContainerEntity currentContainer : otherContainers) {
-                for (int j = 0; j < 27; j++) {
+                for (int j = 0; j < currentContainer.getContainerSize(); j++) {
                     if (fuelSlot.getItem() == currentContainer.getItem(j).getItem()) {
                         if (fuelSlot.getCount() + currentContainer.getItem(j).getCount() <= fuelSlot.getMaxStackSize()) {
                             fuelSlot.setCount(fuelSlot.getCount() + currentContainer.getItem(j).copy().getCount());

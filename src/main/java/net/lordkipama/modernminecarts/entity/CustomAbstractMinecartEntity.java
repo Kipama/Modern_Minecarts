@@ -238,9 +238,6 @@ public abstract class CustomAbstractMinecartEntity extends AbstractMinecart impl
             if (getLinkedParent() != null) {
                 double distance = getLinkedParent().distanceTo(this) - 1;
 
-                if(this.isVehicle()){
-                    System.out.println(distance);
-                }
 
                 if (distance <= 4) {
                     ModernMinecartsPacketHandler.INSTANCE.send(PacketDistributor.TRACKING_ENTITY.with(()->this), new ModernMinecartsPacketHandler.CouplePacket(getLinkedParent().getId(), this.getId()));
@@ -305,7 +302,7 @@ public abstract class CustomAbstractMinecartEntity extends AbstractMinecart impl
                 childUUID=null;
             }
         }
-        if(this.getDeltaMovement().length()<0.004){
+        if(this.getDeltaMovement().length()<0.007){
             this.setDeltaMovement(0,this.getDeltaMovement().y,0);
         }
         //Super's tick modified
@@ -798,6 +795,7 @@ public abstract class CustomAbstractMinecartEntity extends AbstractMinecart impl
             return entries;
         }
         else if(this instanceof ContainerEntity imacontainer){
+            entries.add(imacontainer);
             entries.add(imacontainer);
         }
         return entries;
