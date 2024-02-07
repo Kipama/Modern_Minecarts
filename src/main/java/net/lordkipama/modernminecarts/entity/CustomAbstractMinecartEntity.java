@@ -747,7 +747,7 @@ public abstract class CustomAbstractMinecartEntity extends AbstractMinecart impl
 
     @Override
     protected void applyNaturalSlowdown() {
-        double d0 = this.isVehicle() ? 0.997D : 0.96D;
+        double d0 =0.997D;
         Vec3 vec3 = this.getDeltaMovement();
         vec3 = vec3.multiply(d0, 0.0D, d0);
         if (this.isInWater()) {
