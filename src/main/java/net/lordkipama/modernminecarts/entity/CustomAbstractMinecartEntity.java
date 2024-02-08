@@ -302,7 +302,7 @@ public abstract class CustomAbstractMinecartEntity extends AbstractMinecart impl
                 childUUID=null;
             }
         }
-        if(this.getDeltaMovement().length()<0.007){
+        if(this.getDeltaMovement().length()<0.005){
             this.setDeltaMovement(0,this.getDeltaMovement().y,0);
         }
         //Super's tick modified
