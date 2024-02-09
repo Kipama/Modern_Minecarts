@@ -45,6 +45,24 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
+//Parts of this code is based on the work of Cammie.
+//Namely everything related to ChainMinecartInterface, except for connecting of chained inventories
+/*Copyright (C) 2022 Cammie
+
+Permission is hereby granted, free of charge, to any person obtaining a copy of this software and
+associated documentation files (the "Software"), to use, copy, modify, and/or merge copies of the
+Software, and to permit persons to whom the Software is furnished to do so, subject to the following
+restrictions:
+
+ 1) The above copyright notice and this permission notice shall be included in all copies or substantial
+    portions of the Software.
+ 2) You include attribution to the copyright holder(s) in public display of any project that uses any
+    portion of the Software.
+ 3) You may not publish or distribute substantial portions of the Software in its compiled or uncompiled
+    forms without prior permission from the copyright holder.
+ 4) The Software does not make up a substantial portion of your own projects.
+*/
+
 public abstract class CustomAbstractMinecartEntity extends AbstractMinecart implements ChainMinecartInterface{
     private boolean jumpedOffSlope = false;
     private double maxSpeed = 0.8;
@@ -287,9 +305,7 @@ public abstract class CustomAbstractMinecartEntity extends AbstractMinecart impl
                     parentUUID=null;
                 }
             }
-            else {
-                // MinecartHelper.shouldSlowDown((CustomAbstractMinecartEntity) (Object) this, world);
-            }
+
 
             if (getLinkedChild() != null){
                 if (getLinkedChild().isRemoved()) {
@@ -302,7 +318,7 @@ public abstract class CustomAbstractMinecartEntity extends AbstractMinecart impl
                 childUUID=null;
             }
         }
-        if(this.getDeltaMovement().length()<0.007){
+        if(this.getDeltaMovement().length()<0.005){
             this.setDeltaMovement(0,this.getDeltaMovement().y,0);
         }
         //Super's tick modified
@@ -535,37 +551,44 @@ public abstract class CustomAbstractMinecartEntity extends AbstractMinecart impl
             flag1 = !flag;
             //Add "start boost"
             Vec3 deltaMovementSpeed = this.getDeltaMovement();
-            if (weightedState.getDirInverted(pState)) {
-                if (weightedState.getRailShape(pState).equals(RailShape.NORTH_SOUTH) || weightedState.getRailShape(pState).equals(RailShape.ASCENDING_NORTH) || weightedState.getRailShape(pState).equals(RailShape.ASCENDING_SOUTH)) {
-                    if (deltaMovementSpeed.z < -0.2) {
-                        this.setDeltaMovement(new Vec3(deltaMovementSpeed.x(), deltaMovementSpeed.y(), deltaMovementSpeed.z() / 8 + 0.1));
-                    } else if (flag) {
-                        this.setDeltaMovement(new Vec3(deltaMovementSpeed.x(), deltaMovementSpeed.y(), deltaMovementSpeed.z() + 0.02));
+            if(this.getLinkedParent()==null) {
+
+                if (weightedState.getDirInverted(pState)) {
+                    if (weightedState.getRailShape(pState).equals(RailShape.NORTH_SOUTH) || weightedState.getRailShape(pState).equals(RailShape.ASCENDING_NORTH) || weightedState.getRailShape(pState).equals(RailShape.ASCENDING_SOUTH)) {
+                        if (deltaMovementSpeed.z < -0.2) {
+                            this.setDeltaMovement(new Vec3(deltaMovementSpeed.x(), deltaMovementSpeed.y(), deltaMovementSpeed.z() / 8 + 0.1));
+                        } else if (flag) {
+                            this.setDeltaMovement(new Vec3(deltaMovementSpeed.x(), deltaMovementSpeed.y(), deltaMovementSpeed.z() + 0.02));
+                        } else {
+                            this.setDeltaMovement(new Vec3(deltaMovementSpeed.x(), deltaMovementSpeed.y(), deltaMovementSpeed.z() / 7));
+                        }
+                    } else {
+                        if (deltaMovementSpeed.x > 0.2) {
+                            this.setDeltaMovement(new Vec3(deltaMovementSpeed.x() / 8 - 0.1, deltaMovementSpeed.y(), deltaMovementSpeed.z()));
+                        } else if (flag) {
+                            this.setDeltaMovement(new Vec3(deltaMovementSpeed.x() - 0.02, deltaMovementSpeed.y(), deltaMovementSpeed.z()));
+                        } else {
+                            this.setDeltaMovement(new Vec3(deltaMovementSpeed.x() / 7, deltaMovementSpeed.y(), deltaMovementSpeed.z()));
+                        }
                     }
-                    else {this.setDeltaMovement(new Vec3(deltaMovementSpeed.x(), deltaMovementSpeed.y(), deltaMovementSpeed.z() / 7));}
                 } else {
-                    if (deltaMovementSpeed.x > 0.2) {
-                        this.setDeltaMovement(new Vec3(deltaMovementSpeed.x() / 8 - 0.1, deltaMovementSpeed.y(), deltaMovementSpeed.z()));
-                    } else if (flag) {
-                        this.setDeltaMovement(new Vec3(deltaMovementSpeed.x() - 0.02, deltaMovementSpeed.y(), deltaMovementSpeed.z()));
+                    if (weightedState.getRailShape(pState).equals(RailShape.NORTH_SOUTH) || weightedState.getRailShape(pState).equals(RailShape.ASCENDING_NORTH) || weightedState.getRailShape(pState).equals(RailShape.ASCENDING_SOUTH)) {
+                        if (deltaMovementSpeed.z > 0.2) {
+                            this.setDeltaMovement(new Vec3(deltaMovementSpeed.x(), deltaMovementSpeed.y(), deltaMovementSpeed.z() / 8 - 0.1));
+                        } else if (flag) {
+                            this.setDeltaMovement(new Vec3(deltaMovementSpeed.x(), deltaMovementSpeed.y(), deltaMovementSpeed.z() - 0.02));
+                        } else {
+                            this.setDeltaMovement(new Vec3(deltaMovementSpeed.x(), deltaMovementSpeed.y(), deltaMovementSpeed.z() / 7));
+                        }
+                    } else {
+                        if (deltaMovementSpeed.x < -0.2) {
+                            this.setDeltaMovement(new Vec3(deltaMovementSpeed.x() / 8 + 0.1, deltaMovementSpeed.y(), deltaMovementSpeed.z()));
+                        } else if (flag) {
+                            this.setDeltaMovement(new Vec3(deltaMovementSpeed.x() + 0.02, deltaMovementSpeed.y(), deltaMovementSpeed.z()));
+                        } else {
+                            this.setDeltaMovement(new Vec3(deltaMovementSpeed.x() / 7, deltaMovementSpeed.y(), deltaMovementSpeed.z()));
+                        }
                     }
-                    else {this.setDeltaMovement(new Vec3(deltaMovementSpeed.x() / 7, deltaMovementSpeed.y(), deltaMovementSpeed.z()));}
-                }
-            } else {
-                if (weightedState.getRailShape(pState).equals(RailShape.NORTH_SOUTH) || weightedState.getRailShape(pState).equals(RailShape.ASCENDING_NORTH) || weightedState.getRailShape(pState).equals(RailShape.ASCENDING_SOUTH)) {
-                    if (deltaMovementSpeed.z > 0.2) {
-                        this.setDeltaMovement(new Vec3(deltaMovementSpeed.x(), deltaMovementSpeed.y(), deltaMovementSpeed.z() / 8 - 0.1));
-                    } else if (flag) {
-                        this.setDeltaMovement(new Vec3(deltaMovementSpeed.x(), deltaMovementSpeed.y(), deltaMovementSpeed.z() - 0.02));
-                    }
-                    else {this.setDeltaMovement(new Vec3(deltaMovementSpeed.x(), deltaMovementSpeed.y(), deltaMovementSpeed.z() / 7));}
-                } else {
-                    if (deltaMovementSpeed.x < -0.2) {
-                        this.setDeltaMovement(new Vec3(deltaMovementSpeed.x() / 8 + 0.1, deltaMovementSpeed.y(), deltaMovementSpeed.z()));
-                    } else if (flag) {
-                        this.setDeltaMovement(new Vec3(deltaMovementSpeed.x() + 0.02, deltaMovementSpeed.y(), deltaMovementSpeed.z()));
-                    }
-                    else{this.setDeltaMovement(new Vec3(deltaMovementSpeed.x() / 7, deltaMovementSpeed.y(), deltaMovementSpeed.z()));}
                 }
             }
         }
@@ -747,7 +770,7 @@ public abstract class CustomAbstractMinecartEntity extends AbstractMinecart impl
 
     @Override
     protected void applyNaturalSlowdown() {
-        double d0 = this.isVehicle() ? 0.997D : 0.96D;
+        double d0 =0.997D;
         Vec3 vec3 = this.getDeltaMovement();
         vec3 = vec3.multiply(d0, 0.0D, d0);
         if (this.isInWater()) {
