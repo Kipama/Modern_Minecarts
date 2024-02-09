@@ -6,22 +6,23 @@ It once again makes them a viable method of transport for players and items, whi
 
 Features
 ---
-### Faster Rails: 
+### Copper Rails: 
 
-Constructed from Copper, these rails propel minecarts at double the speed of powered rails. 
+These rails are twice as fast as powered rails. 
 
-However, beware of oxidation, which causes them to lose power over time. 
+However, oxidation causes them to become slower over time. 
 
-Craft them using the new smithing template discovered in mineshafts and occasionally in villages.
+They are crafted using a copper smithing template discovered in mineshafts and villages.
 
 ---
-### Connecting Minecarts:
+### Chaining Minecarts:
 
 Link minecarts together using chains to transport multiple entities or large quantities of items simultaneously. 
 
-Connects hopper minecarts to chest minecarts to join their inventories and load and unload chest minecarts automatically. 
+Connected hopper minecarts and chest minecarts join their inventories making loading and unloading trains easier. 
 
-Furnace minecarts can pull chained minecarts, and can draw fuel directly from attached minecarts' inventories.
+Furnace minecarts can pull chained minecarts, and draw fuel directly from attached minecarts' inventories.
+They also have a new UI and can burn any kind of fuel.
 
 ---
 ### Other Rail blocks:
@@ -35,4 +36,6 @@ Powered Detector Rail: Merges the functionalities of powered and detector rails.
 
 ---
 ### Smaller Changes:
--Removed that minecarts with players are 25% slower than empty ones. (Why is this a feature?)
+- Doubled results of the powered rail crafting recipe from 6 to 12 rails.
+- Reduced air drag on minecarts to allow for further jumps
+
