@@ -45,6 +45,24 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
+//Parts of this code is based on the work of Cammie.
+//Namely everything related to ChainMinecartInterface, except for connecting of chained inventories
+/*Copyright (C) 2022 Cammie
+
+Permission is hereby granted, free of charge, to any person obtaining a copy of this software and
+associated documentation files (the "Software"), to use, copy, modify, and/or merge copies of the
+Software, and to permit persons to whom the Software is furnished to do so, subject to the following
+restrictions:
+
+ 1) The above copyright notice and this permission notice shall be included in all copies or substantial
+    portions of the Software.
+ 2) You include attribution to the copyright holder(s) in public display of any project that uses any
+    portion of the Software.
+ 3) You may not publish or distribute substantial portions of the Software in its compiled or uncompiled
+    forms without prior permission from the copyright holder.
+ 4) The Software does not make up a substantial portion of your own projects.
+*/
+
 public abstract class CustomAbstractMinecartEntity extends AbstractMinecart implements ChainMinecartInterface{
     private boolean jumpedOffSlope = false;
     private double maxSpeed = 0.8;
@@ -287,9 +305,7 @@ public abstract class CustomAbstractMinecartEntity extends AbstractMinecart impl
                     parentUUID=null;
                 }
             }
-            else {
-                // MinecartHelper.shouldSlowDown((CustomAbstractMinecartEntity) (Object) this, world);
-            }
+
 
             if (getLinkedChild() != null){
                 if (getLinkedChild().isRemoved()) {

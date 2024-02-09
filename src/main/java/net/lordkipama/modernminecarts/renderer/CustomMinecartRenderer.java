@@ -15,15 +15,10 @@ import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.block.BlockRenderDispatcher;
 import net.minecraft.client.renderer.entity.EntityRenderer;
 import net.minecraft.client.renderer.entity.EntityRendererProvider;
-import net.minecraft.client.renderer.entity.layers.RenderLayer;
 import net.minecraft.client.renderer.texture.OverlayTexture;
-import net.minecraft.core.Rotations;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Mth;
-import net.minecraft.world.entity.Entity;
-import net.minecraft.world.entity.vehicle.AbstractMinecart;
 import net.minecraft.world.level.block.RenderShape;
-import net.minecraft.world.level.block.Rotation;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.api.distmarker.Dist;
@@ -32,9 +27,23 @@ import org.jetbrains.annotations.NotNull;
 import org.joml.Matrix3f;
 import org.joml.Matrix4f;
 
-import java.nio.ByteBuffer;
+//The following code is based on the work of Cammie. The only changes have been porting it from fabric to forge.
+/*Copyright (C) 2022 Cammie
 
+Permission is hereby granted, free of charge, to any person obtaining a copy of this software and
+associated documentation files (the "Software"), to use, copy, modify, and/or merge copies of the
+Software, and to permit persons to whom the Software is furnished to do so, subject to the following
+restrictions:
 
+ 1) The above copyright notice and this permission notice shall be included in all copies or substantial
+    portions of the Software.
+ 2) You include attribution to the copyright holder(s) in public display of any project that uses any
+    portion of the Software.
+ 3) You may not publish or distribute substantial portions of the Software in its compiled or uncompiled
+    forms without prior permission from the copyright holder.
+ 4) The Software does not make up a substantial portion of your own projects.
+*
+* */
 @OnlyIn(Dist.CLIENT)
 public class CustomMinecartRenderer<T extends CustomAbstractMinecartEntity> extends EntityRenderer<T> {
     private static final ResourceLocation MINECART_LOCATION = new ResourceLocation("textures/entity/minecart.png");
