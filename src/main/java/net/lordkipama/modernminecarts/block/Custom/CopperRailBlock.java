@@ -1,6 +1,6 @@
 package net.lordkipama.modernminecarts.block.Custom;
 
-import net.lordkipama.modernminecarts.RailSpeeds;
+import net.lordkipama.modernminecarts.ModernMinecartsConfig;
 import net.lordkipama.modernminecarts.block.ModBlocks;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
@@ -19,7 +19,6 @@ import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.PoweredRailBlock;
 import net.minecraft.world.level.block.state.BlockState;
-import net.minecraft.world.level.block.state.properties.RailShape;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.advancements.CriteriaTriggers;
 
@@ -127,20 +126,20 @@ public class CopperRailBlock extends PoweredRailBlock implements WeatheringRailB
         float finalSpeed = 0.4f;
 
         if(currentAge=="UNAFFECTED"){
-            finalSpeed = RailSpeeds.fastest_speed;
+            finalSpeed = ModernMinecartsConfig.copper_speed;
         }
         else if(currentAge=="EXPOSED"){
-            finalSpeed = RailSpeeds.exposed_copper_speed;
+            finalSpeed = ModernMinecartsConfig.exposed_copper_speed;
         }
         else if(currentAge=="WEATHERED"){
-            finalSpeed = RailSpeeds.weathered_copper_speed;
+            finalSpeed = ModernMinecartsConfig.weathered_copper_speed;
         }
         else if(currentAge=="OXIDIZED"){
-            finalSpeed = RailSpeeds.oxidized_copper_speed;
+            finalSpeed = ModernMinecartsConfig.oxidized_copper_speed;
         }
 
-        if(getRailDirection(state, level, pos, null).isAscending() && finalSpeed>= RailSpeeds.max_ascending_speed){
-            return RailSpeeds.max_ascending_speed;
+        if(getRailDirection(state, level, pos, null).isAscending() && finalSpeed>= ModernMinecartsConfig.max_ascending_speed){
+            return ModernMinecartsConfig.max_ascending_speed;
         }
 
         return finalSpeed;

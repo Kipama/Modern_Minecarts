@@ -1,18 +1,10 @@
 package net.lordkipama.modernminecarts.entity;
 
-import net.lordkipama.modernminecarts.Item.ModItems;
 import net.lordkipama.modernminecarts.Item.VanillaItems;
-import net.lordkipama.modernminecarts.RailSpeeds;
-import net.lordkipama.modernminecarts.block.Custom.SlopedRailBlock;
-import net.lordkipama.modernminecarts.block.ModBlocks;
 import net.minecraft.core.BlockPos;
-import net.minecraft.tags.BlockTags;
-import net.minecraft.tags.TagKey;
-import net.minecraft.util.Mth;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.EntityType;
-import net.minecraft.world.entity.MoverType;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.vehicle.AbstractMinecart;
@@ -20,13 +12,7 @@ import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.Level;
-import net.minecraft.world.level.block.BaseRailBlock;
-import net.minecraft.world.level.block.Blocks;
-import net.minecraft.world.level.block.state.BlockState;
-import net.minecraft.world.level.block.state.properties.BlockStateProperties;
-import net.minecraft.world.level.block.state.properties.EnumProperty;
 import net.minecraft.world.level.block.state.properties.RailShape;
-import net.minecraft.world.phys.Vec3;
 
 import static net.minecraft.world.level.block.Block.canSupportRigidBlock;
 
