@@ -1,6 +1,6 @@
 package net.lordkipama.modernminecarts.block.Custom;
 
-import net.lordkipama.modernminecarts.RailSpeeds;
+import net.lordkipama.modernminecarts.ModernMinecartsConfig;
 import net.lordkipama.modernminecarts.block.ModBlocks;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -136,10 +136,10 @@ public class SlopedRailBlock extends BaseRailBlock {
         }
 
         if(airInFront){
-            return RailSpeeds.fastest_speed;
+            return ModernMinecartsConfig.copper_speed;
         }
         else {
-            return RailSpeeds.max_ascending_speed;
+            return ModernMinecartsConfig.max_ascending_speed;
         }
     }
 

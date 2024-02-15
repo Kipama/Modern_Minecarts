@@ -1,11 +1,14 @@
 package net.lordkipama.modernminecarts.entity;
 
 import net.lordkipama.modernminecarts.Item.VanillaItems;
+import net.lordkipama.modernminecarts.ModernMinecartsConfig;
 import net.lordkipama.modernminecarts.block.Custom.PoweredDetectorRailBlock;
 import net.lordkipama.modernminecarts.inventory.FurnaceMinecartMenu;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.particles.ParticleTypes;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level.TicketType;
 import net.minecraft.tags.BlockTags;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.player.Inventory;
@@ -17,12 +20,14 @@ import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.crafting.RecipeType;
+import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.*;
 import net.minecraft.world.level.block.entity.AbstractFurnaceBlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.common.ForgeHooks;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -109,7 +114,8 @@ public class CustomMinecartFurnaceEntity extends CustomAbstractMinecartContainer
             numberOfChildren = getNumberOfChildren();
         }
         super.tick();
-        if(!this.level().isClientSide()) {
+
+        if(this.level() instanceof ServerLevel server) {
             if (fuel > 0) {
                 --fuel;
             }
@@ -138,6 +144,14 @@ public class CustomMinecartFurnaceEntity extends CustomAbstractMinecartContainer
                 this.zPush = 0.0D;
                 this.setDisplayBlockState(Blocks.FURNACE.defaultBlockState().setValue(FurnaceBlock.FACING, Direction.NORTH).setValue(FurnaceBlock.LIT, Boolean.FALSE));
             }
+
+
+
+            if(fuel > 0 && ModernMinecartsConfig.allowFurnaceMinecartChunkloading) {
+                ChunkPos chunkpos = new ChunkPos(BlockPos.containing(this.getX(), this.getY(), this.getZ()));
+                server.getChunkSource().addRegionTicket(TicketType.PORTAL, chunkpos, 3, blockPosition());
+            }
+
         }
         //Clientside
         else{

@@ -4,7 +4,7 @@ package net.lordkipama.modernminecarts.entity;
 import com.google.common.collect.Maps;
 import com.mojang.datafixers.util.Pair;
 import net.lordkipama.modernminecarts.Proxy.ModernMinecartsPacketHandler;
-import net.lordkipama.modernminecarts.RailSpeeds;
+import net.lordkipama.modernminecarts.ModernMinecartsConfig;
 import net.lordkipama.modernminecarts.block.Custom.PoweredDetectorRailBlock;
 import net.lordkipama.modernminecarts.block.ModBlocks;
 import net.minecraft.Util;
@@ -211,7 +211,7 @@ public abstract class CustomAbstractMinecartEntity extends AbstractMinecart impl
             railMaxSpeed = railMaxSpeed/2;
         }
 
-        if(railMaxSpeed > RailSpeeds.max_ascending_speed) {
+        if(railMaxSpeed > ModernMinecartsConfig.max_ascending_speed) {
             Vec3 vec3 = getDeltaMovement();
             BlockState frontBlockState;
             BlockPos blockpos;

@@ -1,6 +1,6 @@
 package net.lordkipama.modernminecarts.block.Custom;
 
-import net.lordkipama.modernminecarts.RailSpeeds;
+import net.lordkipama.modernminecarts.ModernMinecartsConfig;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.entity.vehicle.AbstractMinecart;
 import net.minecraft.world.level.BlockGetter;
@@ -55,7 +55,7 @@ public class RailCrossingBlock extends BaseRailBlock {
 
     @Override
     public float getRailMaxSpeed(BlockState state, Level level, BlockPos pos, AbstractMinecart cart) {
-        return RailSpeeds.fastest_speed;
+        return ModernMinecartsConfig.copper_speed;
 
     }
 }

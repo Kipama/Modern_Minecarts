@@ -1,6 +1,6 @@
 package net.lordkipama.modernminecarts.block.Custom;
 
-import net.lordkipama.modernminecarts.RailSpeeds;
+import net.lordkipama.modernminecarts.ModernMinecartsConfig;
 import net.lordkipama.modernminecarts.block.ModBlocks;
 import net.minecraft.advancements.CriteriaTriggers;
 import net.minecraft.core.BlockPos;
@@ -38,20 +38,20 @@ public class WaxedCopperRailBlock extends PoweredRailBlock{
         float finalSpeed = 0.4f;
 
         if(version=="WAXED_UNAFFECTED"){
-            finalSpeed = RailSpeeds.fastest_speed;
+            finalSpeed = ModernMinecartsConfig.copper_speed;
         }
         else if(version=="WAXED_EXPOSED"){
-            finalSpeed = RailSpeeds.exposed_copper_speed;
+            finalSpeed = ModernMinecartsConfig.exposed_copper_speed;
         }
         else if(version=="WAXED_WEATHERED"){
-            finalSpeed = RailSpeeds.weathered_copper_speed;
+            finalSpeed = ModernMinecartsConfig.weathered_copper_speed;
         }
         else if(version=="WAXED_OXIDIZED"){
-            finalSpeed = RailSpeeds.oxidized_copper_speed;
+            finalSpeed = ModernMinecartsConfig.oxidized_copper_speed;
         }
 
-        if(getRailDirection(state, level, pos, null).isAscending() && finalSpeed>= RailSpeeds.max_ascending_speed){
-            return RailSpeeds.max_ascending_speed;
+        if(getRailDirection(state, level, pos, null).isAscending() && finalSpeed>= ModernMinecartsConfig.max_ascending_speed){
+            return ModernMinecartsConfig.max_ascending_speed;
         }
 
         return finalSpeed;

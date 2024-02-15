@@ -1,28 +1,23 @@
 package net.lordkipama.modernminecarts.block.Custom;
 
-import net.lordkipama.modernminecarts.RailSpeeds;
+import net.lordkipama.modernminecarts.ModernMinecartsConfig;
 import net.lordkipama.modernminecarts.block.ModBlocks;
 import net.minecraft.core.BlockPos;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.tags.BlockTags;
-import net.minecraft.tags.TagKey;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.vehicle.AbstractMinecart;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
-import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.RailBlock;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import net.minecraft.world.level.block.state.properties.RailShape;
 import net.minecraft.world.phys.BlockHitResult;
-import net.minecraftforge.registries.ForgeRegistries;
-import net.minecraftforge.registries.tags.ITag;
 
 public class CustomRailBlock extends RailBlock {
 
@@ -34,9 +29,9 @@ public class CustomRailBlock extends RailBlock {
     @Override
     public float getRailMaxSpeed(BlockState state, Level level, BlockPos pos, AbstractMinecart cart) {
         if (getRailDirection(state, level, pos, null).isAscending()) {
-            return RailSpeeds.max_ascending_speed;
+            return ModernMinecartsConfig.max_ascending_speed;
         } else {
-            return RailSpeeds.fastest_speed;
+            return ModernMinecartsConfig.copper_speed;
         }
     }
 
