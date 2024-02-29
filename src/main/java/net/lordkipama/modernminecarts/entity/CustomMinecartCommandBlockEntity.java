@@ -16,7 +16,6 @@ import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.vehicle.AbstractMinecart;
 import net.minecraft.world.item.Item;
-import net.minecraft.world.item.Items;
 import net.minecraft.world.level.BaseCommandBlock;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Blocks;
@@ -81,7 +80,7 @@ public class CustomMinecartCommandBlockEntity extends CustomAbstractMinecartEnti
      */
     public void activateMinecart(int pX, int pY, int pZ, boolean pReceivingPower) {
         if (pReceivingPower && this.tickCount - this.lastActivated >= 4) {
-            this.getCommandBlock().performCommand(this.level());
+            this.getCommandBlock().performCommand(this.level);
             this.lastActivated = this.tickCount;
         }
 
@@ -120,8 +119,10 @@ public class CustomMinecartCommandBlockEntity extends CustomAbstractMinecartEnti
     }
 
     public class MinecartCommandBase extends BaseCommandBlock {
+
+        @Override
         public ServerLevel getLevel() {
-            return (ServerLevel) net.lordkipama.modernminecarts.entity.CustomMinecartCommandBlockEntity.this.level();
+            return (ServerLevel) net.lordkipama.modernminecarts.entity.CustomMinecartCommandBlockEntity.this.level;
         }
 
         public void onUpdated() {

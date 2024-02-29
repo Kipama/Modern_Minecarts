@@ -53,7 +53,7 @@ public class FurnaceMinecartMenu extends RecipeBookMenu<Container> {
         checkContainerDataCount(pFurnaceData, 3);
         this.container = pFurnaceContainer;
         this.data = pFurnaceData;
-        this.level = pPlayerInventory.player.level();
+        this.level = pPlayerInventory.player.level;
         this.addSlot(new CustomFurnaceFuelSlot(this, pFurnaceContainer, 0, 80, 45));
 
         for(int i = 0; i < 3; ++i) {

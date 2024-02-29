@@ -1,0 +1,21 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "c": {
+      "item": "minecraft:copper_ingot"
+    },
+    "/": {
+      "item": "minecraft:stick"
+    }
+  },
+  "pattern": [
+    "c c",
+    "c/c",
+    "c c"
+  ],
+  "result": {
+    "count": 6,
+    "item": "modernminecarts:copper_rail"
+  }
+}

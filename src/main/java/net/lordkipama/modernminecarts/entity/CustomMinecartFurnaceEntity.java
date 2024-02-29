@@ -115,14 +115,14 @@ public class CustomMinecartFurnaceEntity extends CustomAbstractMinecartContainer
         }
         super.tick();
 
-        if(this.level() instanceof ServerLevel server) {
+        if(this.level instanceof ServerLevel server) {
             if (fuel > 0) {
                 --fuel;
             }
             else if (this.getLinkedChild() != null) {
-                Block block = level().getBlockState(this.getOnPos()).getBlock();
-                boolean consumeFuel = (((!(block instanceof PoweredRailBlock) || ((PoweredRailBlock) block).isActivatorRail()) && !(block instanceof PoweredDetectorRailBlock)) || level().getBlockState(this.getOnPos()).getValue(PoweredRailBlock.POWERED))
-                        && level().getBlockState(this.getOnPos()).is(BlockTags.RAILS)
+                Block block = level.getBlockState(this.getOnPos()).getBlock();
+                boolean consumeFuel = (((!(block instanceof PoweredRailBlock) || ((PoweredRailBlock) block).isActivatorRail()) && !(block instanceof PoweredDetectorRailBlock)) || level.getBlockState(this.getOnPos()).getValue(PoweredRailBlock.POWERED))
+                        && level.getBlockState(this.getOnPos()).is(BlockTags.RAILS)
                         && this.getLinkedParent() == null;
 
 
@@ -157,7 +157,7 @@ public class CustomMinecartFurnaceEntity extends CustomAbstractMinecartContainer
         else{
             //FUEL doesnt change clientside!
             if(this.getDisplayBlockState().getValue(FurnaceBlock.LIT)&& this.random.nextInt(6) == 0) {
-                this.level().addParticle(ParticleTypes.LARGE_SMOKE, this.getX(), this.getY() + 1.5D, this.getZ(), 0.0D, 0.0D, 0.0D);
+                this.level.addParticle(ParticleTypes.LARGE_SMOKE, this.getX(), this.getY() + 1.5D, this.getZ(), 0.0D, 0.0D, 0.0D);
             }
         }
     }
@@ -389,7 +389,7 @@ public class CustomMinecartFurnaceEntity extends CustomAbstractMinecartContainer
     /*
     public void tick() {
         super.tick();
-        if (!this.level().isClientSide()) {
+        if (!this.level.isClientSide()) {
             if (this.fuel > 0) {
                 --this.fuel;
             }
@@ -403,7 +403,7 @@ public class CustomMinecartFurnaceEntity extends CustomAbstractMinecartContainer
         }
 
         if (this.hasFuel() && this.random.nextInt(4) == 0) {
-            this.level().addParticle(ParticleTypes.LARGE_SMOKE, this.getX(), this.getY() + 0.8D, this.getZ(), 0.0D, 0.0D, 0.0D);
+            this.level.addParticle(ParticleTypes.LARGE_SMOKE, this.getX(), this.getY() + 0.8D, this.getZ(), 0.0D, 0.0D, 0.0D);
         }
 
     }
@@ -418,7 +418,7 @@ public class CustomMinecartFurnaceEntity extends CustomAbstractMinecartContainer
 
     protected Item getDropItem() {
         if(getLinkedParent() != null || getLinkedChild() != null){
-            level().addFreshEntity(new ItemEntity(level(),this.getX(), this.getY(), this.getZ(), new ItemStack(Items.CHAIN)));
+            level.addFreshEntity(new ItemEntity(level,this.getX(), this.getY(), this.getZ(), new ItemStack(Items.CHAIN)));
         }
         return VanillaItems.FURNACE_MINECART_ITEM.get();
     }
@@ -485,7 +485,7 @@ public class CustomMinecartFurnaceEntity extends CustomAbstractMinecartContainer
             this.zPush = this.getZ() - pPlayer.getZ();
         }
 
-        return InteractionResult.sidedSuccess(this.level().isClientSide);
+        return InteractionResult.sidedSuccess(this.level.isClientSide);
         */
     /*
         return interactionresult;
@@ -532,6 +532,6 @@ public class CustomMinecartFurnaceEntity extends CustomAbstractMinecartContainer
     }
 
     public void stopOpen(Player pPlayer) {
-        this.level().gameEvent(GameEvent.CONTAINER_CLOSE, this.position(), GameEvent.Context.of(pPlayer));
+        this.level.gameEvent(GameEvent.CONTAINER_CLOSE, this.position(), GameEvent.Context.of(pPlayer));
     }*/
 }

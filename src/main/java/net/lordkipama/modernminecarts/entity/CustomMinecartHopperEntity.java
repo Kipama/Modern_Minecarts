@@ -11,7 +11,6 @@ import net.minecraft.world.entity.vehicle.AbstractMinecart;
 import net.minecraft.world.entity.vehicle.ContainerEntity;
 import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.inventory.HopperMenu;
-import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
@@ -22,7 +21,6 @@ import net.minecraft.world.level.block.entity.HopperBlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 public class CustomMinecartHopperEntity extends CustomAbstractMinecartContainerEntity implements Hopper {
     private boolean enabled = true;
@@ -106,7 +104,7 @@ public class CustomMinecartHopperEntity extends CustomAbstractMinecartContainerE
      */
     public void tick() {
         super.tick();
-        if (!this.level().isClientSide && this.isAlive() && this.isEnabled() && this.suckInItems()) {
+        if (!this.level.isClientSide && this.isAlive() && this.isEnabled() && this.suckInItems()) {
             this.setChanged();
         }
 
@@ -124,10 +122,10 @@ public class CustomMinecartHopperEntity extends CustomAbstractMinecartContainerE
     }
 
     public boolean suckInItems() {
-        if (HopperBlockEntity.suckInItems(this.level(), this)) {
+        if (HopperBlockEntity.suckInItems(this.level, this)) {
             return true;
         } else {
-            for(ItemEntity itementity : this.level().getEntitiesOfClass(ItemEntity.class, this.getBoundingBox().inflate(0.25D, 0.0D, 0.25D), EntitySelector.ENTITY_STILL_ALIVE)) {
+            for(ItemEntity itementity : this.level.getEntitiesOfClass(ItemEntity.class, this.getBoundingBox().inflate(0.25D, 0.0D, 0.25D), EntitySelector.ENTITY_STILL_ALIVE)) {
                 if (HopperBlockEntity.addItem(this, itementity)) {
                     return true;
                 }
@@ -195,7 +193,7 @@ public class CustomMinecartHopperEntity extends CustomAbstractMinecartContainerE
 
     protected Item getDropItem() {
         if(getLinkedParent() != null || getLinkedChild() != null){
-            level().addFreshEntity(new ItemEntity(level(),this.getX(), this.getY(), this.getZ(), new ItemStack(Items.CHAIN)));
+            level.addFreshEntity(new ItemEntity(level,this.getX(), this.getY(), this.getZ(), new ItemStack(Items.CHAIN)));
         }
         return VanillaItems.HOPPER_MINECART_ITEM.get();
     }

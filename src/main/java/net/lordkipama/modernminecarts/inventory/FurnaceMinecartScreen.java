@@ -1,7 +1,7 @@
 package net.lordkipama.modernminecarts.inventory;
 
-import net.minecraft.client.gui.GuiGraphics;
-import net.minecraft.client.gui.components.ImageButton;
+import com.mojang.blaze3d.systems.RenderSystem;
+import com.mojang.blaze3d.vertex.PoseStack;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
 import net.minecraft.client.gui.screens.recipebook.AbstractFurnaceRecipeBookComponent;
 import net.minecraft.client.gui.screens.recipebook.RecipeBookComponent;
@@ -10,9 +10,7 @@ import net.minecraft.client.gui.screens.recipebook.SmeltingRecipeBookComponent;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.player.Inventory;
-import net.minecraft.world.inventory.AbstractFurnaceMenu;
 import net.minecraft.world.inventory.ClickType;
-import net.minecraft.world.inventory.FurnaceMenu;
 import net.minecraft.world.inventory.Slot;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
@@ -49,7 +47,7 @@ public class FurnaceMinecartScreen extends AbstractContainerScreen<FurnaceMineca
         this.recipeBookComponent.tick();
     }
 
-    public void render(GuiGraphics pGuiGraphics, int pMouseX, int pMouseY, float pPartialTick) {
+    public void render(PoseStack pGuiGraphics, int pMouseX, int pMouseY, float pPartialTick) {
         this.renderBackground(pGuiGraphics);
         if (this.recipeBookComponent.isVisible() && this.widthTooNarrow) {
             this.renderBg(pGuiGraphics, pPartialTick, pMouseX, pMouseY);
@@ -64,18 +62,19 @@ public class FurnaceMinecartScreen extends AbstractContainerScreen<FurnaceMineca
         //this.recipeBookComponent.renderTooltip(pGuiGraphics, this.leftPos, this.topPos, pMouseX, pMouseY);
     }
 
-    protected void renderBg(GuiGraphics pGuiGraphics, float pPartialTick, int pMouseX, int pMouseY) {
+    protected void renderBg(PoseStack pGuiGraphics, float pPartialTick, int pMouseX, int pMouseY) {
+        RenderSystem.setShaderTexture(0, this.texture);
         int i = this.leftPos;
         int j = this.topPos;
-        pGuiGraphics.blit(this.texture, i, j, 0, 0, this.imageWidth, this.imageHeight);
+        blit(pGuiGraphics, i, j, 0, 0, this.imageWidth, this.imageHeight);
         if (this.menu.isLit()) {
             int k = this.menu.getLitProgress();
-            pGuiGraphics.blit(this.texture, i + 80, j + 40 - k, 176, 12 - k, 14, k + 1);
+            blit(pGuiGraphics, i + 80, j + 40 - k, 176, 12 - k, 14, k + 1);
         }
 
         int k = this.menu.getSpeed();
         //pGuiGraphics.blit(this.texture, i + 103, j + 34, 176, 14, k, 16);
-        pGuiGraphics.blit(this.texture, i + 97, j + 62-k, 176, 49-k, 14, k + 1);
+        blit(pGuiGraphics, i + 97, j + 62-k, 176, 49-k, 14, k + 1);
 
     }
 

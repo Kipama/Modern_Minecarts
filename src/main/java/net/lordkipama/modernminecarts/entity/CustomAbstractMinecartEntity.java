@@ -95,7 +95,7 @@ public abstract class CustomAbstractMinecartEntity extends AbstractMinecart impl
     @Override
     public void comeOffTrack() {
 
-        double d0 = this.onGround() ? this.getMaxSpeed() : getMaxSpeedAirLateral(); //getMaxSpeedAirLateral()
+        double d0 = this.onGround ? this.getMaxSpeed() : getMaxSpeedAirLateral(); //getMaxSpeedAirLateral()
         Vec3 vec3 = this.getDeltaMovement();
 
         //Get hindblock
@@ -109,30 +109,30 @@ public abstract class CustomAbstractMinecartEntity extends AbstractMinecart impl
         if(vec3.x>0){
             BlockPos blockpos = new BlockPos(x-1, y-1, z);
             lateralMomentum = Math.abs(vec3.x);
-            hindBlockState = this.level().getBlockState(blockpos);
+            hindBlockState = this.level.getBlockState(blockpos);
             newVec3 = new Vec3(Math.min(vec3.x+0.1, maxSpeed),Math.min(lateralMomentum, maxSpeed),0);
         }
         else if(vec3.x<0){
             BlockPos blockpos = new BlockPos(x+1, y-1, z);
             lateralMomentum = Math.abs(vec3.x);
-            hindBlockState = this.level().getBlockState(blockpos);
+            hindBlockState = this.level.getBlockState(blockpos);
             newVec3 = new Vec3(Math.max(vec3.x-0.1, -maxSpeed),Math.min(lateralMomentum, maxSpeed),0);
         }
         else if(vec3.z>0){
             BlockPos blockpos = new BlockPos(x, y-1, z-1);
             lateralMomentum = Math.abs(vec3.z);
-            hindBlockState = this.level().getBlockState(blockpos);
+            hindBlockState = this.level.getBlockState(blockpos);
             newVec3 = new Vec3(0,Math.min(lateralMomentum, maxSpeed),Math.min(vec3.z+0.1, maxSpeed));
         }
         else {
             BlockPos blockpos = new BlockPos(x, y-1, z+1);
             lateralMomentum = Math.abs(vec3.z);
-            hindBlockState = this.level().getBlockState(blockpos);
+            hindBlockState = this.level.getBlockState(blockpos);
             newVec3 = new Vec3(0,Math.min(lateralMomentum, maxSpeed),Math.max(vec3.z-0.1, -maxSpeed));
         }
 
         BlockPos belowBlock = new BlockPos(x, y-1,z);
-        if(!jumpedOffSlope && hindBlockState.is(ModBlocks.SLOPED_RAIL.get()) && this.level().getBlockState(belowBlock).is(Blocks.AIR)){
+        if(!jumpedOffSlope && hindBlockState.is(ModBlocks.SLOPED_RAIL.get()) && this.level.getBlockState(belowBlock).is(Blocks.AIR)){
             //modify vec3 if rail is ramp
             vec3 = newVec3;
 
@@ -144,7 +144,7 @@ public abstract class CustomAbstractMinecartEntity extends AbstractMinecart impl
 
 
         this.setDeltaMovement(Mth.clamp(vec3.x, -d0, d0), vec3.y, Mth.clamp(vec3.z, -d0, d0));
-        if (this.onGround() && vec3.y <= 0) {
+        if (this.onGround && vec3.y <= 0) {
             this.setDeltaMovement(this.getDeltaMovement().scale(0.5D));
         }
 
@@ -156,7 +156,7 @@ public abstract class CustomAbstractMinecartEntity extends AbstractMinecart impl
         }
 
         this.move(MoverType.SELF, this.getDeltaMovement());
-        if (!this.onGround()) {
+        if (!this.onGround) {
             this.setDeltaMovement(this.getDeltaMovement().scale(getDragAir()));
         }
     }
@@ -199,10 +199,10 @@ public abstract class CustomAbstractMinecartEntity extends AbstractMinecart impl
     public double getMaxSpeedWithRail() { //Non-default because getMaximumSpeed is protected
         if (!canUseRail()) return getMaxSpeed();
         BlockPos pos = this.getCurrentRailPosition();
-        BlockState state = this.level().getBlockState(pos);
+        BlockState state = this.level.getBlockState(pos);
         if (!state.is(BlockTags.RAILS)) return getMaxSpeed();
 
-        float railMaxSpeed = ((BaseRailBlock)state.getBlock()).getRailMaxSpeed(state, this.level(), pos, this);
+        float railMaxSpeed = ((BaseRailBlock)state.getBlock()).getRailMaxSpeed(state, this.level, pos, this);
         if(getLinkedParent()!=null){
             railMaxSpeed= 0.8F;
         }
@@ -217,29 +217,29 @@ public abstract class CustomAbstractMinecartEntity extends AbstractMinecart impl
             BlockPos blockpos;
             if (vec3.x > 0) {
                 blockpos = new BlockPos(pos.getX() + 1, pos.getY(), pos.getZ());
-                frontBlockState = this.level().getBlockState(blockpos);
+                frontBlockState = this.level.getBlockState(blockpos);
             } else if (vec3.x < 0) {
                 blockpos = new BlockPos(pos.getX() - 1, pos.getY(), pos.getZ());
-                frontBlockState = this.level().getBlockState(blockpos);
+                frontBlockState = this.level.getBlockState(blockpos);
             } else if (vec3.z > 0) {
                 blockpos = new BlockPos(pos.getX(), pos.getY(), pos.getZ() + 1);
-                frontBlockState = this.level().getBlockState(blockpos);
+                frontBlockState = this.level.getBlockState(blockpos);
             } else {
                 blockpos = new BlockPos(pos.getX(), pos.getY(), pos.getZ() - 1);
-                frontBlockState = this.level().getBlockState(blockpos);
+                frontBlockState = this.level.getBlockState(blockpos);
             }
 
             if (frontBlockState.is(BlockTags.RAILS)) {
                 try {
                     final EnumProperty<RailShape> SHAPE = BlockStateProperties.RAIL_SHAPE;
                     if (frontBlockState.getValue(SHAPE).isAscending()) {
-                        railMaxSpeed = ((BaseRailBlock) frontBlockState.getBlock()).getRailMaxSpeed(frontBlockState, this.level(), blockpos, this);
+                        railMaxSpeed = ((BaseRailBlock) frontBlockState.getBlock()).getRailMaxSpeed(frontBlockState, this.level, blockpos, this);
                     }
                 } catch (Exception e) {
                     try {
                         final EnumProperty<RailShape> SHAPE = BlockStateProperties.RAIL_SHAPE_STRAIGHT;
                         if (frontBlockState.getValue(SHAPE).isAscending()) {
-                            railMaxSpeed = ((BaseRailBlock) frontBlockState.getBlock()).getRailMaxSpeed(frontBlockState, this.level(), blockpos, this); //((BaseRailBlock) state.getBlock()).getRailMaxSpeed(frontBlockState, this.level(), pos, this);
+                            railMaxSpeed = ((BaseRailBlock) frontBlockState.getBlock()).getRailMaxSpeed(frontBlockState, this.level, blockpos, this); //((BaseRailBlock) state.getBlock()).getRailMaxSpeed(frontBlockState, this.level, pos, this);
                         }
                     } catch (Exception ignored) {
                     }
@@ -252,7 +252,7 @@ public abstract class CustomAbstractMinecartEntity extends AbstractMinecart impl
 
     @Override
     public void tick() {
-        if (!this.level().isClientSide()) {
+        if (!this.level.isClientSide()) {
             if (getLinkedParent() != null) {
                 double distance = getLinkedParent().distanceTo(this) - 1;
 
@@ -289,7 +289,7 @@ public abstract class CustomAbstractMinecartEntity extends AbstractMinecart impl
                     }
                 } else {
                     ChainMinecartInterface.unsetParentChild(this.getLinkedParent(), this);
-                    level().addFreshEntity(new ItemEntity(level(),this.getX(), this.getY(), this.getZ(), new ItemStack(Items.CHAIN)));
+                    level.addFreshEntity(new ItemEntity(level,this.getX(), this.getY(), this.getZ(), new ItemStack(Items.CHAIN)));
                     //dropStack(new ItemStack(Items.CHAIN));
                     return;
                 }
@@ -330,9 +330,9 @@ public abstract class CustomAbstractMinecartEntity extends AbstractMinecart impl
             this.setDamage(this.getDamage() - 1.0F);
         }
 
-        this.checkBelowWorld();
+        this.checkOutOfWorld();
         this.handleNetherPortal();
-        if (this.level().isClientSide) {
+        if (this.level.isClientSide) {
             if (this.lSteps > 0) {
                 double d5 = this.getX() + (this.lx - this.getX()) / (double)this.lSteps;
                 double d6 = this.getY() + (this.ly - this.getY()) / (double)this.lSteps;
@@ -357,12 +357,12 @@ public abstract class CustomAbstractMinecartEntity extends AbstractMinecart impl
             int k = Mth.floor(this.getX());
             int i = Mth.floor(this.getY());
             int j = Mth.floor(this.getZ());
-            if (this.level().getBlockState(new BlockPos(k, i - 1, j)).is(BlockTags.RAILS)) {
+            if (this.level.getBlockState(new BlockPos(k, i - 1, j)).is(BlockTags.RAILS)) {
                 --i;
             }
 
             BlockPos blockpos = new BlockPos(k, i, j);
-            BlockState blockstate = this.level().getBlockState(blockpos);
+            BlockState blockstate = this.level.getBlockState(blockpos);
             boolean onRails = BaseRailBlock.isRail(blockstate);
             if (canUseRail() && onRails) {
                 this.moveAlongTrack(blockpos, blockstate);
@@ -397,7 +397,7 @@ public abstract class CustomAbstractMinecartEntity extends AbstractMinecart impl
             if (getCollisionHandler() != null) box = getCollisionHandler().getMinecartCollisionBox(this);
             else                               box = this.getBoundingBox().inflate(0.2F, 0.0D, 0.2F);
             if (canBeRidden() && this.getDeltaMovement().horizontalDistanceSqr() > 0.01D) {
-                List<Entity> list = this.level().getEntities(this, box, EntitySelector.pushableBy(this));
+                List<Entity> list = this.level.getEntities(this, box, EntitySelector.pushableBy(this));
                 if (!list.isEmpty()) {
                     for (Entity entity1 : list) {
                         if (!(entity1 instanceof Player) && !(entity1 instanceof IronGolem) && !(entity1 instanceof AbstractMinecart) && !this.isVehicle() && !entity1.isPassenger()) {
@@ -408,7 +408,7 @@ public abstract class CustomAbstractMinecartEntity extends AbstractMinecart impl
                     }
                 }
             } else {
-                for(Entity entity : this.level().getEntities(this, box)) {
+                for(Entity entity : this.level.getEntities(this, box)) {
                     if (!this.hasPassenger(entity) && entity.isPushable() && entity instanceof AbstractMinecart) {
                         entity.push(this);
                     }
@@ -450,12 +450,12 @@ public abstract class CustomAbstractMinecartEntity extends AbstractMinecart impl
     public CustomAbstractMinecartEntity getLinkedParent() {
         Entity entity = null;
 
-        if(level().isClientSide())
+        if(level.isClientSide())
         {
-            entity = level().getEntity(this.parentIdClient);
+            entity = level.getEntity(this.parentIdClient);
         }
         else {
-            if(level() instanceof ServerLevel server) {
+            if(level instanceof ServerLevel server) {
                 entity = server.getEntity(this.parentUUID);
             }
         }
@@ -481,7 +481,7 @@ public abstract class CustomAbstractMinecartEntity extends AbstractMinecart impl
             this.parentIdClient = -1;
         }
 
-        if (!this.level().isClientSide()) {
+        if (!this.level.isClientSide()) {
             ModernMinecartsPacketHandler.INSTANCE.send(PacketDistributor.TRACKING_ENTITY.with(()->this), new ModernMinecartsPacketHandler.CouplePacket(this.getParentIdClient(), this.getId()));
         }
         this.startRefreshTrain();
@@ -499,12 +499,12 @@ public abstract class CustomAbstractMinecartEntity extends AbstractMinecart impl
 
         Entity entity = null;
 
-        if(level().isClientSide())
+        if(level.isClientSide())
         {
-            entity = level().getEntity(childIdClient);
+            entity = level.getEntity(childIdClient);
         }
         else {
-            if(level() instanceof ServerLevel server) {
+            if(level instanceof ServerLevel server) {
                 entity = server.getEntity(childUUID);
             }
         }
@@ -598,7 +598,7 @@ public abstract class CustomAbstractMinecartEntity extends AbstractMinecart impl
         }
 
         Vec3 vec31 = this.getDeltaMovement();
-        RailShape railshape = ((BaseRailBlock)pState.getBlock()).getRailDirection(pState, this.level(), pPos, this);
+        RailShape railshape = ((BaseRailBlock)pState.getBlock()).getRailDirection(pState, this.level, pPos, this);
         switch (railshape) {
             case ASCENDING_EAST -> {
                 this.setDeltaMovement(vec31.add(-d3, 0.0D, 0.0D));
@@ -703,7 +703,7 @@ public abstract class CustomAbstractMinecartEntity extends AbstractMinecart impl
         }
 
         if (shouldDoRailFunctions())
-            baserailblock.onMinecartPass(pState, level(), pPos, this);
+            baserailblock.onMinecartPass(pState, level, pPos, this);
 
         if (flag && shouldDoRailFunctions()) {
             Vec3 vec36 = this.getDeltaMovement();
@@ -740,7 +740,7 @@ public abstract class CustomAbstractMinecartEntity extends AbstractMinecart impl
 
 
     private boolean isRedstoneConductor(BlockPos pPos) {
-        return this.level().getBlockState(pPos).isRedstoneConductor(this.level(), pPos);
+        return this.level.getBlockState(pPos).isRedstoneConductor(this.level, pPos);
     }
 
     private static Pair<Vec3i, Vec3i> exits(RailShape pShape) {
@@ -858,7 +858,7 @@ public abstract class CustomAbstractMinecartEntity extends AbstractMinecart impl
 
     @Override
     public boolean hurt(DamageSource pSource, float pAmount) {
-        if (!this.level().isClientSide && !this.isRemoved()) {
+        if (!this.level.isClientSide && !this.isRemoved()) {
             if (this.isInvulnerableTo(pSource)) {
                 return false;
             } else {
@@ -870,7 +870,7 @@ public abstract class CustomAbstractMinecartEntity extends AbstractMinecart impl
                 boolean flag = pSource.getEntity() instanceof Player && ((Player)pSource.getEntity()).getAbilities().instabuild;
                 if(this.getLinkedChild()!=null){
                     ChainMinecartInterface.unsetParentChild(this, this.getLinkedChild());
-                    level().addFreshEntity(new ItemEntity(level(),this.getX(), this.getY(), this.getZ(), new ItemStack(Items.CHAIN)));
+                    level.addFreshEntity(new ItemEntity(level,this.getX(), this.getY(), this.getZ(), new ItemStack(Items.CHAIN)));
                 }
 
                 if (flag || this.getDamage() > 40.0F) {

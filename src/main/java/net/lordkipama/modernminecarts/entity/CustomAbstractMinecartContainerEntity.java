@@ -14,7 +14,6 @@ import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.SlotAccess;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.entity.vehicle.AbstractMinecart;
 import net.minecraft.world.entity.vehicle.ContainerEntity;
 import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.item.ItemStack;
@@ -36,7 +35,7 @@ public abstract class CustomAbstractMinecartContainerEntity extends CustomAbstra
 
     public void destroy(DamageSource pSource) {
         super.destroy(pSource);
-        this.chestVehicleDestroyed(pSource, this.level(), this);
+        this.chestVehicleDestroyed(pSource, this.level, this);
     }
 
     /**
@@ -86,8 +85,8 @@ public abstract class CustomAbstractMinecartContainerEntity extends CustomAbstra
     }
 
     public void remove(Entity.RemovalReason pReason) {
-        if (!this.level().isClientSide && pReason.shouldDestroy()) {
-            Containers.dropContents(this.level(), this, this);
+        if (!this.level.isClientSide && pReason.shouldDestroy()) {
+            Containers.dropContents(this.level, this, this);
         }
 
         super.remove(pReason);
@@ -116,7 +115,7 @@ public abstract class CustomAbstractMinecartContainerEntity extends CustomAbstra
     public InteractionResult interactWithContainerVehicle(Player p_270068_) {
         if(!p_270068_.isCrouching()) {
             p_270068_.openMenu(this);
-            return !p_270068_.level().isClientSide ? InteractionResult.CONSUME : InteractionResult.SUCCESS;
+            return !p_270068_.level.isClientSide ? InteractionResult.CONSUME : InteractionResult.SUCCESS;
         }
         else return InteractionResult.PASS;
     }

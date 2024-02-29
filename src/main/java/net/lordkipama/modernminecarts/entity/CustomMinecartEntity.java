@@ -31,7 +31,7 @@ public class CustomMinecartEntity extends CustomAbstractMinecartEntity {
             return InteractionResult.PASS;
         } else if (this.isVehicle()) {
             return InteractionResult.PASS;
-        } else if (!this.level().isClientSide) {
+        } else if (!this.level.isClientSide) {
             return p_38483_.startRiding(this) ? InteractionResult.CONSUME : InteractionResult.PASS;
         } else {
             return InteractionResult.SUCCESS;
@@ -40,7 +40,7 @@ public class CustomMinecartEntity extends CustomAbstractMinecartEntity {
 
     protected Item getDropItem() {
         if(getLinkedParent() != null || getLinkedChild() != null){
-            level().addFreshEntity(new ItemEntity(level(),this.getX(), this.getY(), this.getZ(), new ItemStack(Items.CHAIN)));
+            level.addFreshEntity(new ItemEntity(level,this.getX(), this.getY(), this.getZ(), new ItemStack(Items.CHAIN)));
         }
 
         return VanillaItems.MINECART_ITEM.get();

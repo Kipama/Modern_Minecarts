@@ -54,7 +54,7 @@ public class CustomMinecartTNTEntity extends CustomAbstractMinecartEntity {
         super.tick();
         if (this.fuse > 0) {
             --this.fuse;
-            this.level().addParticle(ParticleTypes.SMOKE, this.getX(), this.getY() + 0.5D, this.getZ(), 0.0D, 0.0D, 0.0D);
+            this.level.addParticle(ParticleTypes.SMOKE, this.getX(), this.getY() + 0.5D, this.getZ(), 0.0D, 0.0D, 0.0D);
         } else if (this.fuse == 0) {
             this.explode(this.getDeltaMovement().horizontalDistanceSqr());
         }
@@ -98,7 +98,7 @@ public class CustomMinecartTNTEntity extends CustomAbstractMinecartEntity {
 
     protected Item getDropItem() {
         if(getLinkedParent() != null || getLinkedChild() != null){
-            level().addFreshEntity(new ItemEntity(level(),this.getX(), this.getY(), this.getZ(), new ItemStack(Items.CHAIN)));
+            level.addFreshEntity(new ItemEntity(level,this.getX(), this.getY(), this.getZ(), new ItemStack(Items.CHAIN)));
         }
         return Items.TNT_MINECART;
     }
@@ -111,13 +111,13 @@ public class CustomMinecartTNTEntity extends CustomAbstractMinecartEntity {
     }
 
     protected void explode(@Nullable DamageSource p_259539_, double p_260287_) {
-        if (!this.level().isClientSide) {
+        if (!this.level.isClientSide) {
             double d0 = Math.sqrt(p_260287_);
             if (d0 > 5.0D) {
                 d0 = 5.0D;
             }
 
-            this.level().explode(this, p_259539_, (ExplosionDamageCalculator)null, this.getX(), this.getY(), this.getZ(), (float)(4.0D + this.random.nextDouble() * 1.5D * d0), false, Level.ExplosionInteraction.TNT);
+            this.level.explode(this, p_259539_, (ExplosionDamageCalculator)null, this.getX(), this.getY(), this.getZ(), (float)(4.0D + this.random.nextDouble() * 1.5D * d0), false, Level.ExplosionInteraction.TNT);
             this.discard();
         }
 
@@ -159,10 +159,10 @@ public class CustomMinecartTNTEntity extends CustomAbstractMinecartEntity {
      */
     public void primeFuse() {
         this.fuse = 80;
-        if (!this.level().isClientSide) {
-            this.level().broadcastEntityEvent(this, (byte)10);
+        if (!this.level.isClientSide) {
+            this.level.broadcastEntityEvent(this, (byte)10);
             if (!this.isSilent()) {
-                this.level().playSound((Player)null, this.getX(), this.getY(), this.getZ(), SoundEvents.TNT_PRIMED, SoundSource.BLOCKS, 1.0F, 1.0F);
+                this.level.playSound((Player)null, this.getX(), this.getY(), this.getZ(), SoundEvents.TNT_PRIMED, SoundSource.BLOCKS, 1.0F, 1.0F);
             }
         }
 

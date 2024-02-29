@@ -11,7 +11,6 @@ import net.minecraft.world.entity.monster.piglin.PiglinAi;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.vehicle.AbstractMinecart;
-import net.minecraft.world.entity.vehicle.AbstractMinecartContainer;
 import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.inventory.ChestMenu;
 import net.minecraft.world.item.Item;
@@ -57,7 +56,7 @@ public class CustomMinecartChestEntity extends CustomAbstractMinecartContainerEn
     }
 
     public void stopOpen(Player pPlayer) {
-        this.level().gameEvent(GameEvent.CONTAINER_CLOSE, this.position(), GameEvent.Context.of(pPlayer));
+        this.level.gameEvent(GameEvent.CONTAINER_CLOSE, this.position(), GameEvent.Context.of(pPlayer));
     }
 
     public InteractionResult interact(Player pPlayer, InteractionHand pHand) {
@@ -72,7 +71,7 @@ public class CustomMinecartChestEntity extends CustomAbstractMinecartContainerEn
 
     protected Item getDropItem() {
         if(getLinkedParent() != null || getLinkedChild() != null){
-            level().addFreshEntity(new ItemEntity(level(),this.getX(), this.getY(), this.getZ(), new ItemStack(Items.CHAIN)));
+            level.addFreshEntity(new ItemEntity(level,this.getX(), this.getY(), this.getZ(), new ItemStack(Items.CHAIN)));
         }
 
         return VanillaItems.CHEST_MINECART_ITEM.get();

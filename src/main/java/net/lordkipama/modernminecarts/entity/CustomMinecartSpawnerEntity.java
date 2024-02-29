@@ -41,7 +41,7 @@ public class CustomMinecartSpawnerEntity extends CustomAbstractMinecartEntity {
 
     protected Item getDropItem() {
         if(getLinkedParent() != null || getLinkedChild() != null){
-            level().addFreshEntity(new ItemEntity(level(),this.getX(), this.getY(), this.getZ(), new ItemStack(Items.CHAIN)));
+            level.addFreshEntity(new ItemEntity(level,this.getX(), this.getY(), this.getZ(), new ItemStack(Items.CHAIN)));
         }
         return VanillaItems.SPAWNER_MINECART_ITEM.get();
     }
@@ -67,7 +67,7 @@ public class CustomMinecartSpawnerEntity extends CustomAbstractMinecartEntity {
      */
     protected void readAdditionalSaveData(CompoundTag pCompound) {
         super.readAdditionalSaveData(pCompound);
-        this.spawner.load(this.level(), this.blockPosition(), pCompound);
+        this.spawner.load(this.level, this.blockPosition(), pCompound);
     }
 
     protected void addAdditionalSaveData(CompoundTag pCompound) {
@@ -79,7 +79,7 @@ public class CustomMinecartSpawnerEntity extends CustomAbstractMinecartEntity {
      * Handles an entity event received from a {@link net.minecraft.network.protocol.game.ClientboundEntityEventPacket}.
      */
     public void handleEntityEvent(byte pId) {
-        this.spawner.onEventTriggered(this.level(), pId);
+        this.spawner.onEventTriggered(this.level, pId);
     }
 
     /**
