@@ -50,7 +50,7 @@ public class ModEvents {
                 Block targetedBlock = pBlockstate.getBlock();
                 //Wax/Deage Rail
                 if (targetedBlock.equals(ModBlocks.COPPER_RAIL.get()) || targetedBlock.equals(ModBlocks.EXPOSED_COPPER_RAIL.get()) || targetedBlock.equals(ModBlocks.WEATHERED_COPPER_RAIL.get()) || targetedBlock.equals(ModBlocks.OXIDIZED_COPPER_RAIL.get())) {
-                    if (event.getItemStack().getItem() == Items.HONEYCOMB || event.getItemStack().is(ItemTags.AXES)) {
+                    if (event.getItemStack().getItem() == Items.HONEYCOMB || event.getItemStack().is(Items.WOODEN_AXE) || event.getItemStack().is(Items.STONE_AXE) || event.getItemStack().is(Items.IRON_AXE) || event.getItemStack().is(Items.GOLDEN_AXE) || event.getItemStack().is(Items.DIAMOND_AXE)) {
                         event.setUseBlock(Event.Result.ALLOW);
                     } else {
                         event.setUseBlock(Event.Result.DENY);
@@ -58,7 +58,7 @@ public class ModEvents {
                 }
                 //Dewax Rail
                 else if (targetedBlock.equals(ModBlocks.WAXED_COPPER_RAIL.get()) || targetedBlock.equals(ModBlocks.WAXED_EXPOSED_COPPER_RAIL.get()) || targetedBlock.equals(ModBlocks.WAXED_WEATHERED_COPPER_RAIL.get()) || targetedBlock.equals(ModBlocks.WAXED_OXIDIZED_COPPER_RAIL.get())) {
-                    if (event.getItemStack().is(ItemTags.AXES)) {
+                    if (event.getItemStack().is(Items.WOODEN_AXE) || event.getItemStack().is(Items.STONE_AXE) || event.getItemStack().is(Items.IRON_AXE) || event.getItemStack().is(Items.GOLDEN_AXE) || event.getItemStack().is(Items.DIAMOND_AXE)) {
                         event.setUseBlock(Event.Result.ALLOW);
                     } else {
                         event.setUseBlock(Event.Result.DENY);

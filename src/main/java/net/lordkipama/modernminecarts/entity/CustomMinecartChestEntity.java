@@ -60,7 +60,7 @@ public class CustomMinecartChestEntity extends CustomAbstractMinecartContainerEn
     }
 
     public InteractionResult interact(Player pPlayer, InteractionHand pHand) {
-        InteractionResult interactionresult = this.interactWithContainerVehicle(pPlayer);
+        InteractionResult interactionresult = this.interactWithChestVehicle(this::gameEvent, pPlayer);
         if (interactionresult.consumesAction()) {
             this.gameEvent(GameEvent.CONTAINER_OPEN, pPlayer);
             PiglinAi.angerNearbyPiglins(pPlayer, true);

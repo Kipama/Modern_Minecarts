@@ -13,7 +13,7 @@ public class ModMenus {
             DeferredRegister.create(ForgeRegistries.MENU_TYPES, ModernMinecarts.MOD_ID);
 
     public static final RegistryObject<MenuType<FurnaceMinecartMenu>> FURNACE_MINECART_MENU =
-            MENU_TYPES.register("furnace_minecart_menu", ()-> new MenuType(FurnaceMinecartMenu::new, FeatureFlags.DEFAULT_FLAGS));
+            MENU_TYPES.register("furnace_minecart_menu", ()-> new MenuType(FurnaceMinecartMenu::new));
 
     public static void register(IEventBus eventBus) {
         MENU_TYPES.register(eventBus);

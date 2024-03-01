@@ -17,6 +17,7 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.PoweredRailBlock;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.BlockHitResult;
@@ -76,8 +77,7 @@ public class CopperRailBlock extends PoweredRailBlock implements WeatheringRailB
             player.swing(interactionHand);
             return super.use(state, level, pos, player, interactionHand, blockHitResult);
 
-        } else if (itemstack.is(ItemTags.AXES)) {
-
+        } else if (itemstack.is(Items.WOODEN_AXE) || itemstack.is(Items.STONE_AXE) || itemstack.is(Items.IRON_AXE) || itemstack.is(Items.GOLDEN_AXE) || itemstack.is(Items.DIAMOND_AXE)) {
 
             //Serverside
             if(!level.isClientSide()) {

@@ -121,7 +121,7 @@ public class FurnaceMinecartMenu extends RecipeBookMenu<Container> {
             }
 
             if (itemstack1.isEmpty()) {
-                slot.setByPlayer(ItemStack.EMPTY);
+                slot.set(ItemStack.EMPTY); // .setByPlayer(ItemStack.EMPTY);
             } else {
                 slot.setChanged();
             }

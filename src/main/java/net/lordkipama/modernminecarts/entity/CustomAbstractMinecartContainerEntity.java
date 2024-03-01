@@ -18,6 +18,9 @@ import net.minecraft.world.entity.vehicle.ContainerEntity;
 import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.gameevent.GameEvent;
+
+import java.util.function.BiConsumer;
 
 public abstract class CustomAbstractMinecartContainerEntity extends CustomAbstractMinecartEntity implements ContainerEntity {
     private NonNullList<ItemStack> itemStacks = NonNullList.withSize(36, ItemStack.EMPTY);
@@ -108,14 +111,14 @@ public abstract class CustomAbstractMinecartContainerEntity extends CustomAbstra
     public InteractionResult interact(Player pPlayer, InteractionHand pHand) {
         InteractionResult ret = super.interact(pPlayer, pHand);
         if (ret.consumesAction()) return ret;
-        return this.interactWithContainerVehicle(pPlayer);
+        return this.interactWithChestVehicle(this::gameEvent, pPlayer);
     }
 
     @Override
-    public InteractionResult interactWithContainerVehicle(Player p_270068_) {
-        if(!p_270068_.isCrouching()) {
-            p_270068_.openMenu(this);
-            return !p_270068_.level.isClientSide ? InteractionResult.CONSUME : InteractionResult.SUCCESS;
+    public InteractionResult interactWithChestVehicle(BiConsumer<GameEvent, Entity> p_219932_, Player pPlayer) {
+        if(!pPlayer.isCrouching()) {
+            pPlayer.openMenu(this);
+            return !pPlayer.level.isClientSide ? InteractionResult.CONSUME : InteractionResult.SUCCESS;
         }
         else return InteractionResult.PASS;
     }
