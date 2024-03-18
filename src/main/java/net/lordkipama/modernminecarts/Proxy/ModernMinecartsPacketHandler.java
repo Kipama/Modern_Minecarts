@@ -8,30 +8,29 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.level.Level;
-import net.minecraftforge.network.NetworkEvent;
+import net.minecraftforge.event.network.CustomPayloadEvent;
+import net.minecraftforge.network.ChannelBuilder;
 import net.minecraftforge.network.NetworkRegistry;
-import net.minecraftforge.network.simple.SimpleChannel;
+import net.minecraftforge.network.SimpleChannel;
+import net.minecraftforge.network.NetworkDirection;
+
 
 import java.util.function.Supplier;
 
 public class ModernMinecartsPacketHandler {
-    private static final String PROTOCOL_VERSION = "1";
-    public static final SimpleChannel INSTANCE = NetworkRegistry.newSimpleChannel(
-            new ResourceLocation("modernminecarts", "example"),
-            () -> PROTOCOL_VERSION,
-            PROTOCOL_VERSION::equals,
-            PROTOCOL_VERSION::equals
-    );
+    private static final int PROTOCOL_VERSION = 1;
+    public static final SimpleChannel INSTANCE = ChannelBuilder
+            .named(new ResourceLocation("modernminecarts", "example"))
+            .networkProtocolVersion(PROTOCOL_VERSION)
+            .simpleChannel();
 
     public static void Init(){
         int id = 0;
-
-        INSTANCE.registerMessage(id++,
-                CouplePacket.class,
-                CouplePacket::encode,
-                CouplePacket::decode,
-                CouplePacket::handle);
-
+        INSTANCE.messageBuilder(CouplePacket.class, NetworkDirection.PLAY_TO_CLIENT)
+                .encoder(CouplePacket::encode)
+                .decoder(CouplePacket::decode)
+                .consumerMainThread(CouplePacket::handle)
+                .add();
     }
 
     public static class CouplePacket {
@@ -55,8 +54,8 @@ public class ModernMinecartsPacketHandler {
             return packet;
         }
 
-        public static void handle(CouplePacket msg, Supplier<NetworkEvent.Context> ctx) {
-            ctx.get().enqueueWork(() -> {
+        public static void handle(CouplePacket msg, CustomPayloadEvent.Context ctx) {
+            ctx.enqueueWork(() -> {
 
                 Level world = ModernMinecarts.PROXY.getWorld();
 
@@ -73,7 +72,7 @@ public class ModernMinecartsPacketHandler {
                 }
 
             });
-            ctx.get().setPacketHandled(true);
+            ctx.setPacketHandled(true);
         }
 
     }

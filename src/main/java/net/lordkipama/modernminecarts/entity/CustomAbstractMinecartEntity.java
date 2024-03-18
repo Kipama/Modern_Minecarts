@@ -83,7 +83,6 @@ public abstract class CustomAbstractMinecartEntity extends AbstractMinecart impl
     private double lzd;
 
 
-
     protected CustomAbstractMinecartEntity(EntityType<?> pEntityType, Level pLevel) {
         super(pEntityType, pLevel);
     }
@@ -258,7 +257,8 @@ public abstract class CustomAbstractMinecartEntity extends AbstractMinecart impl
 
 
                 if (distance <= 4) {
-                    ModernMinecartsPacketHandler.INSTANCE.send(PacketDistributor.TRACKING_ENTITY.with(()->this), new ModernMinecartsPacketHandler.CouplePacket(getLinkedParent().getId(), this.getId()));
+                    ModernMinecartsPacketHandler.INSTANCE.send(new ModernMinecartsPacketHandler.CouplePacket(getLinkedParent().getId(), this.getId()),PacketDistributor.TRACKING_ENTITY.with(this));
+
 
                     Vec3 direction = getLinkedParent().position().subtract(this.position()).normalize();
                     Vec3 parentVelocity = getLinkedParent().getDeltaMovement();
@@ -482,7 +482,7 @@ public abstract class CustomAbstractMinecartEntity extends AbstractMinecart impl
         }
 
         if (!this.level().isClientSide()) {
-            ModernMinecartsPacketHandler.INSTANCE.send(PacketDistributor.TRACKING_ENTITY.with(()->this), new ModernMinecartsPacketHandler.CouplePacket(this.getParentIdClient(), this.getId()));
+            ModernMinecartsPacketHandler.INSTANCE.send(new ModernMinecartsPacketHandler.CouplePacket(this.getParentIdClient(), this.getId()),PacketDistributor.TRACKING_ENTITY.with(this));
         }
         this.startRefreshTrain();
     }
@@ -780,16 +780,14 @@ public abstract class CustomAbstractMinecartEntity extends AbstractMinecart impl
         this.setDeltaMovement(vec3);
     }
 
-    @Override
-    public void lerpTo(double pX, double pY, double pZ, float pYaw, float pPitch, int pPosRotationIncrements, boolean pTeleport) {
+    public void lerpTo(double pX, double pY, double pZ, float pYRot, float pXRot, int pSteps) {
         this.lx = pX;
         this.ly = pY;
         this.lz = pZ;
-        this.lyr = pYaw;
-        this.lxr = pPitch;
-        this.lSteps = pPosRotationIncrements + 2;
+        this.lyr = (double)pYRot;
+        this.lxr = (double)pXRot;
+        this.lSteps = pSteps + 2;
         this.setDeltaMovement(this.lxd, this.lyd, this.lzd);
-        super.lerpTo(pX,pY,pZ,pYaw,pPitch, pPosRotationIncrements, pTeleport);
     }
 
     @Override
@@ -800,6 +798,7 @@ public abstract class CustomAbstractMinecartEntity extends AbstractMinecart impl
         this.setDeltaMovement(this.lxd, this.lyd, this.lzd);
         super.lerpMotion(pX, pY, pZ);
     }
+
 
     public List<ContainerEntity> getContainerMinecartItemstacks(List<ContainerEntity> entries, boolean directionUp, boolean checkHoppers){
         CustomAbstractMinecartEntity parent = this.getLinkedParent();

@@ -9,6 +9,7 @@ import net.minecraft.world.inventory.*;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.AbstractCookingRecipe;
 import net.minecraft.world.item.crafting.Recipe;
+import net.minecraft.world.item.crafting.RecipeHolder;
 import net.minecraft.world.item.crafting.RecipeType;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.AbstractFurnaceBlockEntity;
@@ -79,6 +80,11 @@ public class FurnaceMinecartMenu extends RecipeBookMenu<Container> {
     public void clearCraftingContent() {
         //this.getSlot(0).set(ItemStack.EMPTY);
         //this.getSlot(2).set(ItemStack.EMPTY);
+    }
+
+    @Override
+    public boolean recipeMatches(RecipeHolder<? extends Recipe<Container>> pRecipe) {
+         return pRecipe.value().matches(this.container, this.level);
     }
 
     public boolean recipeMatches(Recipe<? super Container> p_38980_) {

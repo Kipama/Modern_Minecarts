@@ -17,7 +17,6 @@ import net.minecraft.world.level.block.CraftingTableBlock;
 import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.BlockHitResult;
-import net.minecraftforge.network.NetworkHooks;
 
 public class CustomSmithingTableBlock extends CraftingTableBlock {
     private static final Component CONTAINER_TITLE = Component.translatable("container.upgrade");

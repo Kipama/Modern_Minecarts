@@ -1,7 +1,7 @@
 package net.lordkipama.modernminecarts.Item;
 
 import net.minecraft.core.BlockPos;
-import net.minecraft.core.BlockSource;
+//import net.minecraft.core.BlockSource;
 import net.minecraft.core.Direction;
 import net.minecraft.core.dispenser.DefaultDispenseItemBehavior;
 import net.minecraft.core.dispenser.DispenseItemBehavior;
@@ -63,7 +63,7 @@ public abstract class AbstractMinecartItem extends Item {
         /**
          * Dispense the specified stack, play the dispense sound and spawn particles.
          */
-        public @NotNull ItemStack execute(BlockSource source, ItemStack stack) {
+        /*public @NotNull ItemStack execute(BlockSource source, ItemStack stack) {
 
             Direction direction = source.getBlockState().getValue(DispenserBlock.FACING);
             Level world = source.getLevel();
@@ -99,7 +99,7 @@ public abstract class AbstractMinecartItem extends Item {
                 stack.shrink(1);
             }
             return stack;
-        }
+        }*/
     };
 
 

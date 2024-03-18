@@ -2,6 +2,7 @@ package net.lordkipama.modernminecarts.inventory;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.OptionalInt;
 import javax.annotation.Nullable;
 
 import net.lordkipama.modernminecarts.Item.CustomSmithingTemplateItem;
@@ -11,6 +12,7 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.*;
 import net.minecraft.world.item.DispensibleContainerItem;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.crafting.RecipeHolder;
 import net.minecraft.world.item.crafting.RecipeType;
 import net.minecraft.world.item.crafting.SmithingRecipe;
 import net.minecraft.world.level.Level;
@@ -29,8 +31,8 @@ public class CustomSmithingMenu extends ItemCombinerMenu{
         public static final int SLOT_Y_PLACEMENT = 48;
         private final Level level;
         @Nullable
-        private SmithingRecipe selectedRecipe;
-        private final List<SmithingRecipe> recipes;
+        private RecipeHolder<SmithingRecipe> selectedRecipe;
+        private final List<RecipeHolder<SmithingRecipe>> recipes;
 
         public CustomSmithingMenu(int pContainerId, Inventory pPlayerInventory) {
             this(pContainerId, pPlayerInventory, ContainerLevelAccess.NULL);
@@ -44,28 +46,28 @@ public class CustomSmithingMenu extends ItemCombinerMenu{
 
 
     protected ItemCombinerMenuSlotDefinition createInputSlotDefinitions() {
-            return ItemCombinerMenuSlotDefinition.create().withSlot(0, 8, 48, (p_266643_) -> {
-                return this.recipes.stream().anyMatch((p_266642_) -> {
-                    return p_266642_.isTemplateIngredient(p_266643_);
-                });
-            }).withSlot(1, 26, 48, (p_286208_) -> {
-                return this.recipes.stream().anyMatch((p_286206_) -> {
-                    return p_286206_.isBaseIngredient(p_286208_);
-                });
-            }).withSlot(2, 44, 48, (p_286207_) -> {
-                return this.recipes.stream().anyMatch((p_286204_) -> {
-                    return p_286204_.isAdditionIngredient(p_286207_);
-                });
-            }).withResultSlot(3, 98, 48).build();
-        }
+        return ItemCombinerMenuSlotDefinition.create().withSlot(0, 8, 48, (p_266643_) -> {
+            return this.recipes.stream().anyMatch((p_296885_) -> {
+                return p_296885_.value().isTemplateIngredient(p_266643_);
+            });
+        }).withSlot(1, 26, 48, (p_286208_) -> {
+            return this.recipes.stream().anyMatch((p_296880_) -> {
+                return p_296880_.value().isBaseIngredient(p_286208_);
+            });
+        }).withSlot(2, 44, 48, (p_286207_) -> {
+            return this.recipes.stream().anyMatch((p_296878_) -> {
+                return p_296878_.value().isAdditionIngredient(p_286207_);
+            });
+        }).withResultSlot(3, 98, 48).build();
+    }
 
         protected boolean isValidBlock(BlockState pState) {
             return pState.is(Blocks.SMITHING_TABLE);
         }
 
-        protected boolean mayPickup(Player pPlayer, boolean pHasStack) {
-            return this.selectedRecipe != null && this.selectedRecipe.matches(this.inputSlots, this.level);
-        }
+    protected boolean mayPickup(Player pPlayer, boolean pHasStack) {
+        return this.selectedRecipe != null && this.selectedRecipe.value().matches(this.inputSlots, this.level);
+    }
 
         protected void onTake(Player pPlayer, ItemStack pStack) {
             pStack.onCraftedBy(pPlayer.level(), pPlayer, pStack.getCount());
@@ -110,36 +112,42 @@ public class CustomSmithingMenu extends ItemCombinerMenu{
          * Called when the Anvil Input Slot changes, calculates the new result and puts it in the output slot.
          */
         public void createResult() {
-            List<SmithingRecipe> list = this.level.getRecipeManager().getRecipesFor(RecipeType.SMITHING, this.inputSlots, this.level);
+            List<RecipeHolder<SmithingRecipe>> list = this.level.getRecipeManager().getRecipesFor(RecipeType.SMITHING, this.inputSlots, this.level);
             if (list.isEmpty()) {
                 this.resultSlots.setItem(0, ItemStack.EMPTY);
             } else {
-                SmithingRecipe smithingrecipe = list.get(0);
-                ItemStack itemstack = smithingrecipe.assemble(this.inputSlots, this.level.registryAccess());
+                RecipeHolder<SmithingRecipe> recipeholder = list.get(0);
+                ItemStack itemstack = recipeholder.value().assemble(this.inputSlots, this.level.registryAccess());
                 if (itemstack.isItemEnabled(this.level.enabledFeatures())) {
-                    this.selectedRecipe = smithingrecipe;
-                    this.resultSlots.setRecipeUsed(smithingrecipe);
+                    this.selectedRecipe = recipeholder;
+                    this.resultSlots.setRecipeUsed(recipeholder);
                     this.resultSlots.setItem(0, itemstack);
                 }
             }
 
         }
 
-        public int getSlotToQuickMoveTo(ItemStack pStack) {
-            return this.recipes.stream().map((p_266640_) -> {
-                return findSlotMatchingIngredient(p_266640_, pStack);
-            }).filter(Optional::isPresent).findFirst().orElse(Optional.of(0)).get();
-        }
+    public int getSlotToQuickMoveTo(ItemStack pStack) {
+        return this.findSlotToQuickMoveTo(pStack).orElse(0);
+    }
 
-        private static Optional<Integer> findSlotMatchingIngredient(SmithingRecipe pRecipe, ItemStack pStack) {
-            if (pRecipe.isTemplateIngredient(pStack)) {
-                return Optional.of(0);
-            } else if (pRecipe.isBaseIngredient(pStack)) {
-                return Optional.of(1);
-            } else {
-                return pRecipe.isAdditionIngredient(pStack) ? Optional.of(2) : Optional.empty();
-            }
+    private OptionalInt findSlotToQuickMoveTo(ItemStack pStack) {
+        return this.recipes.stream().flatMapToInt((p_296882_) -> {
+            return findSlotMatchingIngredient(p_296882_.value(), pStack).stream();
+        }).filter((p_296883_) -> {
+            return !this.getSlot(p_296883_).hasItem();
+        }).findFirst();
+    }
+
+    private static OptionalInt findSlotMatchingIngredient(SmithingRecipe pRecipe, ItemStack pStack) {
+        if (pRecipe.isTemplateIngredient(pStack)) {
+            return OptionalInt.of(0);
+        } else if (pRecipe.isBaseIngredient(pStack)) {
+            return OptionalInt.of(1);
+        } else {
+            return pRecipe.isAdditionIngredient(pStack) ? OptionalInt.of(2) : OptionalInt.empty();
         }
+    }
 
         /**
          * Called to determine if the current slot is valid for the stack merging (double-click) code. The stack passed in is
@@ -149,9 +157,8 @@ public class CustomSmithingMenu extends ItemCombinerMenu{
             return pSlot.container != this.resultSlots && super.canTakeItemForPickAll(pStack, pSlot);
         }
 
-        public boolean canMoveIntoInputSlots(ItemStack pStack) {
-            return this.recipes.stream().map((p_266647_) -> {
-                return findSlotMatchingIngredient(p_266647_, pStack);
-            }).anyMatch(Optional::isPresent);
-        }
+    public boolean canMoveIntoInputSlots(ItemStack pStack) {
+        return this.findSlotToQuickMoveTo(pStack).isPresent();
+    }
+
 }

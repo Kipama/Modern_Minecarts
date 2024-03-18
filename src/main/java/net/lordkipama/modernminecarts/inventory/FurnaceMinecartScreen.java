@@ -50,7 +50,7 @@ public class FurnaceMinecartScreen extends AbstractContainerScreen<FurnaceMineca
     }
 
     public void render(GuiGraphics pGuiGraphics, int pMouseX, int pMouseY, float pPartialTick) {
-        this.renderBackground(pGuiGraphics);
+        this.renderBackground(pGuiGraphics, pMouseX, pMouseY, pPartialTick);
         if (this.recipeBookComponent.isVisible() && this.widthTooNarrow) {
             this.renderBg(pGuiGraphics, pPartialTick, pMouseX, pMouseY);
             //this.recipeBookComponent.render(pGuiGraphics, pMouseX, pMouseY, pPartialTick);

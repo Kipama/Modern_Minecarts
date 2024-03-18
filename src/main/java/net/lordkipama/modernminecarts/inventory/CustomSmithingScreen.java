@@ -23,6 +23,7 @@ import net.minecraft.world.item.SmithingTemplateItem;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
 import org.joml.Quaternionf;
+import org.joml.Vector3f;
 
 @OnlyIn(Dist.CLIENT)
 public class CustomSmithingScreen extends ItemCombinerScreen<CustomSmithingMenu> {
@@ -32,6 +33,7 @@ public class CustomSmithingScreen extends ItemCombinerScreen<CustomSmithingMenu>
     private static final Component MISSING_TEMPLATE_TOOLTIP = Component.translatable("container.upgrade.missing_template_tooltip");
     private static final Component ERROR_TOOLTIP = Component.translatable("container.upgrade.error_tooltip");
     private static final List<ResourceLocation> EMPTY_SLOT_SMITHING_TEMPLATES = List.of(EMPTY_SLOT_SMITHING_TEMPLATE_ARMOR_TRIM, EMPTY_SLOT_SMITHING_TEMPLATE_NETHERITE_UPGRADE);
+    private static final Vector3f ARMOR_STAND_TRANSLATION = new Vector3f();
     private static final int TITLE_LABEL_X = 44;
     private static final int TITLE_LABEL_Y = 15;
     private static final int ERROR_ICON_WIDTH = 28;
@@ -95,12 +97,12 @@ public class CustomSmithingScreen extends ItemCombinerScreen<CustomSmithingMenu>
         this.renderOnboardingTooltips(p_281961_, p_282410_, p_283013_);
     }
 
-    protected void renderBg(GuiGraphics p_283264_, float p_267158_, int p_267266_, int p_266722_) {
-        super.renderBg(p_283264_, p_267158_, p_267266_, p_266722_);
-        this.templateIcon.render(this.menu, p_283264_, p_267158_, this.leftPos, this.topPos);
-        this.baseIcon.render(this.menu, p_283264_, p_267158_, this.leftPos, this.topPos);
-        this.additionalIcon.render(this.menu, p_283264_, p_267158_, this.leftPos, this.topPos);
-        InventoryScreen.renderEntityInInventory(p_283264_, this.leftPos + 141, this.topPos + 75, 25, ARMOR_STAND_ANGLE, (Quaternionf)null, this.armorStandPreview);
+    protected void renderBg(GuiGraphics pGuiGraphics, float pPartialTick, int pMouseX, int pMouseY) {
+        super.renderBg(pGuiGraphics, pPartialTick, pMouseX, pMouseY);
+        this.templateIcon.render(this.menu, pGuiGraphics, pPartialTick, this.leftPos, this.topPos);
+        this.baseIcon.render(this.menu, pGuiGraphics, pPartialTick, this.leftPos, this.topPos);
+        this.additionalIcon.render(this.menu, pGuiGraphics, pPartialTick, this.leftPos, this.topPos);
+        InventoryScreen.renderEntityInInventory(pGuiGraphics, (float)(this.leftPos + 141), (float)(this.topPos + 75), 25, ARMOR_STAND_TRANSLATION, ARMOR_STAND_ANGLE, (Quaternionf)null, this.armorStandPreview);
     }
 
     public void slotChanged(AbstractContainerMenu p_267217_, int p_266842_, ItemStack p_267208_) {

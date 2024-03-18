@@ -19,6 +19,11 @@
 
   "entity.modernminecarts.chest_minecart": "Minecart with Chest",
 
+  "item.modernminecarts.copper_upgrade_smithing_template": "Smithing Template",
+  "item.modernminecarts.chipped_copper_upgrade_smithing_template": "Smithing Template",
+  "item.modernminecarts.damaged_copper_upgrade_smithing_template": "Smithing Template",
+
+
   "item.modernminecarts.smithing_template.copper_upgrade.applies_to": "Powered Rails",
   "item.modernminecarts.smithing_template.copper_upgrade.ingredients": "Copper Ingot",
   "item.modernminecarts.smithing_template.copper_upgrade.additions_slot_description": "Add up to 64 Copper Ingots",
