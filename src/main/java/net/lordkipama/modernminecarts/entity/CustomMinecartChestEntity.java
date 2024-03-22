@@ -70,7 +70,7 @@ public class CustomMinecartChestEntity extends CustomAbstractMinecartContainerEn
         return interactionresult;
     }
 
-    protected Item getDropItem() {
+    protected Item getDropItem2() {
         if(getLinkedParent() != null || getLinkedChild() != null){
             level().addFreshEntity(new ItemEntity(level(),this.getX(), this.getY(), this.getZ(), new ItemStack(Items.CHAIN)));
         }
@@ -78,4 +78,7 @@ public class CustomMinecartChestEntity extends CustomAbstractMinecartContainerEn
         return VanillaItems.CHEST_MINECART_ITEM.get();
     }
 
+    protected  Item getDropItem(){
+        return VanillaItems.CHEST_MINECART_ITEM.get();
+    }
 }

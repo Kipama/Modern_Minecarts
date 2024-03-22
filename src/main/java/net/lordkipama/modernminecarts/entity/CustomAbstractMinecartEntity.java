@@ -3,6 +3,7 @@ package net.lordkipama.modernminecarts.entity;
 
 import com.google.common.collect.Maps;
 import com.mojang.datafixers.util.Pair;
+import net.lordkipama.modernminecarts.Item.VanillaItems;
 import net.lordkipama.modernminecarts.Proxy.ModernMinecartsPacketHandler;
 import net.lordkipama.modernminecarts.ModernMinecartsConfig;
 import net.lordkipama.modernminecarts.block.Custom.PoweredDetectorRailBlock;
@@ -25,6 +26,7 @@ import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.vehicle.AbstractMinecart;
 import net.minecraft.world.entity.vehicle.ContainerEntity;
+import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.Level;
@@ -39,6 +41,7 @@ import net.minecraft.world.level.gameevent.GameEvent;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.network.PacketDistributor;
+import org.jetbrains.annotations.NotNull;
 
 import javax.annotation.Nullable;
 import java.util.List;
@@ -63,7 +66,7 @@ restrictions:
  4) The Software does not make up a substantial portion of your own projects.
 */
 
-public abstract class CustomAbstractMinecartEntity extends AbstractMinecart implements ChainMinecartInterface{
+public abstract class CustomAbstractMinecartEntity extends AbstractMinecart{
     private boolean jumpedOffSlope = false;
     private double maxSpeed = 0.8;
 
@@ -288,7 +291,7 @@ public abstract class CustomAbstractMinecartEntity extends AbstractMinecart impl
                         this.setDeltaMovement(this.getDeltaMovement().multiply(Math.pow(newDistance,2), newDistance, Math.pow(newDistance,2)));
                     }
                 } else {
-                    ChainMinecartInterface.unsetParentChild(this.getLinkedParent(), this);
+                    unsetParentChild(this.getLinkedParent(), this);
                     level().addFreshEntity(new ItemEntity(level(),this.getX(), this.getY(), this.getZ(), new ItemStack(Items.CHAIN)));
                     //dropStack(new ItemStack(Items.CHAIN));
                     return;
@@ -296,7 +299,7 @@ public abstract class CustomAbstractMinecartEntity extends AbstractMinecart impl
 
                 if (getLinkedParent() != null) {
                     if (getLinkedParent().isRemoved()) {
-                        ChainMinecartInterface.unsetParentChild(getLinkedParent(), this);
+                        unsetParentChild(getLinkedParent(), this);
                         refreshTrain(false);
                     }
                 }
@@ -309,7 +312,7 @@ public abstract class CustomAbstractMinecartEntity extends AbstractMinecart impl
 
             if (getLinkedChild() != null){
                 if (getLinkedChild().isRemoved()) {
-                    ChainMinecartInterface.unsetParentChild(this, getLinkedChild());
+                    unsetParentChild(this, getLinkedChild());
                     refreshTrain(true);
                 }
             }
@@ -868,7 +871,7 @@ public abstract class CustomAbstractMinecartEntity extends AbstractMinecart impl
                 this.gameEvent(GameEvent.ENTITY_DAMAGE, pSource.getEntity());
                 boolean flag = pSource.getEntity() instanceof Player && ((Player)pSource.getEntity()).getAbilities().instabuild;
                 if(this.getLinkedChild()!=null){
-                    ChainMinecartInterface.unsetParentChild(this, this.getLinkedChild());
+                    unsetParentChild(this, this.getLinkedChild());
                     level().addFreshEntity(new ItemEntity(level(),this.getX(), this.getY(), this.getZ(), new ItemStack(Items.CHAIN)));
                 }
 
@@ -885,6 +888,30 @@ public abstract class CustomAbstractMinecartEntity extends AbstractMinecart impl
             }
         } else {
             return true;
+        }
+    }
+
+
+    protected Item getDropItem(){
+        return getDropItem2();
+    };
+
+    abstract protected Item getDropItem2();
+
+
+    static void setParentChild(@NotNull CustomAbstractMinecartEntity parent, @NotNull CustomAbstractMinecartEntity child) {
+        unsetParentChild(parent, parent.getLinkedChild());
+        //unsetParentChild(child, child.getLinkedParent()); This line leads to bugs when connecting to the front of trains
+        parent.setLinkedChild(child);
+        child.setLinkedParent(parent);
+    }
+
+    static void unsetParentChild(@Nullable CustomAbstractMinecartEntity parent, @Nullable CustomAbstractMinecartEntity child) {
+        if (parent != null) {
+            parent.setLinkedChild(null);
+        }
+        if (child != null) {
+            child.setLinkedParent(null);
         }
     }
 }

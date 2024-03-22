@@ -13,9 +13,11 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.vehicle.AbstractMinecart;
 import net.minecraft.world.item.Item;
+import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.BaseCommandBlock;
 import net.minecraft.world.level.Level;
@@ -39,8 +41,12 @@ public class CustomMinecartCommandBlockEntity extends CustomAbstractMinecartEnti
         super(EntityType.COMMAND_BLOCK_MINECART, pLevel, pX, pY, pZ);
     }
 
-    protected Item getDropItem() {
-        return VanillaItems.MINECART_ITEM.get();
+    protected Item getDropItem2() {
+        if(getLinkedParent() != null || getLinkedChild() != null){
+            level().addFreshEntity(new ItemEntity(level(),this.getX(), this.getY(), this.getZ(), new ItemStack(Items.CHAIN)));
+        }
+
+        return VanillaItems.COMMAND_BLOCK_MINECART_ITEM.get();
     }
 
     protected void defineSynchedData() {

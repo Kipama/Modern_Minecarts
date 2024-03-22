@@ -193,7 +193,7 @@ public class CustomMinecartHopperEntity extends CustomAbstractMinecartContainerE
         getFromStorage();
     }
 
-    protected Item getDropItem() {
+    protected Item getDropItem2() {
         if(getLinkedParent() != null || getLinkedChild() != null){
             level().addFreshEntity(new ItemEntity(level(),this.getX(), this.getY(), this.getZ(), new ItemStack(Items.CHAIN)));
         }
