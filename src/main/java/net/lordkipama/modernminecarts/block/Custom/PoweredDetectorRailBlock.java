@@ -1,5 +1,6 @@
 package net.lordkipama.modernminecarts.block.Custom;
 
+import com.mojang.serialization.MapCodec;
 import net.lordkipama.modernminecarts.Item.AbstractMinecartItem;
 import net.lordkipama.modernminecarts.block.ModBlocks;
 import net.lordkipama.modernminecarts.entity.CustomAbstractMinecartContainerEntity;
@@ -36,6 +37,8 @@ import net.minecraft.world.phys.BlockHitResult;
 import java.util.List;
 import java.util.function.Predicate;
 public class PoweredDetectorRailBlock extends BaseRailBlock {
+
+    public static final MapCodec<PoweredDetectorRailBlock> CODEC = simpleCodec(PoweredDetectorRailBlock::new);
     public static final EnumProperty<RailShape> SHAPE = BlockStateProperties.RAIL_SHAPE_STRAIGHT;
     public static final BooleanProperty POWERED = BlockStateProperties.POWERED;
     public static final BooleanProperty WEIGHT_INVERTED = BooleanProperty.create("weight_inverted");//BlockStateProperties.INVERTED;
@@ -155,6 +158,11 @@ public class PoweredDetectorRailBlock extends BaseRailBlock {
     private AABB getSearchBB(BlockPos pPos) {
         double d0 = 0.2D;
         return new AABB((double)pPos.getX() + 0.2D, (double)pPos.getY(), (double)pPos.getZ() + 0.2D, (double)(pPos.getX() + 1) - 0.2D, (double)(pPos.getY() + 1) - 0.2D, (double)(pPos.getZ() + 1) - 0.2D);
+    }
+
+    @Override
+    public MapCodec<PoweredDetectorRailBlock> codec() {
+        return CODEC;
     }
 
     public void onPlace(BlockState pState, Level pLevel, BlockPos pPos, BlockState pOldState, boolean pIsMoving) {

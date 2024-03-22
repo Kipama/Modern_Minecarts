@@ -78,5 +78,4 @@ public class CustomMinecartChestEntity extends CustomAbstractMinecartContainerEn
         return VanillaItems.CHEST_MINECART_ITEM.get();
     }
 
-
 }

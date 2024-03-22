@@ -1,5 +1,6 @@
 package net.lordkipama.modernminecarts.block.Custom;
 
+import com.mojang.serialization.MapCodec;
 import net.lordkipama.modernminecarts.ModernMinecartsConfig;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.entity.vehicle.AbstractMinecart;
@@ -19,10 +20,16 @@ import org.jetbrains.annotations.NotNull;
 
 public class RailCrossingBlock extends BaseRailBlock {
     public static final EnumProperty<RailShape> SHAPE = BlockStateProperties.RAIL_SHAPE_STRAIGHT;
+    public static final MapCodec<RailCrossingBlock> CODEC = simpleCodec(RailCrossingBlock::new);
+
 
     public RailCrossingBlock(BlockBehaviour.Properties p_55395_) {
         super(true, p_55395_);
         this.registerDefaultState(this.stateDefinition.any().setValue(SHAPE, RailShape.NORTH_SOUTH).setValue(WATERLOGGED, Boolean.FALSE));
+    }
+
+    public MapCodec<RailCrossingBlock> codec() {
+        return CODEC;
     }
 
     @Override

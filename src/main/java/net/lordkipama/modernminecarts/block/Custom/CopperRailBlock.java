@@ -149,7 +149,7 @@ public class CopperRailBlock extends PoweredRailBlock implements WeatheringRailB
 
     //COPPER AGING
     public void randomTick(BlockState p_222665_, ServerLevel p_222666_, BlockPos p_222667_, RandomSource p_222668_) {
-        this.onRandomTick(p_222665_, p_222666_, p_222667_, p_222668_);
+        this.getNextState(p_222665_, p_222666_, p_222667_, p_222668_);
     }
 
     public boolean isRandomlyTicking(BlockState p_154935_) {

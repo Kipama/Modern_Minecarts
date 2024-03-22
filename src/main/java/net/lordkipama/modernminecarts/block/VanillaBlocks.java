@@ -25,10 +25,10 @@ public class VanillaBlocks {
             DeferredRegister.create(ForgeRegistries.BLOCKS, "minecraft");
 
     public static final RegistryObject<Block> VANILLA_RAIL = registerBlock("rail",
-            () -> new CustomRailBlock(BlockBehaviour.Properties.copy(Blocks.RAIL)));
+            () -> new CustomRailBlock(BlockBehaviour.Properties.ofFullCopy(Blocks.RAIL)));
 
     public static final RegistryObject<Block> VANILLA_SMITHING_TABLE = registerBlock("smithing_table",
-            () -> new CustomSmithingTableBlock(BlockBehaviour.Properties.copy(Blocks.SMITHING_TABLE)));
+            () -> new CustomSmithingTableBlock(BlockBehaviour.Properties.ofFullCopy(Blocks.SMITHING_TABLE)));
 
 
 

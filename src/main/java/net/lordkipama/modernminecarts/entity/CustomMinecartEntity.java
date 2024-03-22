@@ -38,6 +38,7 @@ public class CustomMinecartEntity extends CustomAbstractMinecartEntity {
         }
     }
 
+
     protected Item getDropItem() {
         if(getLinkedParent() != null || getLinkedChild() != null){
             level().addFreshEntity(new ItemEntity(level(),this.getX(), this.getY(), this.getZ(), new ItemStack(Items.CHAIN)));

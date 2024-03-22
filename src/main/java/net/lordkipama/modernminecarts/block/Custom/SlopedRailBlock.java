@@ -1,5 +1,6 @@
 package net.lordkipama.modernminecarts.block.Custom;
 
+import com.mojang.serialization.MapCodec;
 import net.lordkipama.modernminecarts.ModernMinecartsConfig;
 import net.lordkipama.modernminecarts.block.ModBlocks;
 import net.minecraft.core.BlockPos;
@@ -10,6 +11,7 @@ import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelAccessor;
+import net.minecraft.world.level.LevelReader;
 import net.minecraft.world.level.block.*;
 import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.block.state.BlockState;
@@ -19,6 +21,8 @@ import net.minecraft.world.level.material.FluidState;
 import net.minecraft.world.level.material.Fluids;
 
 public class SlopedRailBlock extends BaseRailBlock {
+
+    public static final MapCodec<SlopedRailBlock> CODEC = simpleCodec(SlopedRailBlock::new);
     public static final DirectionProperty FACING = BlockStateProperties.HORIZONTAL_FACING;
     public static final EnumProperty<RailShape> SHAPE = BlockStateProperties.RAIL_SHAPE;
     public static final EnumProperty<RailShape> CONST_SHAPE = EnumProperty.create("const_shape", RailShape.class);
@@ -29,6 +33,10 @@ public class SlopedRailBlock extends BaseRailBlock {
         super(true, p_55395_);
 
         this.registerDefaultState(this.stateDefinition.any().setValue(SHAPE, RailShape.NORTH_WEST).setValue(WATERLOGGED, Boolean.valueOf(false)));
+    }
+
+    public MapCodec<SlopedRailBlock> codec() {
+        return CODEC;
     }
 
     @Override
@@ -149,8 +157,10 @@ public class SlopedRailBlock extends BaseRailBlock {
         return state.getValue(SHAPE);
     }
 
+
+
     @Override
-    public ItemStack getCloneItemStack(BlockGetter pLevel, BlockPos pPos, BlockState pState) {
+    public ItemStack getCloneItemStack(LevelReader pLevel, BlockPos pPos, BlockState pState) {
         return new ItemStack(ModBlocks.SLOPED_RAIL.get());
     }
 }

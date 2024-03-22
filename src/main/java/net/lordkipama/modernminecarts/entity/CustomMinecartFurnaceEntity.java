@@ -11,6 +11,7 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.TicketType;
 import net.minecraft.tags.BlockTags;
 import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.vehicle.AbstractMinecart;
 import net.minecraft.world.entity.vehicle.ContainerEntity;
@@ -91,8 +92,11 @@ public class CustomMinecartFurnaceEntity extends CustomAbstractMinecartContainer
         return new FurnaceMinecartMenu(pContainerId, pPlayerInventory,this, this.dataAccess);
     }
 
-    @Override
+
     protected Item getDropItem() {
+        if(getLinkedParent() != null || getLinkedChild() != null){
+            level().addFreshEntity(new ItemEntity(level(),this.getX(), this.getY(), this.getZ(), new ItemStack(Items.CHAIN)));
+        }
         return VanillaItems.FURNACE_MINECART_ITEM.get();
     }
     @Override
