@@ -15,6 +15,7 @@ import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.projectile.AbstractArrow;
 import net.minecraft.world.entity.vehicle.AbstractMinecart;
+import net.minecraft.world.entity.vehicle.MinecartTNT;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
@@ -30,12 +31,12 @@ public class CustomMinecartTNTEntity extends CustomAbstractMinecartEntity {
     private static final byte EVENT_PRIME = 10;
     private int fuse = -1;
 
-    public CustomMinecartTNTEntity(EntityType<? extends net.lordkipama.modernminecarts.entity.CustomMinecartTNTEntity> pEntityType, Level pLevel) {
+    public CustomMinecartTNTEntity(EntityType<? extends CustomMinecartTNTEntity> pEntityType, Level pLevel) {
         super(pEntityType, pLevel);
     }
 
     public CustomMinecartTNTEntity(Level pLevel, double pX, double pY, double pZ) {
-        super(VanillaEntities.TNT_MINECART_ENTITY.get(), pLevel, pX, pY, pZ);
+        super(EntityType.TNT_MINECART, pLevel, pX, pY, pZ);
     }
 
     public AbstractMinecart.Type getMinecartType() {
@@ -74,8 +75,7 @@ public class CustomMinecartTNTEntity extends CustomAbstractMinecartEntity {
         Entity entity = pSource.getDirectEntity();
         if (entity instanceof AbstractArrow abstractarrow) {
             if (abstractarrow.isOnFire()) {
-                DamageSource damagesource = DamageSource.explosion(this, pSource.getEntity());
-                this.explode(damagesource, abstractarrow.getDeltaMovement().lengthSqr());
+                this.explode(abstractarrow.getDeltaMovement().lengthSqr());
             }
         }
 
@@ -106,17 +106,13 @@ public class CustomMinecartTNTEntity extends CustomAbstractMinecartEntity {
      * Makes the minecart explode.
      */
     protected void explode(double pRadiusModifier) {
-        this.explode((DamageSource)null, pRadiusModifier);
-    }
-
-    protected void explode(@Nullable DamageSource p_259539_, double p_260287_) {
         if (!this.level.isClientSide) {
-            double d0 = Math.sqrt(p_260287_);
+            double d0 = Math.sqrt(pRadiusModifier);
             if (d0 > 5.0D) {
                 d0 = 5.0D;
             }
 
-            this.level.explode(this, p_259539_, (ExplosionDamageCalculator)null, this.getX(), this.getY(), this.getZ(), (float)(4.0D + this.random.nextDouble() * 1.5D * d0), false, Level.ExplosionInteraction.TNT);
+            this.level.explode(this, this.getX(), this.getY(), this.getZ(), (float)(4.0D + this.random.nextDouble() * 1.5D * d0), Explosion.BlockInteraction.BREAK);
             this.discard();
         }
 

@@ -4,7 +4,7 @@ package net.lordkipama.modernminecarts.renderer;
 
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
-import com.mojang.math.Axis;
+import com.mojang.math.Vector3f;
 import net.lordkipama.modernminecarts.ModernMinecarts;
 import net.lordkipama.modernminecarts.entity.CustomAbstractMinecartEntity;
 import net.minecraft.client.model.EntityModel;
@@ -24,8 +24,8 @@ import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
 import org.jetbrains.annotations.NotNull;
-import org.joml.Matrix3f;
-import org.joml.Matrix4f;
+import com.mojang.math.Matrix3f;
+import com.mojang.math.Matrix4f;
 
 //The following code is based on the work of Cammie. The only changes have been porting it from fabric to forge.
 /*Copyright (C) 2022 Cammie
@@ -97,8 +97,8 @@ public class CustomMinecartRenderer<T extends CustomAbstractMinecartEntity> exte
         }
 
         pMatrixStack.translate(0.0F, 0.375F, 0.0F);
-        pMatrixStack.mulPose(Axis.YP.rotationDegrees(180.0F - pEntityYaw));
-        pMatrixStack.mulPose(Axis.ZP.rotationDegrees(-f3));
+        pMatrixStack.mulPose(Vector3f.YP.rotationDegrees(180.0F - pEntityYaw));
+        pMatrixStack.mulPose(Vector3f.ZP.rotationDegrees(-f3));
         float f5 = (float) pEntity.getHurtTime() - pPartialTicks;
         float f6 = pEntity.getDamage() - pPartialTicks;
         if (f6 < 0.0F) {
@@ -106,7 +106,7 @@ public class CustomMinecartRenderer<T extends CustomAbstractMinecartEntity> exte
         }
 
         if (f5 > 0.0F) {
-            pMatrixStack.mulPose(Axis.XP.rotationDegrees(Mth.sin(f5) * f5 * f6 / 10.0F * (float) pEntity.getHurtDir()));
+            pMatrixStack.mulPose(Vector3f.XP.rotationDegrees(Mth.sin(f5) * f5 * f6 / 10.0F * (float) pEntity.getHurtDir()));
         }
 
         int j = pEntity.getDisplayOffset();
@@ -116,7 +116,7 @@ public class CustomMinecartRenderer<T extends CustomAbstractMinecartEntity> exte
             float f4 = 0.75F;
             pMatrixStack.scale(0.75F, 0.75F, 0.75F);
             pMatrixStack.translate(-0.5F, (float) (j - 8) / 16.0F, 0.5F);
-            pMatrixStack.mulPose(Axis.YP.rotationDegrees(90.0F));
+            pMatrixStack.mulPose(Vector3f.YP.rotationDegrees(90.0F));
             this.renderMinecartContents(pEntity, pPartialTicks, blockstate, pMatrixStack, pBuffer, pPackedLight);
             pMatrixStack.popPose();
         }
@@ -171,8 +171,8 @@ public class CustomMinecartRenderer<T extends CustomAbstractMinecartEntity> exte
 
 
         pMatrixStack.pushPose();
-        pMatrixStack.mulPose(Axis.YP.rotationDegrees(-hAngle - 90));
-        pMatrixStack.mulPose(Axis.XP.rotation(-vAngle));
+        pMatrixStack.mulPose(Vector3f.YP.rotationDegrees(-hAngle - 90));
+        pMatrixStack.mulPose(Vector3f.XP.rotation(-vAngle));
         pMatrixStack.translate(0, 0, 0.5);
         pMatrixStack.pushPose();
 
@@ -198,7 +198,7 @@ public class CustomMinecartRenderer<T extends CustomAbstractMinecartEntity> exte
 
         pMatrixStack.popPose();
         pMatrixStack.translate(0.19, 0.19, 0);
-        pMatrixStack.mulPose(Axis.ZP.rotationDegrees(90));
+        pMatrixStack.mulPose(Vector3f.ZP.rotationDegrees(90));
 
         entry = pMatrixStack.last();//.peek()
         matrix4f = entry.pose();

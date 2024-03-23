@@ -7,6 +7,7 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.vehicle.AbstractMinecart;
+import net.minecraft.world.entity.vehicle.MinecartSpawner;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
@@ -18,24 +19,24 @@ import net.minecraft.world.level.block.state.BlockState;
 public class CustomMinecartSpawnerEntity extends CustomAbstractMinecartEntity {
     private final BaseSpawner spawner = new BaseSpawner() {
         public void broadcastEvent(Level p_150342_, BlockPos p_150343_, int p_150344_) {
-            p_150342_.broadcastEntityEvent(net.lordkipama.modernminecarts.entity.CustomMinecartSpawnerEntity.this, (byte)p_150344_);
+            p_150342_.broadcastEntityEvent(CustomMinecartSpawnerEntity.this, (byte)p_150344_);
         }
 
         @Override
         @org.jetbrains.annotations.Nullable
         public net.minecraft.world.entity.Entity getSpawnerEntity() {
-            return net.lordkipama.modernminecarts.entity.CustomMinecartSpawnerEntity.this;
+            return CustomMinecartSpawnerEntity.this;
         }
     };
     private final Runnable ticker;
 
-    public CustomMinecartSpawnerEntity(EntityType<? extends net.lordkipama.modernminecarts.entity.CustomMinecartSpawnerEntity> pEntityType, Level pLevel) {
+    public CustomMinecartSpawnerEntity(EntityType<? extends CustomMinecartSpawnerEntity> pEntityType, Level pLevel) {
         super(pEntityType, pLevel);
         this.ticker = this.createTicker(pLevel);
     }
 
     public CustomMinecartSpawnerEntity(Level pLevel, double pX, double pY, double pZ) {
-        super(VanillaEntities.SPAWNER_MINECART_ENTITY.get(), pLevel, pX, pY, pZ);
+        super(EntityType.SPAWNER_MINECART, pLevel, pX, pY, pZ);
         this.ticker = this.createTicker(pLevel);
     }
 
@@ -43,7 +44,7 @@ public class CustomMinecartSpawnerEntity extends CustomAbstractMinecartEntity {
         if(getLinkedParent() != null || getLinkedChild() != null){
             level.addFreshEntity(new ItemEntity(level,this.getX(), this.getY(), this.getZ(), new ItemStack(Items.CHAIN)));
         }
-        return VanillaItems.SPAWNER_MINECART_ITEM.get();
+        return Items.MINECART;
     }
 
     private Runnable createTicker(Level pLevel) {

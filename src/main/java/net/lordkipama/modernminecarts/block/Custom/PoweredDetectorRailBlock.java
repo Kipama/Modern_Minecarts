@@ -89,12 +89,12 @@ public class PoweredDetectorRailBlock extends BaseRailBlock {
         if (player.isCrouching()) {
             state = state.setValue(INVERTED, !state.getValue(INVERTED));
             level.setBlock(pos, ModBlocks.POWERED_DETECTOR_RAIL.get().withPropertiesOf(state), 1);
-            level.playSound((Entity) player, pos, SoundEvents.ITEM_FRAME_PLACE, SoundSource.BLOCKS, 0.3F, 0.6F);
+            level.playSound((Player) player, pos, SoundEvents.ITEM_FRAME_PLACE, SoundSource.BLOCKS, 0.3F, 0.6F);
         } else {
             state = state.setValue(WEIGHT_INVERTED, !state.getValue(WEIGHT_INVERTED));
             state = state.setValue(POWERED, state.getValue(WEIGHT_INVERTED));
             level.setBlock(pos, ModBlocks.POWERED_DETECTOR_RAIL.get().withPropertiesOf(state), 1);
-            level.playSound((Entity) player, pos, SoundEvents.COMPARATOR_CLICK, SoundSource.BLOCKS, 0.3F, state.getValue(WEIGHT_INVERTED) ? 0.55F : 0.5F);
+            level.playSound((Player) player, pos, SoundEvents.COMPARATOR_CLICK, SoundSource.BLOCKS, 0.3F, state.getValue(WEIGHT_INVERTED) ? 0.55F : 0.5F);
         }
         return InteractionResult.SUCCESS;
     }

@@ -13,6 +13,7 @@ import net.minecraftforge.eventbus.api.IEventBus;
 import net.minecraftforge.registries.DeferredRegister;
 import net.minecraftforge.registries.ForgeRegistries;
 import net.minecraftforge.registries.RegistryObject;
+import net.minecraft.world.item.CreativeModeTab;
 
 
 import java.util.function.Supplier;
@@ -26,48 +27,48 @@ public class ModBlocks {
 
     //Normal and Waxed normal
     public static final RegistryObject<Block> COPPER_RAIL = registerBlock("copper_rail",
-            () -> new CopperRailBlock(BlockBehaviour.Properties.copy(Blocks.POWERED_RAIL), WeatheringRailBlock.WeatherState.UNAFFECTED));
+            () -> new CopperRailBlock(BlockBehaviour.Properties.copy(Blocks.POWERED_RAIL), WeatheringRailBlock.WeatherState.UNAFFECTED), CreativeModeTab.TAB_TRANSPORTATION);
     public static final RegistryObject<Block> WAXED_COPPER_RAIL = registerBlock("waxed_copper_rail",
-            () -> new WaxedCopperRailBlock(BlockBehaviour.Properties.copy(Blocks.POWERED_RAIL), WaxedCopperRailBlock.WaxedWeatherState.WAXED_UNAFFECTED));
+            () -> new WaxedCopperRailBlock(BlockBehaviour.Properties.copy(Blocks.POWERED_RAIL), WaxedCopperRailBlock.WaxedWeatherState.WAXED_UNAFFECTED), CreativeModeTab.TAB_TRANSPORTATION);
 
     //Exposed and Waxed Exposed
     public static final RegistryObject<Block> EXPOSED_COPPER_RAIL = registerBlock("exposed_copper_rail",
-            () -> new CopperRailBlock(BlockBehaviour.Properties.copy(Blocks.POWERED_RAIL),WeatheringRailBlock.WeatherState.EXPOSED));
+            () -> new CopperRailBlock(BlockBehaviour.Properties.copy(Blocks.POWERED_RAIL),WeatheringRailBlock.WeatherState.EXPOSED), CreativeModeTab.TAB_TRANSPORTATION);
     public static final RegistryObject<Block> WAXED_EXPOSED_COPPER_RAIL = registerBlock("waxed_exposed_copper_rail",
-            () -> new WaxedCopperRailBlock(BlockBehaviour.Properties.copy(Blocks.POWERED_RAIL), WaxedCopperRailBlock.WaxedWeatherState.WAXED_EXPOSED));
+            () -> new WaxedCopperRailBlock(BlockBehaviour.Properties.copy(Blocks.POWERED_RAIL), WaxedCopperRailBlock.WaxedWeatherState.WAXED_EXPOSED), CreativeModeTab.TAB_TRANSPORTATION);
 
     //Weathered and Waxed Weathered
     public static final RegistryObject<Block> WEATHERED_COPPER_RAIL = registerBlock("weathered_copper_rail",
-            () -> new CopperRailBlock(BlockBehaviour.Properties.copy(Blocks.POWERED_RAIL),WeatheringRailBlock.WeatherState.WEATHERED));
+            () -> new CopperRailBlock(BlockBehaviour.Properties.copy(Blocks.POWERED_RAIL),WeatheringRailBlock.WeatherState.WEATHERED), CreativeModeTab.TAB_TRANSPORTATION);
     public static final RegistryObject<Block> WAXED_WEATHERED_COPPER_RAIL = registerBlock("waxed_weathered_copper_rail",
-            () -> new WaxedCopperRailBlock(BlockBehaviour.Properties.copy(Blocks.POWERED_RAIL), WaxedCopperRailBlock.WaxedWeatherState.WAXED_WEATHERED));
+            () -> new WaxedCopperRailBlock(BlockBehaviour.Properties.copy(Blocks.POWERED_RAIL), WaxedCopperRailBlock.WaxedWeatherState.WAXED_WEATHERED), CreativeModeTab.TAB_TRANSPORTATION);
 
     //Oxidized and Waxed Oxidized
     public static final RegistryObject<Block> OXIDIZED_COPPER_RAIL = registerBlock("oxidized_copper_rail",
-            () -> new CopperRailBlock(BlockBehaviour.Properties.copy(Blocks.POWERED_RAIL),WeatheringRailBlock.WeatherState.OXIDIZED));
+            () -> new CopperRailBlock(BlockBehaviour.Properties.copy(Blocks.POWERED_RAIL),WeatheringRailBlock.WeatherState.OXIDIZED), CreativeModeTab.TAB_TRANSPORTATION);
     public static final RegistryObject<Block> WAXED_OXIDIZED_COPPER_RAIL = registerBlock("waxed_oxidized_copper_rail",
-            () -> new WaxedCopperRailBlock(BlockBehaviour.Properties.copy(Blocks.POWERED_RAIL), WaxedCopperRailBlock.WaxedWeatherState.WAXED_OXIDIZED));
+            () -> new WaxedCopperRailBlock(BlockBehaviour.Properties.copy(Blocks.POWERED_RAIL), WaxedCopperRailBlock.WaxedWeatherState.WAXED_OXIDIZED), CreativeModeTab.TAB_TRANSPORTATION);
 
     public static final RegistryObject<Block> RAIL_CROSSING = registerBlock("rail_crossing",
-            () -> new RailCrossingBlock(BlockBehaviour.Properties.copy(Blocks.RAIL)));
+            () -> new RailCrossingBlock(BlockBehaviour.Properties.copy(Blocks.RAIL)), CreativeModeTab.TAB_TRANSPORTATION);
 
     public static final RegistryObject<Block> SLOPED_RAIL = registerBlock("sloped_rail",
-            () -> new SlopedRailBlock(BlockBehaviour.Properties.copy(Blocks.RAIL)));
+            () -> new SlopedRailBlock(BlockBehaviour.Properties.copy(Blocks.RAIL)), CreativeModeTab.TAB_TRANSPORTATION);
 
     public static final RegistryObject<Block> POWERED_DETECTOR_RAIL = registerBlock("powered_detector_rail",
-            () -> new PoweredDetectorRailBlock(BlockBehaviour.Properties.copy(Blocks.DETECTOR_RAIL)));
+            () -> new PoweredDetectorRailBlock(BlockBehaviour.Properties.copy(Blocks.DETECTOR_RAIL)), CreativeModeTab.TAB_TRANSPORTATION);
 
 
     //END NEW BLOCKS
 
-    private static <T extends Block> RegistryObject<T> registerBlock(String name, Supplier<T> block) {
+    private static <T extends Block> RegistryObject<T> registerBlock(String name, Supplier<T> block, CreativeModeTab tab) {
         RegistryObject<T> toReturn = BLOCKS.register(name, block);
-        registerBlockItem(name, toReturn);
+        registerBlockItem(name, toReturn, tab);
         return toReturn;
     }
 
-    private static<T extends Block> RegistryObject<Item> registerBlockItem(String name, RegistryObject<T> block) {
-        return ModItems.ITEMS.register(name, () -> new BlockItem(block.get(), new Item.Properties()));
+    private static<T extends Block> RegistryObject<Item> registerBlockItem(String name, RegistryObject<T> block, CreativeModeTab tab) {
+        return ModItems.ITEMS.register(name, () -> new BlockItem(block.get(), new Item.Properties().tab(tab)));
     }
 
 

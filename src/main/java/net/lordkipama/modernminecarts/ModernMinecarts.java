@@ -15,10 +15,8 @@ import net.minecraft.client.model.geom.ModelLayers;
 import net.minecraft.client.renderer.entity.EntityRenderer;
 import net.minecraft.client.renderer.entity.EntityRendererProvider;
 import net.minecraft.client.renderer.entity.EntityRenderers;
-import net.minecraft.world.item.CreativeModeTabs;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.common.MinecraftForge;
-import net.minecraftforge.event.CreativeModeTabEvent;
 import net.minecraftforge.eventbus.api.IEventBus;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.DistExecutor;
@@ -48,7 +46,6 @@ public class ModernMinecarts {
 
 
         MinecraftForge.EVENT_BUS.register(this);
-        modEventBus.addListener(this::addItemsToTabs);
 
         ModernMinecartsPacketHandler.Init();
 
@@ -58,42 +55,6 @@ public class ModernMinecarts {
 
     }
 
-    private void addItemsToTabs(CreativeModeTabEvent.BuildContents event)
-    {
-        if (event.getTab() == CreativeModeTabs.REDSTONE_BLOCKS) {
-            event.accept(ModBlocks.COPPER_RAIL);
-            event.accept(ModBlocks.EXPOSED_COPPER_RAIL);
-            event.accept(ModBlocks.WEATHERED_COPPER_RAIL);
-            event.accept(ModBlocks.OXIDIZED_COPPER_RAIL);
-
-            event.accept(ModBlocks.WAXED_COPPER_RAIL);
-            event.accept(ModBlocks.WAXED_EXPOSED_COPPER_RAIL);
-            event.accept(ModBlocks.WAXED_WEATHERED_COPPER_RAIL);
-            event.accept(ModBlocks.WAXED_OXIDIZED_COPPER_RAIL);
-
-            event.accept(ModBlocks.RAIL_CROSSING);
-
-            event.accept(ModBlocks.POWERED_DETECTOR_RAIL);
-
-            event.accept(ModBlocks.SLOPED_RAIL);
-
-        }
-        else if (event.getTab() == CreativeModeTabs.TOOLS_AND_UTILITIES) {
-            event.accept(ModBlocks.COPPER_RAIL);
-            event.accept(ModBlocks.EXPOSED_COPPER_RAIL);
-            event.accept(ModBlocks.WEATHERED_COPPER_RAIL);
-            event.accept(ModBlocks.OXIDIZED_COPPER_RAIL);
-
-            event.accept(ModBlocks.WAXED_COPPER_RAIL);
-            event.accept(ModBlocks.WAXED_EXPOSED_COPPER_RAIL);
-            event.accept(ModBlocks.WAXED_WEATHERED_COPPER_RAIL);
-            event.accept(ModBlocks.WAXED_OXIDIZED_COPPER_RAIL);
-
-            event.accept(ModBlocks.RAIL_CROSSING);
-
-            event.accept(ModBlocks.POWERED_DETECTOR_RAIL);
-        }
-    }
 
 
 
