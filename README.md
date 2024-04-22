@@ -38,4 +38,5 @@ Powered Detector Rail: Merges the functionalities of powered and detector rails.
 ### Smaller Changes:
 - Doubled results of the powered rail crafting recipe from 6 to 12 rails.
 - Reduced air drag on minecarts to allow for further jumps
-
+---
+Fabric Port: https://github.com/Kipama/Modern_Minecarts_Fabric
