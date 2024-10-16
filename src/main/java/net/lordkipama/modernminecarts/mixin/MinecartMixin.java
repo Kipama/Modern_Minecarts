@@ -3,6 +3,8 @@ package net.lordkipama.modernminecarts.mixin;
 import com.llamalad7.mixinextras.sugar.Local;
 import com.llamalad7.mixinextras.sugar.ref.LocalRef;
 import com.mojang.datafixers.util.Pair;
+import net.fabricmc.fabric.api.networking.v1.PlayerLookup;
+import net.lordkipama.modernminecarts.ChainMinecartInterface;
 import net.lordkipama.modernminecarts.ModernMinecarts;
 import net.lordkipama.modernminecarts.block.Custom.CopperRailBlock;
 import net.lordkipama.modernminecarts.block.Custom.SlopedRailBlock;
@@ -11,10 +13,16 @@ import net.lordkipama.modernminecarts.block.ModBlocks;
 import net.minecraft.block.*;
 import net.minecraft.block.enums.RailShape;
 import net.minecraft.entity.Entity;
+import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.MovementType;
+import net.minecraft.entity.damage.DamageSource;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.vehicle.AbstractMinecartEntity;
+import net.minecraft.item.ItemStack;
+import net.minecraft.item.Items;
+import net.minecraft.nbt.NbtCompound;
 import net.minecraft.registry.tag.BlockTags;
+import net.minecraft.server.world.ServerWorld;
 import net.minecraft.state.property.EnumProperty;
 import net.minecraft.state.property.Properties;
 import net.minecraft.util.math.*;
@@ -31,9 +39,16 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 import org.spongepowered.asm.mixin.injection.callback.LocalCapture;
 
+import java.util.UUID;
+
 
 @Mixin(AbstractMinecartEntity.class)
-public class MinecartMixin {
+public class MinecartMixin implements ChainMinecartInterface {
+    @Unique private @Nullable UUID parentUuid;
+    @Unique private @Nullable UUID childUuid;
+
+    @Unique private int parentIdClient;
+    @Unique private int childIdClient;
     @Unique private boolean jumpedOffSlope = false;
     @Unique private double maxSpeed = 0.8;
     /**
@@ -474,19 +489,149 @@ public class MinecartMixin {
         if (!thisObject.isOnGround()) {
             thisObject.setVelocity(thisObject.getVelocity().multiply(0.975)); //AIR DRAG
         }
+    }
 
-        //Vanilla code
-        /*
-        double d = this.getMaxSpeed();
-        Vec3d vec3d = this.getVelocity();
-        this.setVelocity(MathHelper.clamp(vec3d.x, -d, d), vec3d.y, MathHelper.clamp(vec3d.z, -d, d));
-        if (this.isOnGround()) {
-            this.setVelocity(this.getVelocity().multiply(0.5));
+
+    @Inject(method = "tick", at = @At("HEAD"))
+    public void minecarttweaks$tick(CallbackInfo info) {
+        AbstractMinecartEntity thisObject = (AbstractMinecartEntity) (Object) this;
+        if(!thisObject.getWorld().isClient()) {
+            if(getLinkedParent() != null) {
+                System.out.println("Has parent");
+                double distance = getLinkedParent().distanceTo(thisObject) - 1;
+
+                if(distance <= 4) {
+                    Vec3d direction = getLinkedParent().getPos().subtract(thisObject.getPos()).normalize();
+
+                    if(distance > 1) {
+                        Vec3d parentVelocity = getLinkedParent().getVelocity();
+
+                        if(parentVelocity.length() == 0) {
+                            thisObject.setVelocity(direction.multiply(0.05));
+                        }
+                        else {
+                            thisObject.setVelocity(direction.multiply(parentVelocity.length()));
+                            thisObject.setVelocity(thisObject.getVelocity().multiply(distance));
+                        }
+                    }
+                    else if(distance < 0.8)
+                        thisObject.setVelocity(direction.multiply(-0.05));
+                    else
+                        thisObject.setVelocity(Vec3d.ZERO);
+                }
+                else {
+                    ChainMinecartInterface.unsetParentChild((ChainMinecartInterface) getLinkedParent(), this);
+                    thisObject.dropStack(new ItemStack(Items.CHAIN));
+                    return;
+                }
+
+                if(getLinkedParent().isRemoved())
+                    ChainMinecartInterface.unsetParentChild((ChainMinecartInterface) getLinkedParent(), this);
+            }
+
+
+            if(getLinkedChild() != null && getLinkedChild().isRemoved())
+                ChainMinecartInterface.unsetParentChild(this, (ChainMinecartInterface) getLinkedChild());
+
         }
-        this.move(MovementType.SELF, this.getVelocity());
-        if (!this.isOnGround()) {
-            this.setVelocity(this.getVelocity().multiply(0.95));
-        }*/
+    }
+    @Inject(method = "readCustomDataFromNbt", at = @At("HEAD"))
+    public void injectReadCustomDataFromNbt(NbtCompound nbt, CallbackInfo info) {
+        if(nbt.contains("ParentUuid"))
+            parentUuid = nbt.getUuid("ParentUuid");
+        if(nbt.contains("ChildUuid"))
+            childUuid = nbt.getUuid("ChildUuid");
+        System.out.println(nbt.getKeys());
+    }
+
+    @Inject(method = "writeCustomDataToNbt", at = @At("HEAD"))
+    public void injectWriteCustomDataToNbt(NbtCompound nbt, CallbackInfo info) {
+        AbstractMinecartEntity thisObject = (AbstractMinecartEntity) (Object) this;
+
+        if (thisObject.getWorld() instanceof ServerWorld) {
+            System.out.println("Server");
+        } else {
+            System.out.println("Client");
+        }
+
+        if (this.parentUuid != null) {
+            System.out.println("ParentUuid not null");
+            try {
+                nbt.putUuid("ParentUuid", this.parentUuid);
+            } catch (Exception e) {
+                System.err.println("Failed to write ParentUuid: " + e.getMessage());
+            }
+        }
+
+        if (this.childUuid != null) {
+            System.out.println("ChildUuid not null");
+            try {
+                nbt.putUuid("ChildUuid", this.childUuid);
+            } catch (Exception e) {
+                System.err.println("Failed to write ChildUuid: " + e.getMessage());
+            }
+        }
+
+        System.out.println("FinalNBT: " + nbt.getKeys());
+    }
+
+    @Override
+    public AbstractMinecartEntity getLinkedParent() {
+        AbstractMinecartEntity thisObject = (AbstractMinecartEntity) (Object) this;
+        var entity = thisObject.getWorld() instanceof ServerWorld serverWorld && this.parentUuid != null ? serverWorld.getEntity(this.parentUuid) : thisObject.getWorld().getEntityById(this.parentIdClient);
+        return entity instanceof AbstractMinecartEntity abstractMinecartEntity ? abstractMinecartEntity : null;
+    }
+
+    @Override
+    public void setLinkedParent(@Nullable AbstractMinecartEntity parent) {
+        AbstractMinecartEntity thisObject = (AbstractMinecartEntity) (Object) this;
+        if (parent != null) {
+            this.parentUuid = parent.getUuid();
+            this.parentIdClient = parent.getId();
+        } else {
+            this.parentUuid = null;
+            this.parentIdClient = -1;
+        }
+
+        if (!thisObject.getWorld().isClient()) {
+            PlayerLookup.tracking(thisObject).forEach(player -> net.lordkipama.modernminecarts.SyncChainedMinecartPacket.send(this.getLinkedParent(), (AbstractMinecartEntity) (Object) this, player));
+        }
+    }
+
+    @Override
+    public void setLinkedParentClient(int id) {
+        this.parentIdClient = id;
+    }
+
+
+    @Override
+    public AbstractMinecartEntity getLinkedChild() {
+        AbstractMinecartEntity thisObject = (AbstractMinecartEntity) (Object) this;
+        var entity = thisObject.getWorld() instanceof ServerWorld serverWorld && this.childUuid != null ? ((ServerWorld) thisObject.getWorld()).getEntity(this.childUuid) : thisObject.getWorld().getEntityById(this.childIdClient);
+        return entity instanceof AbstractMinecartEntity abstractMinecartEntity ? abstractMinecartEntity : null;
+    }
+    @Override
+    public void setLinkedChild(@Nullable AbstractMinecartEntity child) {
+        if (child != null) {
+            this.childUuid = child.getUuid();
+            this.childIdClient = child.getId();
+        } else {
+            this.childUuid = null;
+            this.childIdClient = -1;
+        }
+    }
+
+    @Override
+    public void setLinkedChildClient(int id) {
+        this.childIdClient = id;
+    }
+
+
+    @Inject(method = "dropItems", at = @At("HEAD"))
+    public void modernMinecarts$dropChain(DamageSource damageSource, CallbackInfo ci) {
+        AbstractMinecartEntity thisObject = (AbstractMinecartEntity) (Object) this;
+        if(getLinkedParent() != null || getLinkedChild() != null)
+            thisObject.dropStack(new ItemStack(Items.CHAIN));
     }
 
 
