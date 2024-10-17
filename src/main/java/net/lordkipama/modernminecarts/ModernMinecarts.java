@@ -3,6 +3,7 @@ package net.lordkipama.modernminecarts;
 import net.fabricmc.api.ModInitializer;
 
 import net.fabricmc.fabric.api.event.player.UseBlockCallback;
+import net.fabricmc.fabric.api.event.player.UseEntityCallback;
 import net.fabricmc.fabric.api.itemgroup.v1.ItemGroupEvents;
 import net.fabricmc.fabric.api.object.builder.v1.block.FabricBlockSettings;
 import net.lordkipama.modernminecarts.block.Custom.CopperRailBlock;
@@ -11,23 +12,31 @@ import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
 import net.minecraft.block.enums.RailShape;
+import net.minecraft.entity.vehicle.AbstractMinecartEntity;
 import net.minecraft.item.ItemGroups;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
+import net.minecraft.nbt.NbtCompound;
 import net.minecraft.registry.Registries;
 import net.minecraft.registry.Registry;
 import net.minecraft.registry.tag.BlockTags;
+import net.minecraft.server.world.ServerWorld;
 import net.minecraft.sound.SoundCategory;
 import net.minecraft.sound.SoundEvents;
 import net.minecraft.state.property.EnumProperty;
 import net.minecraft.state.property.Properties;
+import net.minecraft.text.Text;
 import net.minecraft.util.ActionResult;
 import net.minecraft.util.Hand;
+import net.minecraft.util.Identifier;
 import net.minecraft.util.hit.BlockHitResult;
 import net.minecraft.util.hit.HitResult;
 import net.minecraft.util.math.BlockPos;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.util.HashSet;
+import java.util.Set;
 
 public class ModernMinecarts implements ModInitializer {
 	public static final String MOD_ID = "modernminecarts";
@@ -179,6 +188,83 @@ public class ModernMinecarts implements ModInitializer {
 			return ActionResult.PASS;
 
 		});
+		/*Copyright (C) 2022 Cammie
+
+    Permission is hereby granted, free of charge, to any person obtaining a copy of this software and
+    associated documentation files (the "Software"), to use, copy, modify, and/or merge copies of the
+    Software, and to permit persons to whom the Software is furnished to do so, subject to the following
+    restrictions:
+
+     1) The above copyright notice and this permission notice shall be included in all copies or substantial
+        portions of the Software.
+     2) You include attribution to the copyright holder(s) in public display of any project that uses any
+        portion of the Software.
+     3) You may not publish or distribute substantial portions of the Software in its compiled or uncompiled
+        forms without prior permission from the copyright holder.
+     4) The Software does not make up a substantial portion of your own projects.
+    *
+    * */
+		UseEntityCallback.EVENT.register((player, world, hand, entity, hitResult) -> {
+			if(entity instanceof AbstractMinecartEntity cart) {
+				ItemStack stack = player.getStackInHand(hand);
+
+				if(player.isSneaking() && stack.isOf(Items.CHAIN)) {
+					if (world instanceof ServerWorld server) {
+						NbtCompound nbt = stack.getOrCreateNbt();
+
+						if (nbt.contains("ParentEntity") && !cart.getUuid().equals(nbt.getUuid("ParentEntity"))) {
+							if (server.getEntity(nbt.getUuid("ParentEntity")) instanceof AbstractMinecartEntity parent) {
+								Set<ChainMinecartInterface> train = new HashSet<>();
+								train.add((ChainMinecartInterface) parent);
+
+								ChainMinecartInterface nextParent;
+								while ((nextParent = (ChainMinecartInterface) ((ChainMinecartInterface) parent).getLinkedParent()) instanceof ChainMinecartInterface && !train.contains(nextParent)) {
+									train.add(nextParent);
+								}
+
+								if (train.contains(cart) || ((ChainMinecartInterface) parent).getLinkedChild() != null) {
+									//player.sendMessage(Text.translatable(MinecartTweaks.MOD_ID + ".cant_link_to_engine").formatted(Formatting.RED), true);
+								} else {
+									if (((ChainMinecartInterface) cart).getLinkedParent() != null) {
+										ChainMinecartInterface.unsetParentChild((ChainMinecartInterface) cart, (ChainMinecartInterface) ((ChainMinecartInterface) cart).getLinkedParent());
+									}
+
+									ChainMinecartInterface.setParentChild((ChainMinecartInterface) parent, (ChainMinecartInterface) cart);
+								}
+							} else {
+								nbt.remove("ParentEntity");
+
+								if (nbt.isEmpty())
+									stack.setNbt(null);
+							}
+
+							world.playSound(null, cart.getX(), cart.getY(), cart.getZ(), SoundEvents.BLOCK_CHAIN_PLACE, SoundCategory.NEUTRAL, 1F, 1F);
+
+							if (!player.isCreative())
+								stack.decrement(1);
+
+							nbt.remove("ParentEntity");
+
+							if (nbt.isEmpty())
+								stack.setNbt(null);
+						} else {
+							nbt.putUuid("ParentEntity", cart.getUuid());
+							world.playSound(null, cart.getX(), cart.getY(), cart.getZ(), SoundEvents.BLOCK_CHAIN_HIT, SoundCategory.NEUTRAL, 1F, 1F);
+						}
+					}
+					return ActionResult.success(true);
+				}
+			}
+
+			return ActionResult.PASS;
+		});
+	}
+
+
+
+
+	public static Identifier id(String name) {
+		return new Identifier(MOD_ID, name);
 	}
 }
 
