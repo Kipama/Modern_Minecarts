@@ -12,6 +12,7 @@ import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
 import net.minecraft.block.enums.RailShape;
+import net.minecraft.entity.ItemEntity;
 import net.minecraft.entity.vehicle.AbstractMinecartEntity;
 import net.minecraft.item.ItemGroups;
 import net.minecraft.item.ItemStack;
@@ -222,14 +223,41 @@ public class ModernMinecarts implements ModInitializer {
 									train.add(nextParent);
 								}
 
-								if (train.contains(cart) || ((ChainMinecartInterface) parent).getLinkedChild() != null) {
-									//player.sendMessage(Text.translatable(MinecartTweaks.MOD_ID + ".cant_link_to_engine").formatted(Formatting.RED), true);
-								} else {
-									if (((ChainMinecartInterface) cart).getLinkedParent() != null) {
-										ChainMinecartInterface.unsetParentChild((ChainMinecartInterface) cart, (ChainMinecartInterface) ((ChainMinecartInterface) cart).getLinkedParent());
-									}
+								if (train.contains(cart)) {
+									System.out.println("Train contains cart");
+									if(((ChainMinecartInterface) parent).getLinkedParent()==cart){
+										if(((ChainMinecartInterface) cart).getLinkedParent()!=null){
+											cart.dropStack(new ItemStack(Items.CHAIN));
+											System.out.println("Parent not null");
+											ChainMinecartInterface.unsetParentChild((ChainMinecartInterface) ((ChainMinecartInterface) cart).getLinkedParent(), (ChainMinecartInterface) cart);
+										}
+										if(((ChainMinecartInterface) parent).getLinkedChild()!=null){
+											parent.dropStack(new ItemStack(Items.CHAIN));
+											System.out.println("Child not null");
+											ChainMinecartInterface.unsetParentChild((ChainMinecartInterface) parent, ((ChainMinecartInterface) ((ChainMinecartInterface) parent).getLinkedChild()));
+										}
 
-									ChainMinecartInterface.setParentChild((ChainMinecartInterface) parent, (ChainMinecartInterface) cart);
+										ChainMinecartInterface.unsetParentChild((ChainMinecartInterface) cart, (ChainMinecartInterface) parent);
+										ChainMinecartInterface.setParentChild((ChainMinecartInterface) parent, (ChainMinecartInterface) cart);
+									}
+								} else {
+									if(((ChainMinecartInterface) cart).getLinkedParent()!= parent) {
+										System.out.println("Train doesnt contain cart");
+										if (((ChainMinecartInterface) cart).getLinkedParent() != null) {
+											ChainMinecartInterface.unsetParentChild((ChainMinecartInterface) ((ChainMinecartInterface) cart).getLinkedParent(),(ChainMinecartInterface) cart);
+											cart.dropStack(new ItemStack(Items.CHAIN));
+											System.out.println("Parent not null");
+										}
+										if (((ChainMinecartInterface) parent).getLinkedChild() != null) {
+											ChainMinecartInterface.unsetParentChild((ChainMinecartInterface) parent, (ChainMinecartInterface) ((ChainMinecartInterface) parent).getLinkedChild());
+											parent.dropStack(new ItemStack(Items.CHAIN));
+											System.out.println("Child not null");
+										}
+										if(!player.isCreative()){
+											stack.decrement(1);
+										}
+										ChainMinecartInterface.setParentChild((ChainMinecartInterface) parent, (ChainMinecartInterface) cart);
+									}
 								}
 							} else {
 								nbt.remove("ParentEntity");
@@ -240,16 +268,23 @@ public class ModernMinecarts implements ModInitializer {
 
 							world.playSound(null, cart.getX(), cart.getY(), cart.getZ(), SoundEvents.BLOCK_CHAIN_PLACE, SoundCategory.NEUTRAL, 1F, 1F);
 
-							if (!player.isCreative())
-								stack.decrement(1);
+
 
 							nbt.remove("ParentEntity");
 
 							if (nbt.isEmpty())
 								stack.setNbt(null);
 						} else {
-							nbt.putUuid("ParentEntity", cart.getUuid());
-							world.playSound(null, cart.getX(), cart.getY(), cart.getZ(), SoundEvents.BLOCK_CHAIN_HIT, SoundCategory.NEUTRAL, 1F, 1F);
+							if(nbt.contains("ParentEntity") && cart.getUuid().equals(nbt.getUuid("ParentEntity"))){
+								nbt.remove("ParentEntity");
+								world.playSound(null, cart.getX(), cart.getY(), cart.getZ(), SoundEvents.BLOCK_CHAIN_HIT, SoundCategory.NEUTRAL, 1F, 1F);
+								if (nbt.isEmpty())
+									stack.setNbt(null);
+							}
+							else {
+								nbt.putUuid("ParentEntity", cart.getUuid());
+								world.playSound(null, cart.getX(), cart.getY(), cart.getZ(), SoundEvents.BLOCK_CHAIN_HIT, SoundCategory.NEUTRAL, 1F, 1F);
+							}
 						}
 					}
 					return ActionResult.success(true);

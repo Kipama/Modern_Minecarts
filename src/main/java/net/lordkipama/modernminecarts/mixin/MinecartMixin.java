@@ -167,7 +167,7 @@ public class MinecartMixin implements ChainMinecartInterface {
         d = o + h * s;
         f = p + i * s;
         thisObject.setPosition(d, e, f);
-        t = thisObject.hasPassengers() ? 0.75 : 1.0;
+        t = 1; //REMOVED Slowdown for minecart with passangers thisObject.hasPassengers() ? 0.75 : 1.0;
         u =((MinecartInvoker) thisObject).invokeGetMaxSpeed();
         vec3d2 = thisObject.getVelocity();
         vec3d2 = new Vec3d(Math.min(Math.max(vec3d2.x, -u), u),0,Math.min(Math.max(vec3d2.z, -u), u));
@@ -493,11 +493,10 @@ public class MinecartMixin implements ChainMinecartInterface {
 
 
     @Inject(method = "tick", at = @At("HEAD"))
-    public void minecarttweaks$tick(CallbackInfo info) {
+    public void modernminecarts$tick(CallbackInfo info) {
         AbstractMinecartEntity thisObject = (AbstractMinecartEntity) (Object) this;
         if(!thisObject.getWorld().isClient()) {
             if(getLinkedParent() != null) {
-                System.out.println("Has parent");
                 double distance = getLinkedParent().distanceTo(thisObject) - 1;
 
                 if(distance <= 4) {
@@ -634,5 +633,31 @@ public class MinecartMixin implements ChainMinecartInterface {
             thisObject.dropStack(new ItemStack(Items.CHAIN));
     }
 
+    /**
+     * @author
+     * @reason
+     */
+    @Overwrite
+    public void applySlowdown() {
+        AbstractMinecartEntity thisObject = (AbstractMinecartEntity) (Object) this;
+        double d = 0.96; //REMOVED Slowdown for minecart with passangers thisObject.hasPassengers() ? 0.997 : 0.96;
+        Vec3d vec3d = thisObject.getVelocity();
+        vec3d = vec3d.multiply(d, 0.0, d);
+        if (thisObject.isTouchingWater()) {
+            vec3d = vec3d.multiply(0.949999988079071);
+        }
 
+        thisObject.setVelocity(vec3d);
+    }
+
+    @Inject(method = "damage", at = @At("HEAD"), cancellable = true)
+    private void injectHurt(CallbackInfoReturnable<Double> cir) {
+        AbstractMinecartEntity thisObject = (AbstractMinecartEntity) (Object) this;
+        if(!thisObject.getWorld().isClient()) {
+            if(this.getLinkedChild()!=null){
+                ChainMinecartInterface.unsetParentChild(this, (ChainMinecartInterface) this.getLinkedChild());
+                thisObject.dropStack(new ItemStack(Items.CHAIN));
+            }
+        }
+    }
 }
