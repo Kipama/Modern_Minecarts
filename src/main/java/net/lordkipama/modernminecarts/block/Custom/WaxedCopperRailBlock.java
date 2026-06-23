@@ -7,6 +7,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
+import net.minecraft.tags.ItemTags;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.player.Player;
@@ -60,9 +61,11 @@ public class WaxedCopperRailBlock extends PoweredRailBlock{
     @Override
     public InteractionResult use(BlockState state, Level level, BlockPos pos, Player player, InteractionHand interactionHand, BlockHitResult blockHitResult) {
         ItemStack itemstack = player.getItemInHand(interactionHand);
-        if(!player.isCreative() && !player.isSpectator()) {
-            player.getItemInHand(interactionHand).setDamageValue(player.getItemInHand(interactionHand).getDamageValue() + 1);
+
+        if (!itemstack.is(ItemTags.AXES)) {
+            return InteractionResult.PASS;
         }
+
         if(!level.isClientSide()) {
             if (this.waxedWeatherState == WaxedCopperRailBlock.WaxedWeatherState.WAXED_UNAFFECTED) {
                 if (player instanceof ServerPlayer) {
@@ -85,13 +88,17 @@ public class WaxedCopperRailBlock extends PoweredRailBlock{
                 }
                 level.setBlock(pos, ModBlocks.OXIDIZED_COPPER_RAIL.get().withPropertiesOf(state), 1);
             }
+
+            if(!player.isCreative() && !player.isSpectator()) {
+                itemstack.setDamageValue(itemstack.getDamageValue() + 1);
+            }
         }
 
         player.swing(interactionHand);
         level.playSound(player, pos, SoundEvents.AXE_WAX_OFF, SoundSource.BLOCKS, 1.0F, 1.0F);
         level.levelEvent(player, 3004, pos, 0);
 
-        return super.use(state, level, pos, player, interactionHand, blockHitResult);
+        return InteractionResult.sidedSuccess(level.isClientSide());
     }
 
     public static enum WaxedWeatherState {

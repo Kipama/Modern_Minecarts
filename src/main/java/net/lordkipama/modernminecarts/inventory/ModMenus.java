@@ -22,9 +22,6 @@ public class ModMenus {
     private static final DeferredRegister<MenuType<?>> MENU_TYPES =
             DeferredRegister.create(ForgeRegistries.MENU_TYPES, ModernMinecarts.MOD_ID);
 
-    public static final RegistryObject<MenuType<CustomSmithingMenu>> CUSTOM_SMITHING_MENU =
-            MENU_TYPES.register("custom_smithing_menu", ()-> new MenuType(CustomSmithingMenu::new, FeatureFlags.DEFAULT_FLAGS));
-
     public static final RegistryObject<MenuType<FurnaceMinecartMenu>> FURNACE_MINECART_MENU =
             MENU_TYPES.register("furnace_minecart_menu", ()-> new MenuType(FurnaceMinecartMenu::new, FeatureFlags.DEFAULT_FLAGS));
 

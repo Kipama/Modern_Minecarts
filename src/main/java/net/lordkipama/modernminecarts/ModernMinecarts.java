@@ -7,7 +7,6 @@ import net.lordkipama.modernminecarts.Proxy.ModernMinecartsPacketHandler;
 import net.lordkipama.modernminecarts.block.ModBlocks;
 import net.lordkipama.modernminecarts.block.VanillaBlocks;
 import net.lordkipama.modernminecarts.entity.*;
-import net.lordkipama.modernminecarts.inventory.CustomSmithingScreen;
 import net.lordkipama.modernminecarts.inventory.FurnaceMinecartScreen;
 import net.lordkipama.modernminecarts.inventory.ModMenus;
 import net.lordkipama.modernminecarts.renderer.CustomMinecartRenderer;
@@ -27,8 +26,6 @@ import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.event.lifecycle.FMLClientSetupEvent;
 import net.minecraftforge.fml.event.lifecycle.FMLCommonSetupEvent;
 import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import net.lordkipama.modernminecarts.Proxy.ClientProxy;
 import net.lordkipama.modernminecarts.Proxy.ServerProxy;
 
@@ -80,11 +77,6 @@ public class ModernMinecarts {
             event.accept(ModBlocks.SLOPED_RAIL);
 
         }
-        else if (event.getTabKey() == CreativeModeTabs.INGREDIENTS) {
-            event.accept(ModItems.COPPER_UPGRADE_SMITHING_TEMPLATE);
-            event.accept(ModItems.CHIPPED_COPPER_UPGRADE_SMITHING_TEMPLATE);
-            event.accept(ModItems.DAMAGED_COPPER_UPGRADE_SMITHING_TEMPLATE);
-        }
         else if (event.getTabKey() == CreativeModeTabs.TOOLS_AND_UTILITIES) {
             event.accept(ModBlocks.COPPER_RAIL);
             event.accept(ModBlocks.EXPOSED_COPPER_RAIL);
@@ -116,9 +108,6 @@ public class ModernMinecarts {
             EntityRenderers.register(VanillaEntities.HOPPER_MINECART_ENTITY.get(), new CustomMinecartHopperEntityRenderFactory());
             EntityRenderers.register(VanillaEntities.SPAWNER_MINECART_ENTITY.get(), new CustomMinecartSpawnerEntityRenderFactory());
             EntityRenderers.register(VanillaEntities.TNT_MINECART_ENTITY.get(), new CustomMinecartTNTEntityRenderFactory());
-            event.enqueueWork(
-                    () -> MenuScreens.register(ModMenus.CUSTOM_SMITHING_MENU.get(), CustomSmithingScreen::new)
-            );
             event.enqueueWork(
                     () -> MenuScreens.register(ModMenus.FURNACE_MINECART_MENU.get(), FurnaceMinecartScreen::new)
             );
