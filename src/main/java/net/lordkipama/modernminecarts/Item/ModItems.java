@@ -21,10 +21,6 @@ public class ModItems {
     public static final DeferredRegister<Item> ITEMS =
             DeferredRegister.create(ForgeRegistries.ITEMS, ModernMinecarts.MOD_ID);
 
-    public static final RegistryObject<Item> COPPER_UPGRADE_SMITHING_TEMPLATE = ITEMS.register("copper_upgrade_smithing_template", CustomSmithingTemplateItem::createCopperUpgradeTemplate);
-    public static final RegistryObject<Item> CHIPPED_COPPER_UPGRADE_SMITHING_TEMPLATE = ITEMS.register("chipped_copper_upgrade_smithing_template", CustomSmithingTemplateItem::createChippedCopperUpgradeTemplate);
-    public static final RegistryObject<Item> DAMAGED_COPPER_UPGRADE_SMITHING_TEMPLATE = ITEMS.register("damaged_copper_upgrade_smithing_template", CustomSmithingTemplateItem::createDamagedCopperUpgradeTemplate);
-
 
     public static void register(IEventBus eventBus) {
         ITEMS.register(eventBus);
