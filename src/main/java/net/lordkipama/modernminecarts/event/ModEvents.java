@@ -17,15 +17,21 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.ai.behavior.EntityTracker;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.entity.projectile.ProjectileUtil;
 import net.minecraft.world.entity.vehicle.AbstractMinecart;
 import net.minecraft.world.inventory.MenuType;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
+import net.minecraft.world.level.ClipContext;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.phys.AABB;
+import net.minecraft.world.phys.EntityHitResult;
+import net.minecraft.world.phys.HitResult;
+import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.client.event.RenderLivingEvent;
 import net.minecraftforge.client.event.ScreenEvent;
 import net.minecraftforge.event.entity.living.LivingHurtEvent;
@@ -45,38 +51,63 @@ public class ModEvents {
     @Mod.EventBusSubscriber(modid = ModernMinecarts.MOD_ID)
     public static class ForgeEvents {
         @SubscribeEvent
-        public static void PlayerInteractEvent(PlayerInteractEvent.RightClickBlock event) {
-                BlockState pBlockstate =  event.getLevel().getBlockState(event.getPos());
-                Block targetedBlock = pBlockstate.getBlock();
-                //Wax/Deage Rail
-                if (targetedBlock.equals(ModBlocks.COPPER_RAIL.get()) || targetedBlock.equals(ModBlocks.EXPOSED_COPPER_RAIL.get()) || targetedBlock.equals(ModBlocks.WEATHERED_COPPER_RAIL.get()) || targetedBlock.equals(ModBlocks.OXIDIZED_COPPER_RAIL.get())) {
-                    if (event.getItemStack().getItem() == Items.HONEYCOMB || event.getItemStack().is(ItemTags.AXES)) {
-                        event.setUseBlock(Event.Result.ALLOW);
-                    } else {
-                        event.setUseBlock(Event.Result.DENY);
+        public static void onRightClickItem(PlayerInteractEvent.RightClickItem event) {
+            Player player = event.getEntity();
+            ItemStack stack = player.getItemInHand(event.getHand());
+
+            if (!event.getLevel().isClientSide()
+                    && player.isCrouching()
+                    && stack.getItem() == Items.CHAIN
+                    && stack.hasTag()
+                    && isRightClickingAir(player, event.getLevel())) {
+                CompoundTag nbt = stack.getTag();
+
+                if (nbt != null && nbt.contains("ParentEntity")) {
+                    nbt.remove("ParentEntity");
+
+                    if (nbt.isEmpty()) {
+                        stack.setTag(null);
                     }
+
+                    event.getLevel().playSound(null, player.getX(), player.getY(), player.getZ(), SoundEvents.CHAIN_BREAK, SoundSource.NEUTRAL, 1F, 1F);
+                    event.setCancellationResult(InteractionResult.SUCCESS);
+                    event.setCanceled(true);
                 }
-                //Dewax Rail
-                else if (targetedBlock.equals(ModBlocks.WAXED_COPPER_RAIL.get()) || targetedBlock.equals(ModBlocks.WAXED_EXPOSED_COPPER_RAIL.get()) || targetedBlock.equals(ModBlocks.WAXED_WEATHERED_COPPER_RAIL.get()) || targetedBlock.equals(ModBlocks.WAXED_OXIDIZED_COPPER_RAIL.get())) {
-                    if (event.getItemStack().is(ItemTags.AXES)) {
-                        event.setUseBlock(Event.Result.ALLOW);
-                    } else {
-                        event.setUseBlock(Event.Result.DENY);
-                    }
-                }
-                //Place sloped rail.
-                else if (targetedBlock.equals(Blocks.RAIL)) {
-                    if (event.getItemStack().getItem() == Items.STICK) {
-                        event.setUseBlock(Event.Result.ALLOW);
-                        event.setUseItem(Event.Result.DENY);
-                    } else {
-                        event.setUseBlock(Event.Result.DENY);
-                    }
-                } else if (targetedBlock.equals(ModBlocks.POWERED_DETECTOR_RAIL.get())) {
-                    if (event.getHand() == InteractionHand.MAIN_HAND) {
-                        event.setUseBlock(Event.Result.ALLOW);
-                    }
-                }
+            }
+        }
+
+        private static boolean isRightClickingAir(Player player, Level level) {
+            double reachDistance = 5.0D;
+            Vec3 eyePosition = player.getEyePosition();
+            Vec3 lookDirection = player.getLookAngle();
+            Vec3 endPosition = eyePosition.add(lookDirection.scale(reachDistance));
+
+            HitResult blockHit = level.clip(new ClipContext(
+                    eyePosition,
+                    endPosition,
+                    ClipContext.Block.OUTLINE,
+                    ClipContext.Fluid.NONE,
+                    player
+            ));
+
+            if (blockHit.getType() != HitResult.Type.MISS) {
+                return false;
+            }
+
+            AABB searchBox = player.getBoundingBox()
+                    .expandTowards(lookDirection.scale(reachDistance))
+                    .inflate(1.0D);
+
+            EntityHitResult entityHit = ProjectileUtil.getEntityHitResult(
+                    level,
+                    player,
+                    eyePosition,
+                    endPosition,
+                    searchBox,
+                    entity -> !entity.isSpectator() && entity.isPickable()
+            );
+
+            return entityHit == null;
         }
 
         @SubscribeEvent
@@ -85,7 +116,6 @@ public class ModEvents {
             Player player = event.getEntity();
             ItemStack stack = player.getItemInHand(hand);
             Entity entity = event.getTarget();
-
             if(event.getLevel().isClientSide()) {
                 //CLIENTSIDE CHAIN LOGIC
                 if (entity instanceof CustomAbstractMinecartEntity mc && mc.getMinecartType() == CustomAbstractMinecartEntity.Type.RIDEABLE) {
