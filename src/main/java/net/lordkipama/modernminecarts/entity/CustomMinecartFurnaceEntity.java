@@ -120,15 +120,18 @@ public class CustomMinecartFurnaceEntity extends CustomAbstractMinecartContainer
         super.tick();
 
         if(this.level instanceof ServerLevel server) {
+            Block block = level.getBlockState(this.getOnPos()).getBlock();
+            Vec3 movement = this.getDeltaMovement();
+            boolean isMoving = movement.horizontalDistanceSqr() > 0.001D;
+            boolean hasChild = this.getLinkedChild() != null;
+            boolean consumeFuel = (((!(block instanceof PoweredRailBlock) || ((PoweredRailBlock) block).isActivatorRail()) && !(block instanceof PoweredDetectorRailBlock)) || level.getBlockState(this.getOnPos()).getValue(PoweredRailBlock.POWERED))
+                    && level.getBlockState(this.getOnPos()).is(BlockTags.RAILS)
+                    && this.getLinkedParent() == null
+                    && (hasChild || isMoving);
             if (fuel > 0) {
                 --fuel;
             }
-            else if (this.getLinkedChild() != null) {
-                Block block = level.getBlockState(this.getOnPos()).getBlock();
-                boolean consumeFuel = (((!(block instanceof PoweredRailBlock) || ((PoweredRailBlock) block).isActivatorRail()) && !(block instanceof PoweredDetectorRailBlock)) || level.getBlockState(this.getOnPos()).getValue(PoweredRailBlock.POWERED))
-                        && level.getBlockState(this.getOnPos()).is(BlockTags.RAILS)
-                        && this.getLinkedParent() == null;
-
+            else{
 
                 if(consumeFuel) {
                     numBurningFurni = tryBurnFuel();
@@ -138,10 +141,17 @@ public class CustomMinecartFurnaceEntity extends CustomAbstractMinecartContainer
                     fillFuelSlot(fuelSlot);
                 }
             }
-            if (this.fuel > 0 && this.getLinkedChild()!=null && this.xPush==0 && this.zPush==0) {
-                this.xPush = this.getX() - this.getLinkedChild().getX();
-                this.zPush = this.getZ() - this.getLinkedChild().getZ();
-                this.setDisplayBlockState(Blocks.FURNACE.defaultBlockState().setValue(FurnaceBlock.FACING, Direction.NORTH).setValue(FurnaceBlock.LIT, Boolean.TRUE));
+            if (this.fuel > 0 && this.xPush==0 && this.zPush==0) {
+                if(hasChild) {
+                    this.xPush = this.getX() - this.getLinkedChild().getX();
+                    this.zPush = this.getZ() - this.getLinkedChild().getZ();
+                    this.setDisplayBlockState(Blocks.FURNACE.defaultBlockState().setValue(FurnaceBlock.FACING, Direction.NORTH).setValue(FurnaceBlock.LIT, Boolean.TRUE));
+                }
+                else if(isMoving){
+                    this.xPush = movement.x;
+                    this.zPush = movement.z;
+                    this.setDisplayBlockState(Blocks.FURNACE.defaultBlockState().setValue(FurnaceBlock.FACING, Direction.NORTH).setValue(FurnaceBlock.LIT, Boolean.TRUE));
+                }
             }
             if (this.fuel <= 0) {
                 this.xPush = 0.0D;
