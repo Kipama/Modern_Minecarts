@@ -9,6 +9,7 @@ import net.minecraft.screen.ArrayPropertyDelegate;
 import net.minecraft.screen.PropertyDelegate;
 import net.minecraft.screen.ScreenHandler;
 import net.minecraft.screen.slot.Slot;
+import net.lordkipama.modernminecarts.logic.MinecartTuning;
 
 public class FurnaceMinecartScreenHandler extends ScreenHandler {
     private static final int PROPERTY_COUNT = 3;
@@ -106,6 +107,6 @@ public class FurnaceMinecartScreenHandler extends ScreenHandler {
     }
 
     public int getSpeedProgress() {
-        return Math.max(0, Math.min(40, properties.get(2)));
+        return Math.max(0, Math.min(MinecartTuning.SPEEDOMETER_HEIGHT, properties.get(2)));
     }
 }
