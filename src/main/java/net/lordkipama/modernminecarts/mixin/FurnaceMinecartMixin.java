@@ -3,6 +3,7 @@ package net.lordkipama.modernminecarts.mixin;
 import net.lordkipama.modernminecarts.interfaces.ChainMinecartInterface;
 import net.lordkipama.modernminecarts.interfaces.ContainerMinecartInteface;
 import net.lordkipama.modernminecarts.block.Custom.CopperRailBlock;
+import net.lordkipama.modernminecarts.block.Custom.PoweredDetectorRailBlock;
 import net.lordkipama.modernminecarts.block.Custom.SlopedRailBlock;
 import net.lordkipama.modernminecarts.block.Custom.WaxedCopperRailBlock;
 import net.lordkipama.modernminecarts.block.ModBlocks;
@@ -435,6 +436,9 @@ public abstract class FurnaceMinecartMixin implements Inventory, NamedScreenHand
                 && !state.isOf(net.minecraft.block.Blocks.ACTIVATOR_RAIL)
                 && state.contains(PoweredRailBlock.POWERED)) {
             return state.get(PoweredRailBlock.POWERED);
+        }
+        if (state.getBlock() instanceof PoweredDetectorRailBlock) {
+            return state.get(PoweredDetectorRailBlock.POWERED);
         }
         return true;
     }

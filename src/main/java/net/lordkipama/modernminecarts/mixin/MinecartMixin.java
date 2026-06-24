@@ -8,6 +8,7 @@ import net.lordkipama.modernminecarts.interfaces.ChainMinecartInterface;
 import net.lordkipama.modernminecarts.interfaces.ContainerMinecartInteface;
 import net.lordkipama.modernminecarts.ModernMinecarts;
 import net.lordkipama.modernminecarts.block.Custom.CopperRailBlock;
+import net.lordkipama.modernminecarts.block.Custom.PoweredDetectorRailBlock;
 import net.lordkipama.modernminecarts.block.Custom.SlopedRailBlock;
 import net.lordkipama.modernminecarts.block.Custom.WaxedCopperRailBlock;
 import net.lordkipama.modernminecarts.block.ModBlocks;
@@ -78,6 +79,10 @@ public class MinecartMixin implements ChainMinecartInterface {
         if(state.getBlock()  instanceof PoweredRailBlock){
             bl = state.get(PoweredRailBlock.POWERED);
             bl2 = !bl;
+        } else if (state.getBlock() instanceof PoweredDetectorRailBlock detectorRail) {
+            bl = state.get(PoweredDetectorRailBlock.POWERED);
+            bl2 = !bl;
+            modernminecarts$applyPoweredDetectorMotion(thisObject, state, detectorRail, bl);
         }
         double g = 0.0078125;
         if (thisObject.isTouchingWater()) {
@@ -360,6 +365,56 @@ public class MinecartMixin implements ChainMinecartInterface {
 
         if (thisObject instanceof ContainerMinecartInteface furnaceMinecart) {
             cir.setReturnValue(furnaceMinecart.limitTrainSpeed(cir.getReturnValue()));
+        }
+    }
+
+    @Unique
+    private void modernminecarts$applyPoweredDetectorMotion(
+            AbstractMinecartEntity cart,
+            BlockState state,
+            PoweredDetectorRailBlock rail,
+            boolean powered
+    ) {
+        if (getLinkedParent() != null) {
+            return;
+        }
+
+        Vec3d velocity = cart.getVelocity();
+        RailShape shape = state.get(PoweredDetectorRailBlock.SHAPE);
+        boolean northSouth = shape == RailShape.NORTH_SOUTH
+                || shape == RailShape.ASCENDING_NORTH
+                || shape == RailShape.ASCENDING_SOUTH;
+
+        if (state.get(PoweredDetectorRailBlock.INVERTED)) {
+            if (northSouth) {
+                if (velocity.z < -0.2D) {
+                    cart.setVelocity(velocity.x, velocity.y, velocity.z / 8.0D + 0.1D);
+                } else if (powered) {
+                    cart.setVelocity(velocity.x, velocity.y, velocity.z + 0.02D);
+                } else {
+                    cart.setVelocity(velocity.x, velocity.y, velocity.z / 7.0D);
+                }
+            } else if (velocity.x > 0.2D) {
+                cart.setVelocity(velocity.x / 8.0D - 0.1D, velocity.y, velocity.z);
+            } else if (powered) {
+                cart.setVelocity(velocity.x - 0.02D, velocity.y, velocity.z);
+            } else {
+                cart.setVelocity(velocity.x / 7.0D, velocity.y, velocity.z);
+            }
+        } else if (northSouth) {
+            if (velocity.z > 0.2D) {
+                cart.setVelocity(velocity.x, velocity.y, velocity.z / 8.0D - 0.1D);
+            } else if (powered) {
+                cart.setVelocity(velocity.x, velocity.y, velocity.z - 0.02D);
+            } else {
+                cart.setVelocity(velocity.x, velocity.y, velocity.z / 7.0D);
+            }
+        } else if (velocity.x < -0.2D) {
+            cart.setVelocity(velocity.x / 8.0D + 0.1D, velocity.y, velocity.z);
+        } else if (powered) {
+            cart.setVelocity(velocity.x + 0.02D, velocity.y, velocity.z);
+        } else {
+            cart.setVelocity(velocity.x / 7.0D, velocity.y, velocity.z);
         }
     }
 

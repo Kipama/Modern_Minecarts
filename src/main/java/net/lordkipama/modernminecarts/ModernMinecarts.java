@@ -57,6 +57,7 @@ public class ModernMinecarts implements ModInitializer {
 
 		ItemGroupEvents.modifyEntriesEvent(ItemGroups.REDSTONE).register(entries -> entries.add(ModBlocks.RAIL_CROSSING));
 		ItemGroupEvents.modifyEntriesEvent(ItemGroups.REDSTONE).register(entries -> entries.add(ModBlocks.RAIL_JUMP));
+		ItemGroupEvents.modifyEntriesEvent(ItemGroups.REDSTONE).register(entries -> entries.add(ModBlocks.POWERED_DETECTOR_RAIL));
 
 		//Event handler stick
 		UseBlockCallback.EVENT.register((player, world, hand, hitResult) -> {

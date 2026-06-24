@@ -8,6 +8,7 @@ import net.lordkipama.modernminecarts.block.Custom.CopperRailBlock;
 import net.lordkipama.modernminecarts.block.Custom.RailCrossingBlock;
 import net.lordkipama.modernminecarts.block.Custom.SlopedRailBlock;
 import net.lordkipama.modernminecarts.block.Custom.WaxedCopperRailBlock;
+import net.lordkipama.modernminecarts.block.Custom.PoweredDetectorRailBlock;
 import net.minecraft.block.Block;
 import net.minecraft.block.Blocks;
 import net.minecraft.block.Oxidizable;
@@ -47,6 +48,9 @@ public class ModBlocks {
 
     public static final Block RAIL_JUMP = registerBlock("rail_jump",
             new SlopedRailBlock(FabricBlockSettings.copyOf(Blocks.RAIL)));
+
+    public static final Block POWERED_DETECTOR_RAIL = registerBlock("powered_detector_rail",
+            new PoweredDetectorRailBlock(FabricBlockSettings.copyOf(Blocks.DETECTOR_RAIL)));
 
 
     private static Block registerBlock(String name, Block block){

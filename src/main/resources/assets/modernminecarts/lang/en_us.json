@@ -14,5 +14,6 @@
 
   "block.modernminecarts.rail_crossing": "Rail Crossing",
   "block.modernminecarts.rail_jump": "Rail Jump",
-  "container.modernminecarts.furnace_minecart": "Furnace Minecart"
+  "container.modernminecarts.furnace_minecart": "Furnace Minecart",
+  "block.modernminecarts.powered_detector_rail": "Powered Detector Rail"
 }
