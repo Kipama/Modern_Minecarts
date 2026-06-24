@@ -7,6 +7,7 @@ import net.lordkipama.modernminecarts.block.Custom.SlopedRailBlock;
 import net.lordkipama.modernminecarts.block.Custom.WaxedCopperRailBlock;
 import net.lordkipama.modernminecarts.block.ModBlocks;
 import net.lordkipama.modernminecarts.screen.FurnaceMinecartScreenHandler;
+import net.lordkipama.modernminecarts.util.TrainInventoryUtil;
 import net.minecraft.block.AbstractRailBlock;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
@@ -17,7 +18,6 @@ import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.player.PlayerInventory;
 import net.minecraft.entity.vehicle.AbstractMinecartEntity;
 import net.minecraft.entity.vehicle.FurnaceMinecartEntity;
-import net.minecraft.entity.vehicle.VehicleInventory;
 import net.minecraft.inventory.Inventories;
 import net.minecraft.inventory.Inventory;
 import net.minecraft.item.Item;
@@ -41,7 +41,6 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -297,16 +296,12 @@ public abstract class FurnaceMinecartMixin implements Inventory, NamedScreenHand
 
     @Override
     public List<Inventory> getChainInventories() {
-        List<Inventory> inventories = new ArrayList<>();
-        AbstractMinecartEntity current = modernminecarts$getChild(modernminecarts$self());
-
-        while (current != null) {
-            if (!(current instanceof FurnaceMinecartEntity) && current instanceof VehicleInventory inventory) {
-                inventories.add(inventory);
-            }
-            current = modernminecarts$getChild(current);
-        }
-        return inventories;
+        return TrainInventoryUtil.collectStorageInventories(
+                modernminecarts$self(),
+                false,
+                true,
+                true
+        );
     }
 
     @Override
