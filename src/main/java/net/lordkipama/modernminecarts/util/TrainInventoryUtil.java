@@ -1,6 +1,7 @@
 package net.lordkipama.modernminecarts.util;
 
 import net.lordkipama.modernminecarts.interfaces.ChainMinecartInterface;
+import net.lordkipama.modernminecarts.logic.MinecartTuning;
 import net.minecraft.entity.vehicle.AbstractMinecartEntity;
 import net.minecraft.entity.vehicle.FurnaceMinecartEntity;
 import net.minecraft.entity.vehicle.HopperMinecartEntity;
@@ -16,8 +17,6 @@ import java.util.Set;
 import java.util.UUID;
 
 public final class TrainInventoryUtil {
-    private static final int MAX_TRAIN_LENGTH = 128;
-
     private TrainInventoryUtil() {
     }
 
@@ -51,7 +50,7 @@ public final class TrainInventoryUtil {
         List<Inventory> directionInventories = new ArrayList<>();
         int traversed = 0;
         while (current != null
-                && traversed++ < MAX_TRAIN_LENGTH
+                && traversed++ < MinecartTuning.MAX_TRAIN_LENGTH
                 && visited.add(current.getUuid())) {
             if (current instanceof VehicleInventory inventory
                     && !(current instanceof FurnaceMinecartEntity)

@@ -2,6 +2,8 @@ package net.lordkipama.modernminecarts.mixin;
 
 import net.lordkipama.modernminecarts.interfaces.ChainMinecartInterface;
 import net.lordkipama.modernminecarts.interfaces.ContainerMinecartInteface;
+import net.lordkipama.modernminecarts.logic.MinecartTuning;
+import net.lordkipama.modernminecarts.logic.TrainEngineLogic;
 import net.lordkipama.modernminecarts.block.Custom.CopperRailBlock;
 import net.lordkipama.modernminecarts.block.Custom.PoweredDetectorRailBlock;
 import net.lordkipama.modernminecarts.block.Custom.SlopedRailBlock;
@@ -317,11 +319,10 @@ public abstract class FurnaceMinecartMixin implements Inventory, NamedScreenHand
             return parentFurnace.calculateActualSpeedForDisplay();
         }
 
-        double actualSpeed = modernminecarts$self().getVelocity().horizontalLength();
-        if (actualSpeed > modernminecarts$speedForDisplay / 80.0D) {
-            return modernminecarts$speedForDisplay;
-        }
-        return (int) Math.round(actualSpeed * 80.0D + 0.2D);
+        return TrainEngineLogic.calculateSpeedometerValue(
+                modernminecarts$self().getVelocity().horizontalLength(),
+                modernminecarts$speedForDisplay / (double) MinecartTuning.SPEEDOMETER_SCALE
+        );
     }
 
     @Override
@@ -331,17 +332,12 @@ public abstract class FurnaceMinecartMixin implements Inventory, NamedScreenHand
             return parentFurnace.limitTrainSpeed(railSpeed);
         }
 
-        int burning = Math.max(1, modernminecarts$burningFurnaces);
-        int nonBurningCarts = modernminecarts$numberOfChildren - burning + 1;
-        double result = railSpeed;
-        if (nonBurningCarts > 2 * burning) {
-            result = Math.max(
-                    railSpeed - (railSpeed / (10.0D * burning)) * (nonBurningCarts - 2 * burning),
-                    0.2D
-            );
-        }
-
-        modernminecarts$speedForDisplay = (int) Math.round(result * 80.0D);
+        double result = TrainEngineLogic.calculateSpeedLimit(
+                railSpeed,
+                modernminecarts$numberOfChildren,
+                modernminecarts$burningFurnaces
+        );
+        modernminecarts$speedForDisplay = TrainEngineLogic.speedToDisplayUnits(result);
         return result;
     }
 
@@ -454,11 +450,11 @@ public abstract class FurnaceMinecartMixin implements Inventory, NamedScreenHand
         }
 
         if (!(railState.getBlock() instanceof AbstractRailBlock)) {
-            return 0.4D;
+            return MinecartTuning.VANILLA_RAIL_SPEED;
         }
 
         double railSpeed = modernminecarts$getParent(cart) != null
-                ? 0.8D
+                ? MinecartTuning.COPPER_RAIL_SPEED
                 : modernminecarts$getSpeedForRail(cart, railPos, railState);
         if (cart.isTouchingWater() && !railState.isOf(Blocks.POWERED_RAIL)) {
             railSpeed /= 2.0D;
@@ -488,7 +484,7 @@ public abstract class FurnaceMinecartMixin implements Inventory, NamedScreenHand
             BlockState state
     ) {
         if (state.isOf(ModBlocks.RAIL_CROSSING)) {
-            return 0.8D;
+            return MinecartTuning.COPPER_RAIL_SPEED;
         }
 
         if (state.isOf(ModBlocks.RAIL_JUMP)) {
@@ -500,7 +496,9 @@ public abstract class FurnaceMinecartMixin implements Inventory, NamedScreenHand
                 case ASCENDING_WEST -> pos.west().up();
                 default -> pos;
             };
-            return cart.getWorld().getBlockState(launchPos).isAir() ? 0.8D : 0.5D;
+            return cart.getWorld().getBlockState(launchPos).isAir()
+                    ? MinecartTuning.MAXIMUM_JUMP_SPEED
+                    : MinecartTuning.ASCENDING_COPPER_RAIL_SPEED;
         }
 
         if (state.getBlock() instanceof CopperRailBlock
@@ -511,25 +509,25 @@ public abstract class FurnaceMinecartMixin implements Inventory, NamedScreenHand
                         || state.isOf(ModBlocks.WAXED_COPPER_RAIL)
                         || state.isOf(ModBlocks.EXPOSED_COPPER_RAIL)
                         || state.isOf(ModBlocks.WAXED_EXPOSED_COPPER_RAIL)) {
-                    return 0.5D;
+                    return MinecartTuning.ASCENDING_COPPER_RAIL_SPEED;
                 }
             }
 
             if (state.isOf(ModBlocks.COPPER_RAIL) || state.isOf(ModBlocks.WAXED_COPPER_RAIL)) {
-                return 0.8D;
+                return MinecartTuning.COPPER_RAIL_SPEED;
             }
             if (state.isOf(ModBlocks.EXPOSED_COPPER_RAIL)
                     || state.isOf(ModBlocks.WAXED_EXPOSED_COPPER_RAIL)) {
-                return 0.6D;
+                return MinecartTuning.EXPOSED_COPPER_RAIL_SPEED;
             }
             if (state.isOf(ModBlocks.WEATHERED_COPPER_RAIL)
                     || state.isOf(ModBlocks.WAXED_WEATHERED_COPPER_RAIL)) {
-                return 0.3D;
+                return MinecartTuning.WEATHERED_COPPER_RAIL_SPEED;
             }
-            return 0.2D;
+            return MinecartTuning.OXIDIZED_COPPER_RAIL_SPEED;
         }
 
-        return 0.4D;
+        return MinecartTuning.VANILLA_RAIL_SPEED;
     }
 
     @Unique

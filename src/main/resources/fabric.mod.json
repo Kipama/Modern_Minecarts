@@ -3,9 +3,9 @@
 	"id": "modernminecarts",
 	"version": "${version}",
 	"name": "ModernMinecarts",
-	"description": "This is an example description! Tell everyone what your mod is about!",
+	"description": "Expands minecart transport with faster rails, linked trains, furnace engines, cargo routing, crossings, jumps, and powered detectors.",
 	"authors": [
-		"Me!"
+		"LordKipama"
 	],
 	"contact": {
 		"homepage": "https://fabricmc.net/",
@@ -33,8 +33,5 @@
 		"minecraft": "~1.20.1",
 		"java": ">=17",
 		"fabric-api": "*"
-	},
-	"suggests": {
-		"another-mod": "*"
 	}
 }

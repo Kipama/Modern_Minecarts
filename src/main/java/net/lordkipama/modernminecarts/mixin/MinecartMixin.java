@@ -6,6 +6,7 @@ import com.mojang.datafixers.util.Pair;
 import net.fabricmc.fabric.api.networking.v1.PlayerLookup;
 import net.lordkipama.modernminecarts.interfaces.ChainMinecartInterface;
 import net.lordkipama.modernminecarts.interfaces.ContainerMinecartInteface;
+import net.lordkipama.modernminecarts.logic.PoweredDetectorMotion;
 import net.lordkipama.modernminecarts.ModernMinecarts;
 import net.lordkipama.modernminecarts.block.Custom.CopperRailBlock;
 import net.lordkipama.modernminecarts.block.Custom.PoweredDetectorRailBlock;
@@ -385,37 +386,14 @@ public class MinecartMixin implements ChainMinecartInterface {
                 || shape == RailShape.ASCENDING_NORTH
                 || shape == RailShape.ASCENDING_SOUTH;
 
-        if (state.get(PoweredDetectorRailBlock.INVERTED)) {
-            if (northSouth) {
-                if (velocity.z < -0.2D) {
-                    cart.setVelocity(velocity.x, velocity.y, velocity.z / 8.0D + 0.1D);
-                } else if (powered) {
-                    cart.setVelocity(velocity.x, velocity.y, velocity.z + 0.02D);
-                } else {
-                    cart.setVelocity(velocity.x, velocity.y, velocity.z / 7.0D);
-                }
-            } else if (velocity.x > 0.2D) {
-                cart.setVelocity(velocity.x / 8.0D - 0.1D, velocity.y, velocity.z);
-            } else if (powered) {
-                cart.setVelocity(velocity.x - 0.02D, velocity.y, velocity.z);
-            } else {
-                cart.setVelocity(velocity.x / 7.0D, velocity.y, velocity.z);
-            }
-        } else if (northSouth) {
-            if (velocity.z > 0.2D) {
-                cart.setVelocity(velocity.x, velocity.y, velocity.z / 8.0D - 0.1D);
-            } else if (powered) {
-                cart.setVelocity(velocity.x, velocity.y, velocity.z - 0.02D);
-            } else {
-                cart.setVelocity(velocity.x, velocity.y, velocity.z / 7.0D);
-            }
-        } else if (velocity.x < -0.2D) {
-            cart.setVelocity(velocity.x / 8.0D + 0.1D, velocity.y, velocity.z);
-        } else if (powered) {
-            cart.setVelocity(velocity.x + 0.02D, velocity.y, velocity.z);
-        } else {
-            cart.setVelocity(velocity.x / 7.0D, velocity.y, velocity.z);
-        }
+        PoweredDetectorMotion.Motion adjusted = PoweredDetectorMotion.adjust(
+                velocity.x,
+                velocity.z,
+                northSouth,
+                state.get(PoweredDetectorRailBlock.INVERTED),
+                powered
+        );
+        cart.setVelocity(adjusted.x(), velocity.y, adjusted.z());
     }
 
     /**

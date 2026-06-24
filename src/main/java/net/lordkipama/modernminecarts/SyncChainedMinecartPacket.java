@@ -6,6 +6,7 @@ import net.fabricmc.fabric.api.networking.v1.PacketByteBufs;
 import net.fabricmc.fabric.api.networking.v1.PacketSender;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
 import net.lordkipama.modernminecarts.interfaces.ChainMinecartInterface;
+import net.lordkipama.modernminecarts.network.ChainLinkSync;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.network.ClientPlayNetworkHandler;
 import net.minecraft.client.world.ClientWorld;
@@ -36,15 +37,14 @@ public class SyncChainedMinecartPacket {
     public static final Identifier ID = ModernMinecarts.id("sync_chained_minecart");
 
     public static void send(@Nullable Entity parent, @Nullable Entity child, ServerPlayerEntity... players) {
+        ChainLinkSync sync = ChainLinkSync.of(parent, child);
         PacketByteBuf buf = PacketByteBufs.create();
-        buf.writeBoolean(parent != null);
-
-        if(parent != null)
-            buf.writeInt(parent.getId());
-
-        buf.writeBoolean(child != null);
-        if (child != null)
-            buf.writeInt(child.getId());
+        buf.writeBoolean(sync.hasParent());
+        if(sync.hasParent())
+            buf.writeInt(sync.parentId());
+        buf.writeBoolean(sync.hasChild());
+        if (sync.hasChild())
+            buf.writeInt(sync.childId());
 
         for (var player : players) {
             ServerPlayNetworking.send(player, ID, buf);
@@ -53,26 +53,13 @@ public class SyncChainedMinecartPacket {
 
     @Environment(EnvType.CLIENT)
     public static void handle(MinecraftClient client, ClientPlayNetworkHandler handler, PacketByteBuf buf, PacketSender sender) {
-        boolean parentExists = buf.readBoolean();
-        int parentId = parentExists ? buf.readInt() : -1;
-
-        boolean childExists = buf.readBoolean();
-        int childId = childExists ? buf.readInt() : -1;
+        int parentId = buf.readBoolean() ? buf.readInt() : ChainLinkSync.MISSING_ENTITY;
+        int childId = buf.readBoolean() ? buf.readInt() : ChainLinkSync.MISSING_ENTITY;
+        ChainLinkSync sync = new ChainLinkSync(parentId, childId);
 
         client.submit(() -> {
             if(client.world != null) {
-                ClientWorld world = client.world;
-
-                @Nullable Entity parentEntity = world.getEntityById(parentId);
-                @Nullable Entity childEntity = world.getEntityById(childId);
-
-                if (parentEntity instanceof ChainMinecartInterface linkable) {
-                    linkable.setLinkedChildClient(childId);
-                }
-
-                if (childEntity instanceof ChainMinecartInterface linkable) {
-                    linkable.setLinkedParentClient(parentId);
-                }
+                sync.apply(client.world);
             }
         });
     }
