@@ -120,7 +120,10 @@ public abstract class FurnaceMinecartMixin implements Inventory, NamedScreenHand
         boolean isMoving = cart.getVelocity().horizontalLengthSquared() > 0.001D;
         boolean isRoot = modernminecarts$getParent(cart) == null;
         boolean hasDirection = pushX * pushX + pushZ * pushZ > 1.0E-7D;
-        boolean mayStart = modernminecarts$railAllowsMovement(cart) && isRoot && (hasChild || isMoving);
+        boolean mayStart = modernminecarts$railAllowsMovement(cart)
+                && !modernminecarts$isActivelyPoweredRail(cart)
+                && isRoot
+                && (hasChild || isMoving);
 
         if (fuel <= 0 && mayStart) {
             modernminecarts$burningFurnaces = burnFuelTrain();
@@ -207,6 +210,15 @@ public abstract class FurnaceMinecartMixin implements Inventory, NamedScreenHand
 
     @Override
     public int burnFuelTrain() {
+        if (modernminecarts$isActivelyPoweredRail(modernminecarts$self())) {
+            AbstractMinecartEntity child = modernminecarts$getChild(modernminecarts$self());
+            if (child instanceof FurnaceMinecartEntity
+                    && child instanceof ContainerMinecartInteface furnaceChild) {
+                return furnaceChild.burnFuelTrain();
+            }
+            return 0;
+        }
+
         int burnTime = modernminecarts$consumeFuelItem();
         if (burnTime <= 0) {
             return 0;
@@ -332,8 +344,9 @@ public abstract class FurnaceMinecartMixin implements Inventory, NamedScreenHand
             return parentFurnace.limitTrainSpeed(railSpeed);
         }
 
+        double furnaceSpeed = Math.min(railSpeed, MinecartTuning.FURNACE_MINECART_MAX_SPEED);
         double result = TrainEngineLogic.calculateSpeedLimit(
-                railSpeed,
+                furnaceSpeed,
                 modernminecarts$numberOfChildren,
                 modernminecarts$burningFurnaces
         );
@@ -421,12 +434,9 @@ public abstract class FurnaceMinecartMixin implements Inventory, NamedScreenHand
 
     @Unique
     private static boolean modernminecarts$railAllowsMovement(FurnaceMinecartEntity cart) {
-        if (!cart.isOnRail()) {
+        BlockState state = modernminecarts$getCurrentRailState(cart);
+        if (state == null) {
             return false;
-        }
-        var state = cart.getWorld().getBlockState(cart.getBlockPos());
-        if (!(state.getBlock() instanceof net.minecraft.block.AbstractRailBlock)) {
-            state = cart.getWorld().getBlockState(cart.getBlockPos().down());
         }
         if (state.getBlock() instanceof PoweredRailBlock
                 && !state.isOf(net.minecraft.block.Blocks.ACTIVATOR_RAIL)
@@ -437,6 +447,35 @@ public abstract class FurnaceMinecartMixin implements Inventory, NamedScreenHand
             return state.get(PoweredDetectorRailBlock.POWERED);
         }
         return true;
+    }
+
+    @Unique
+    private static boolean modernminecarts$isActivelyPoweredRail(FurnaceMinecartEntity cart) {
+        BlockState state = modernminecarts$getCurrentRailState(cart);
+        if (state == null) {
+            return false;
+        }
+        if (state.getBlock() instanceof PoweredRailBlock
+                && !state.isOf(Blocks.ACTIVATOR_RAIL)
+                && state.contains(PoweredRailBlock.POWERED)) {
+            return state.get(PoweredRailBlock.POWERED);
+        }
+        return state.getBlock() instanceof PoweredDetectorRailBlock
+                && state.get(PoweredDetectorRailBlock.POWERED);
+    }
+
+    @Unique
+    private static @Nullable BlockState modernminecarts$getCurrentRailState(
+            FurnaceMinecartEntity cart
+    ) {
+        if (!cart.isOnRail()) {
+            return null;
+        }
+        BlockState state = cart.getWorld().getBlockState(cart.getBlockPos());
+        if (!(state.getBlock() instanceof AbstractRailBlock)) {
+            state = cart.getWorld().getBlockState(cart.getBlockPos().down());
+        }
+        return state.getBlock() instanceof AbstractRailBlock ? state : null;
     }
 
     @Unique
