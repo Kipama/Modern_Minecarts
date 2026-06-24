@@ -156,6 +156,14 @@ public abstract class FurnaceMinecartMixin implements Inventory, NamedScreenHand
                 pushX = 0;
                 pushZ = 0;
                 cart.setVelocity(Vec3d.ZERO);
+            } else {
+                Vec3d velocity = cart.getVelocity();
+                double maxSpeed = MinecartTuning.FURNACE_MINECART_MAX_SPEED;
+                cart.setVelocity(
+                        Math.max(-maxSpeed, Math.min(maxSpeed, velocity.x)),
+                        velocity.y,
+                        Math.max(-maxSpeed, Math.min(maxSpeed, velocity.z))
+                );
             }
             setLit(fuel > 0);
         }
