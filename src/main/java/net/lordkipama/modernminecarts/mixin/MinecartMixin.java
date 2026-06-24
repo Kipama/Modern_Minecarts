@@ -279,17 +279,16 @@ public class MinecartMixin implements ChainMinecartInterface {
             }
             else if(blockUnder.isOf(ModBlocks.RAIL_JUMP)){
                 boolean airInFront = false;
-                final EnumProperty<RailShape> SHAPE = EnumProperty.of("shape", RailShape.class, shape -> shape != RailShape.NORTH_EAST && shape != RailShape.NORTH_WEST && shape != RailShape.SOUTH_EAST && shape != RailShape.SOUTH_WEST );
-                if(blockUnder.get(SHAPE)== RailShape.ASCENDING_NORTH){
+                if(blockUnder.get(SlopedRailBlock.SHAPE)== RailShape.ASCENDING_NORTH){
                     airInFront = thisObject.getWorld().getBlockState(new BlockPos(i,j,k-1)).isOf(Blocks.AIR);
                 }
-                if(blockUnder.get(SHAPE)== RailShape.ASCENDING_EAST){
+                if(blockUnder.get(SlopedRailBlock.SHAPE)== RailShape.ASCENDING_EAST){
                     airInFront = thisObject.getWorld().getBlockState(new BlockPos(i+1,j,k)).isOf(Blocks.AIR);
                 }
-                else if(blockUnder.get(SHAPE)== RailShape.ASCENDING_SOUTH){
+                else if(blockUnder.get(SlopedRailBlock.SHAPE)== RailShape.ASCENDING_SOUTH){
                     airInFront = thisObject.getWorld().getBlockState(new BlockPos(i,j,k+1)).isOf(Blocks.AIR);
                 }
-                else if(blockUnder.get(SHAPE)== RailShape.ASCENDING_WEST){
+                else if(blockUnder.get(SlopedRailBlock.SHAPE)== RailShape.ASCENDING_WEST){
                     airInFront = thisObject.getWorld().getBlockState(new BlockPos(i-1,j,k)).isOf(Blocks.AIR);
                 }
 
