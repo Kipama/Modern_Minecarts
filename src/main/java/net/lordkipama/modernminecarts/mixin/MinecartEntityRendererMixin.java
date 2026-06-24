@@ -1,6 +1,6 @@
 package net.lordkipama.modernminecarts.mixin;
 
-import net.lordkipama.modernminecarts.ChainMinecartInterface;
+import net.lordkipama.modernminecarts.interfaces.ChainMinecartInterface;
 import net.lordkipama.modernminecarts.ModernMinecarts;
 import net.minecraft.client.render.OverlayTexture;
 import net.minecraft.client.render.RenderLayer;

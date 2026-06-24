@@ -1,4 +1,4 @@
-package net.lordkipama.modernminecarts;
+package net.lordkipama.modernminecarts.interfaces;
 
 import net.minecraft.entity.vehicle.AbstractMinecartEntity;
 import org.jetbrains.annotations.NotNull;

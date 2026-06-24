@@ -1,6 +1,6 @@
 package net.lordkipama.modernminecarts.mixin;
 
-import net.lordkipama.modernminecarts.ChainMinecartInterface;
+import net.lordkipama.modernminecarts.interfaces.ChainMinecartInterface;
 import net.minecraft.entity.Entity;
 import net.minecraft.server.network.EntityTrackerEntry;
 import net.minecraft.server.network.ServerPlayerEntity;
