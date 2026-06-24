@@ -23,6 +23,7 @@ import net.minecraft.state.property.EnumProperty;
 import net.minecraft.state.property.Properties;
 import net.minecraft.state.property.Property;
 import net.minecraft.util.ActionResult;
+import net.minecraft.util.ItemActionResult;
 import net.minecraft.util.Hand;
 import net.minecraft.util.hit.BlockHitResult;
 import net.minecraft.util.math.BlockPos;
@@ -99,7 +100,8 @@ public class PoweredDetectorRailBlock extends DetectorRailBlock {
     }
 
     @Override
-    public ActionResult onUse(
+    protected ItemActionResult onUseWithItem(
+            ItemStack stack,
             BlockState state,
             World world,
             BlockPos pos,
@@ -107,12 +109,11 @@ public class PoweredDetectorRailBlock extends DetectorRailBlock {
             Hand hand,
             BlockHitResult hit
     ) {
-        ItemStack stack = player.getStackInHand(hand);
         if (stack.getItem() instanceof MinecartItem
                 || stack.isOf(Items.HOPPER)
                 || stack.isOf(Items.CHEST)
                 || stack.isOf(Items.BARREL)) {
-            return ActionResult.PASS;
+            return ItemActionResult.PASS_TO_DEFAULT_BLOCK_INTERACTION;
         }
 
         if (!world.isClient()) {
@@ -142,7 +143,7 @@ public class PoweredDetectorRailBlock extends DetectorRailBlock {
             updatePoweredStatus(world, pos, state);
         }
 
-        return ActionResult.success(world.isClient());
+        return ItemActionResult.success(world.isClient());
     }
 
     @Override

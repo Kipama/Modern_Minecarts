@@ -23,14 +23,12 @@ import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.vehicle.AbstractMinecartEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
-import net.minecraft.inventory.Inventory;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.registry.tag.BlockTags;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.state.property.EnumProperty;
 import net.minecraft.state.property.Properties;
 import net.minecraft.util.math.*;
-import net.minecraft.util.ItemScatterer;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.spongepowered.asm.mixin.Mixin;
@@ -666,17 +664,6 @@ public class MinecartMixin implements ChainMinecartInterface {
     }
 
 
-    @Inject(method = "dropItems", at = @At("HEAD"))
-    public void modernMinecarts$dropChain(DamageSource damageSource, CallbackInfo ci) {
-        AbstractMinecartEntity thisObject = (AbstractMinecartEntity) (Object) this;
-        if(getLinkedParent() != null || getLinkedChild() != null)
-            thisObject.dropStack(new ItemStack(Items.CHAIN));
-        if (thisObject instanceof Inventory inventory && !thisObject.getWorld().isClient()) {
-            ItemScatterer.spawn(thisObject.getWorld(), thisObject, inventory);
-            inventory.clear();
-        }
-    }
-
     /**
      * @author
      * @reason
@@ -694,14 +681,4 @@ public class MinecartMixin implements ChainMinecartInterface {
         thisObject.setVelocity(vec3d);
     }
 
-    @Inject(method = "damage", at = @At("HEAD"), cancellable = true)
-    private void injectHurt(CallbackInfoReturnable<Double> cir) {
-        AbstractMinecartEntity thisObject = (AbstractMinecartEntity) (Object) this;
-        if(!thisObject.getWorld().isClient()) {
-            if(this.getLinkedChild()!=null){
-                ChainMinecartInterface.unsetParentChild(this, (ChainMinecartInterface) this.getLinkedChild());
-                thisObject.dropStack(new ItemStack(Items.CHAIN));
-            }
-        }
-    }
 }

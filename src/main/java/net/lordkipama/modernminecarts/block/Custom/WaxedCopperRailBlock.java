@@ -15,7 +15,7 @@ import net.minecraft.registry.tag.ItemTags;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.sound.SoundCategory;
 import net.minecraft.sound.SoundEvents;
-import net.minecraft.util.ActionResult;
+import net.minecraft.util.ItemActionResult;
 import net.minecraft.util.Hand;
 import net.minecraft.util.hit.BlockHitResult;
 import net.minecraft.util.math.BlockPos;
@@ -31,8 +31,7 @@ public class WaxedCopperRailBlock extends PoweredRailBlock {
     }
 
     @Override
-    public ActionResult onUse(BlockState state, World world, BlockPos pos, PlayerEntity player, Hand hand, BlockHitResult hit){
-        ItemStack itemstack = player.getStackInHand(hand);
+    protected ItemActionResult onUseWithItem(ItemStack itemstack, BlockState state, World world, BlockPos pos, PlayerEntity player, Hand hand, BlockHitResult hit){
 
         if (itemstack.isIn(ItemTags.AXES)) {
 
@@ -65,7 +64,9 @@ public class WaxedCopperRailBlock extends PoweredRailBlock {
 
             }
         }
-        return super.onUse(state, world, pos, player, hand, hit);
+        return itemstack.isIn(ItemTags.AXES)
+                ? ItemActionResult.success(world.isClient())
+                : ItemActionResult.PASS_TO_DEFAULT_BLOCK_INTERACTION;
     }
 
     @Override

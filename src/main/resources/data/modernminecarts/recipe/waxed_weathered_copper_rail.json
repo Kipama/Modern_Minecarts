@@ -3,13 +3,13 @@
   "category": "misc",
   "ingredients": [
     {
-      "item": "modernminecarts:oxidized_copper_rail"
+      "item": "modernminecarts:weathered_copper_rail"
     },
     {
       "item": "minecraft:honeycomb"
     }
   ],
   "result": {
-    "item": "modernminecarts:waxed_oxidized_copper_rail"
+    "id": "modernminecarts:waxed_weathered_copper_rail"
   }
 }

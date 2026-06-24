@@ -172,14 +172,22 @@ public abstract class FurnaceMinecartMixin implements Inventory, NamedScreenHand
 
     @Inject(method = "writeCustomDataToNbt", at = @At("TAIL"))
     private void modernminecarts$writeInventory(NbtCompound nbt, CallbackInfo ci) {
-        Inventories.writeNbt(nbt, modernminecarts$inventory);
+        Inventories.writeNbt(
+                nbt,
+                modernminecarts$inventory,
+                modernminecarts$self().getWorld().getRegistryManager()
+        );
         nbt.putInt("ModernMinecartsFuelBurnTime", modernminecarts$fuelBurnTime);
     }
 
     @Inject(method = "readCustomDataFromNbt", at = @At("TAIL"))
     private void modernminecarts$readInventory(NbtCompound nbt, CallbackInfo ci) {
         modernminecarts$inventory = DefaultedList.ofSize(1, ItemStack.EMPTY);
-        Inventories.readNbt(nbt, modernminecarts$inventory);
+        Inventories.readNbt(
+                nbt,
+                modernminecarts$inventory,
+                modernminecarts$self().getWorld().getRegistryManager()
+        );
         modernminecarts$fuelBurnTime = nbt.getInt("ModernMinecartsFuelBurnTime");
     }
 
@@ -266,7 +274,7 @@ public abstract class FurnaceMinecartMixin implements Inventory, NamedScreenHand
                     }
                     inventory.markDirty();
                     return;
-                } else if (!ItemStack.canCombine(fuelStack, candidate)) {
+                } else if (!ItemStack.areItemsAndComponentsEqual(fuelStack, candidate)) {
                     continue;
                 }
 
@@ -290,7 +298,7 @@ public abstract class FurnaceMinecartMixin implements Inventory, NamedScreenHand
                 inventory.setStack(slot, remainder);
                 return;
             }
-            if (ItemStack.canCombine(stack, remainder) && stack.getCount() < stack.getMaxCount()) {
+            if (ItemStack.areItemsAndComponentsEqual(stack, remainder) && stack.getCount() < stack.getMaxCount()) {
                 stack.increment(1);
                 return;
             }

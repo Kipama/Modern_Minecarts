@@ -19,7 +19,14 @@ public class ModernMinecartsClient implements ClientModInitializer {
     @Override
     public void onInitializeClient() {
         HandledScreens.register(ModScreenHandlers.FURNACE_MINECART, FurnaceMinecartScreen::new);
-        ClientPlayNetworking.registerGlobalReceiver(net.lordkipama.modernminecarts.SyncChainedMinecartPacket.ID, net.lordkipama.modernminecarts.SyncChainedMinecartPacket::handle);
+        ClientPlayNetworking.registerGlobalReceiver(
+                SyncChainedMinecartPacket.ID,
+                (payload, context) -> context.client().execute(() -> {
+                    if (context.client().world != null) {
+                        payload.sync().apply(context.client().world);
+                    }
+                })
+        );
 
         BlockRenderLayerMap.INSTANCE.putBlocks(RenderLayer.getCutout(), ModBlocks.COPPER_RAIL);
         BlockRenderLayerMap.INSTANCE.putBlocks(RenderLayer.getCutout(), ModBlocks.EXPOSED_COPPER_RAIL);

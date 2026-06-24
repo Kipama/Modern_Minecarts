@@ -17,6 +17,8 @@ import net.minecraft.item.ItemGroups;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
 import net.minecraft.nbt.NbtCompound;
+import net.minecraft.component.DataComponentTypes;
+import net.minecraft.component.type.NbtComponent;
 import net.minecraft.registry.tag.BlockTags;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.sound.SoundCategory;
@@ -42,6 +44,7 @@ public class ModernMinecarts implements ModInitializer {
 
 	@Override
 	public void onInitialize() {
+		SyncChainedMinecartPacket.registerPayload();
 		ModBlocks.registerModBlocks();
 		ModScreenHandlers.register();
 
@@ -78,21 +81,20 @@ public class ModernMinecarts implements ModInitializer {
 								//LOGIC
 								boolean gotReplaced = false;
 								EnumProperty<RailShape> SHAPE = Properties.RAIL_SHAPE;
-								EnumProperty<RailShape> CONST_SHAPE = EnumProperty.of("const_shape", RailShape.class);
 								if (blockState.get(SHAPE) == RailShape.ASCENDING_NORTH) {
-									world.setBlockState(pos, ModBlocks.RAIL_JUMP.getStateWithProperties(blockState).with(CONST_SHAPE, RailShape.ASCENDING_NORTH), 3);
+									world.setBlockState(pos, ModBlocks.RAIL_JUMP.getStateWithProperties(blockState), 3);
 									gotReplaced = true;
 
 								} else if (blockState.get(SHAPE) == RailShape.ASCENDING_SOUTH) {
-									world.setBlockState(pos, ModBlocks.RAIL_JUMP.getStateWithProperties(blockState).with(CONST_SHAPE, RailShape.ASCENDING_SOUTH), 3);
+									world.setBlockState(pos, ModBlocks.RAIL_JUMP.getStateWithProperties(blockState), 3);
 									gotReplaced = true;
 
 								} else if (blockState.get(SHAPE) == RailShape.ASCENDING_EAST) {
-									world.setBlockState(pos, ModBlocks.RAIL_JUMP.getStateWithProperties(blockState).with(CONST_SHAPE, RailShape.ASCENDING_EAST), 3);
+									world.setBlockState(pos, ModBlocks.RAIL_JUMP.getStateWithProperties(blockState), 3);
 									gotReplaced = true;
 
 								} else if (blockState.get(SHAPE) == RailShape.ASCENDING_WEST) {
-									world.setBlockState(pos, ModBlocks.RAIL_JUMP.getStateWithProperties(blockState).with(CONST_SHAPE, RailShape.ASCENDING_WEST), 3);
+									world.setBlockState(pos, ModBlocks.RAIL_JUMP.getStateWithProperties(blockState), 3);
 									gotReplaced = true;
 								} else if (blockState.get(SHAPE) == RailShape.NORTH_SOUTH) {
 									BlockState northernBlockState = world.getBlockState(new BlockPos(pos.getX(), pos.getY(), pos.getZ() - 1));
@@ -101,10 +103,10 @@ public class ModernMinecarts implements ModInitializer {
 									BlockState southernBelowBlockState = world.getBlockState(new BlockPos(pos.getX(), pos.getY() - 1, pos.getZ() + 1));
 
 									if ((southernBlockState.isIn(BlockTags.RAILS) || southernBelowBlockState.isIn(BlockTags.RAILS)) && !(northernBlockState.isIn(BlockTags.RAILS) || northernBelowBlockState.isIn(BlockTags.RAILS))) {
-										world.setBlockState(pos, ModBlocks.RAIL_JUMP.getStateWithProperties(blockState.with(SHAPE, RailShape.ASCENDING_NORTH)).with(CONST_SHAPE, RailShape.ASCENDING_NORTH), 3);
+										world.setBlockState(pos, ModBlocks.RAIL_JUMP.getStateWithProperties(blockState.with(SHAPE, RailShape.ASCENDING_NORTH)), 3);
 										gotReplaced = true;
 									} else if (!(southernBlockState.isIn(BlockTags.RAILS) || southernBelowBlockState.isIn(BlockTags.RAILS)) && (northernBlockState.isIn(BlockTags.RAILS) || northernBelowBlockState.isIn(BlockTags.RAILS))) {
-										world.setBlockState(pos, ModBlocks.RAIL_JUMP.getStateWithProperties(blockState.with(SHAPE, RailShape.ASCENDING_SOUTH)).with(CONST_SHAPE, RailShape.ASCENDING_SOUTH), 3);
+										world.setBlockState(pos, ModBlocks.RAIL_JUMP.getStateWithProperties(blockState.with(SHAPE, RailShape.ASCENDING_SOUTH)), 3);
 										gotReplaced = true;
 									}
 								} else if (blockState.get(SHAPE) == RailShape.EAST_WEST) {
@@ -114,10 +116,10 @@ public class ModernMinecarts implements ModInitializer {
 									BlockState easternBelowBlockState = world.getBlockState(new BlockPos(pos.getX() + 1, pos.getY() - 1, pos.getZ()));
 
 									if ((easternBlockState.isIn(BlockTags.RAILS) || easternBelowBlockState.isIn(BlockTags.RAILS)) && !(westernBlockState.isIn(BlockTags.RAILS) || westernBelowBlockState.isIn(BlockTags.RAILS))) {
-										world.setBlockState(pos, ModBlocks.RAIL_JUMP.getStateWithProperties(blockState.with(SHAPE, RailShape.ASCENDING_WEST)).with(CONST_SHAPE, RailShape.ASCENDING_WEST), 3);
+										world.setBlockState(pos, ModBlocks.RAIL_JUMP.getStateWithProperties(blockState.with(SHAPE, RailShape.ASCENDING_WEST)), 3);
 										gotReplaced = true;
 									} else if (!(easternBlockState.isIn(BlockTags.RAILS) || easternBelowBlockState.isIn(BlockTags.RAILS)) && (westernBlockState.isIn(BlockTags.RAILS) || westernBelowBlockState.isIn(BlockTags.RAILS))) {
-										world.setBlockState(pos, ModBlocks.RAIL_JUMP.getStateWithProperties(blockState.with(SHAPE, RailShape.ASCENDING_EAST)).with(CONST_SHAPE, RailShape.ASCENDING_EAST), 3);
+										world.setBlockState(pos, ModBlocks.RAIL_JUMP.getStateWithProperties(blockState.with(SHAPE, RailShape.ASCENDING_EAST)), 3);
 										gotReplaced = true;
 									}
 								}
@@ -209,7 +211,10 @@ public class ModernMinecarts implements ModInitializer {
 
 				if(player.isSneaking() && stack.isOf(Items.CHAIN)) {
 					if (world instanceof ServerWorld server) {
-						NbtCompound nbt = stack.getOrCreateNbt();
+						NbtCompound nbt = stack.getOrDefault(
+								DataComponentTypes.CUSTOM_DATA,
+								NbtComponent.DEFAULT
+						).copyNbt();
 
 						if (nbt.contains("ParentEntity") && !cart.getUuid().equals(nbt.getUuid("ParentEntity"))) {
 							if (server.getEntity(nbt.getUuid("ParentEntity")) instanceof AbstractMinecartEntity parent) {
@@ -261,7 +266,7 @@ public class ModernMinecarts implements ModInitializer {
 								nbt.remove("ParentEntity");
 
 								if (nbt.isEmpty())
-									stack.setNbt(null);
+									stack.remove(DataComponentTypes.CUSTOM_DATA);
 							}
 
 							world.playSound(null, cart.getX(), cart.getY(), cart.getZ(), SoundEvents.BLOCK_CHAIN_PLACE, SoundCategory.NEUTRAL, 1F, 1F);
@@ -271,18 +276,24 @@ public class ModernMinecarts implements ModInitializer {
 							nbt.remove("ParentEntity");
 
 							if (nbt.isEmpty())
-								stack.setNbt(null);
+								stack.remove(DataComponentTypes.CUSTOM_DATA);
 						} else {
 							if(nbt.contains("ParentEntity") && cart.getUuid().equals(nbt.getUuid("ParentEntity"))){
 								nbt.remove("ParentEntity");
 								world.playSound(null, cart.getX(), cart.getY(), cart.getZ(), SoundEvents.BLOCK_CHAIN_HIT, SoundCategory.NEUTRAL, 1F, 1F);
 								if (nbt.isEmpty())
-									stack.setNbt(null);
+									stack.remove(DataComponentTypes.CUSTOM_DATA);
 							}
 							else {
 								nbt.putUuid("ParentEntity", cart.getUuid());
+								stack.set(DataComponentTypes.CUSTOM_DATA, NbtComponent.of(nbt));
 								world.playSound(null, cart.getX(), cart.getY(), cart.getZ(), SoundEvents.BLOCK_CHAIN_HIT, SoundCategory.NEUTRAL, 1F, 1F);
 							}
+						}
+						if (nbt.isEmpty()) {
+							stack.remove(DataComponentTypes.CUSTOM_DATA);
+						} else {
+							stack.set(DataComponentTypes.CUSTOM_DATA, NbtComponent.of(nbt));
 						}
 					}
 					return ActionResult.success(true);
@@ -297,7 +308,7 @@ public class ModernMinecarts implements ModInitializer {
 
 
 	public static Identifier id(String name) {
-		return new Identifier(MOD_ID, name);
+		return Identifier.of(MOD_ID, name);
 	}
 }
 
