@@ -16,7 +16,6 @@ import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
 import net.minecraft.block.PoweredRailBlock;
 import net.minecraft.block.enums.RailShape;
-import net.minecraft.block.entity.AbstractFurnaceBlockEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.player.PlayerInventory;
 import net.minecraft.entity.vehicle.AbstractMinecartEntity;
@@ -26,7 +25,9 @@ import net.minecraft.inventory.Inventory;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
-import net.minecraft.nbt.NbtCompound;
+import net.minecraft.server.world.ServerWorld;
+import net.minecraft.storage.ReadView;
+import net.minecraft.storage.WriteView;
 import net.minecraft.screen.NamedScreenHandlerFactory;
 import net.minecraft.screen.PropertyDelegate;
 import net.minecraft.screen.ScreenHandler;
@@ -45,22 +46,14 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 import java.util.List;
-import java.util.Map;
 
 @Mixin(FurnaceMinecartEntity.class)
 public abstract class FurnaceMinecartMixin implements Inventory, NamedScreenHandlerFactory, ContainerMinecartInteface {
-    @Unique
-    private static final Map<Item, Integer> MODERNMINECARTS_FUEL_TIMES =
-            AbstractFurnaceBlockEntity.createFuelTimeMap();
-
     @Shadow
     private int fuel;
 
     @Shadow
-    public double pushX;
-
-    @Shadow
-    public double pushZ;
+    public Vec3d pushVec;
 
     @Shadow
     protected abstract void setLit(boolean lit);
@@ -111,7 +104,7 @@ public abstract class FurnaceMinecartMixin implements Inventory, NamedScreenHand
     @Inject(method = "tick", at = @At("HEAD"))
     private void modernminecarts$prepareFuelAndDirection(CallbackInfo ci) {
         FurnaceMinecartEntity cart = modernminecarts$self();
-        if (cart.getWorld().isClient()) {
+        if (cart.getEntityWorld().isClient()) {
             return;
         }
 
@@ -119,7 +112,7 @@ public abstract class FurnaceMinecartMixin implements Inventory, NamedScreenHand
         boolean hasChild = modernminecarts$getChild(cart) != null;
         boolean isMoving = cart.getVelocity().horizontalLengthSquared() > 0.001D;
         boolean isRoot = modernminecarts$getParent(cart) == null;
-        boolean hasDirection = pushX * pushX + pushZ * pushZ > 1.0E-7D;
+        boolean hasDirection = pushVec.horizontalLengthSquared() > 1.0E-7D;
         boolean mayStart = modernminecarts$railAllowsMovement(cart) && isRoot && (hasChild || isMoving);
 
         if (fuel <= 0 && mayStart) {
@@ -129,16 +122,14 @@ public abstract class FurnaceMinecartMixin implements Inventory, NamedScreenHand
         if (fuel > 0 && !hasDirection) {
             AbstractMinecartEntity child = modernminecarts$getChild(cart);
             if (child != null) {
-                pushX = cart.getX() - child.getX();
-                pushZ = cart.getZ() - child.getZ();
+                pushVec = new Vec3d(cart.getX() - child.getX(), 0.0D, cart.getZ() - child.getZ());
             } else if (isMoving) {
-                pushX = cart.getVelocity().x;
-                pushZ = cart.getVelocity().z;
+                pushVec = new Vec3d(cart.getVelocity().x, 0.0D, cart.getVelocity().z);
             }
         }
 
         boolean waitingForDirection = fuel > 0
-                && pushX * pushX + pushZ * pushZ <= 1.0E-7D
+                && pushVec.horizontalLengthSquared() <= 1.0E-7D
                 && modernminecarts$getParent(cart) == null;
         if (waitingForDirection) {
             fuel++;
@@ -148,10 +139,9 @@ public abstract class FurnaceMinecartMixin implements Inventory, NamedScreenHand
     @Inject(method = "tick", at = @At("TAIL"))
     private void modernminecarts$finishFuelTick(CallbackInfo ci) {
         FurnaceMinecartEntity cart = modernminecarts$self();
-        if (!cart.getWorld().isClient()) {
+        if (!cart.getEntityWorld().isClient()) {
             if (!modernminecarts$railAllowsMovement(cart)) {
-                pushX = 0;
-                pushZ = 0;
+                pushVec = Vec3d.ZERO;
                 cart.setVelocity(Vec3d.ZERO);
             }
             setLit(fuel > 0);
@@ -164,47 +154,50 @@ public abstract class FurnaceMinecartMixin implements Inventory, NamedScreenHand
             Hand hand,
             CallbackInfoReturnable<ActionResult> cir
     ) {
-        if (!player.getWorld().isClient()) {
+        if (!player.getEntityWorld().isClient()) {
             player.openHandledScreen(this);
         }
-        cir.setReturnValue(ActionResult.success(player.getWorld().isClient()));
+        cir.setReturnValue(player.getEntityWorld().isClient()
+                ? ActionResult.SUCCESS
+                : ActionResult.SUCCESS_SERVER);
     }
 
-    @Inject(method = "writeCustomDataToNbt", at = @At("TAIL"))
-    private void modernminecarts$writeInventory(NbtCompound nbt, CallbackInfo ci) {
-        Inventories.writeNbt(
-                nbt,
-                modernminecarts$inventory,
-                modernminecarts$self().getWorld().getRegistryManager()
-        );
-        nbt.putInt("ModernMinecartsFuelBurnTime", modernminecarts$fuelBurnTime);
+    @Inject(method = "writeCustomData", at = @At("TAIL"))
+    private void modernminecarts$writeInventory(WriteView view, CallbackInfo ci) {
+        Inventories.writeData(view, modernminecarts$inventory);
+        view.putInt("ModernMinecartsFuelBurnTime", modernminecarts$fuelBurnTime);
     }
 
-    @Inject(method = "readCustomDataFromNbt", at = @At("TAIL"))
-    private void modernminecarts$readInventory(NbtCompound nbt, CallbackInfo ci) {
+    @Inject(method = "readCustomData", at = @At("TAIL"))
+    private void modernminecarts$readInventory(ReadView view, CallbackInfo ci) {
         modernminecarts$inventory = DefaultedList.ofSize(1, ItemStack.EMPTY);
-        Inventories.readNbt(
-                nbt,
-                modernminecarts$inventory,
-                modernminecarts$self().getWorld().getRegistryManager()
-        );
-        modernminecarts$fuelBurnTime = nbt.getInt("ModernMinecartsFuelBurnTime");
+        Inventories.readData(view, modernminecarts$inventory);
+        modernminecarts$fuelBurnTime = view.getInt("ModernMinecartsFuelBurnTime", 0);
     }
 
-    @Inject(method = "applySlowdown", at = @At("TAIL"))
-    private void modernminecarts$capEngineSpeed(CallbackInfo ci) {
+    @Inject(method = "applySlowdown", at = @At("TAIL"), cancellable = true)
+    private void modernminecarts$capEngineSpeed(
+            Vec3d velocity,
+            CallbackInfoReturnable<Vec3d> cir
+    ) {
         FurnaceMinecartEntity cart = modernminecarts$self();
-        double maxSpeed = ((MinecartInvoker) cart).invokeGetMaxSpeed();
-        Vec3d velocity = cart.getVelocity();
-        cart.setVelocity(
-                Math.max(-maxSpeed, Math.min(maxSpeed, velocity.x)),
-                velocity.y,
-                Math.max(-maxSpeed, Math.min(maxSpeed, velocity.z))
-        );
+        if (!(cart.getEntityWorld() instanceof ServerWorld serverWorld)) {
+            return;
+        }
+        double maxSpeed = ((MinecartInvoker) cart).invokeGetMaxSpeed(serverWorld);
+        Vec3d slowed = cir.getReturnValue();
+        cir.setReturnValue(new Vec3d(
+                Math.max(-maxSpeed, Math.min(maxSpeed, slowed.x)),
+                slowed.y,
+                Math.max(-maxSpeed, Math.min(maxSpeed, slowed.z))
+        ));
     }
 
     @Inject(method = "getMaxSpeed", at = @At("RETURN"), cancellable = true)
-    private void modernminecarts$useForgeFurnaceSpeed(CallbackInfoReturnable<Double> cir) {
+    private void modernminecarts$useForgeFurnaceSpeed(
+            ServerWorld world,
+            CallbackInfoReturnable<Double> cir
+    ) {
         double railSpeed = modernminecarts$getRailSpeed();
         if (modernminecarts$getParent(modernminecarts$self()) != null) {
             cir.setReturnValue(railSpeed);
@@ -234,16 +227,16 @@ public abstract class FurnaceMinecartMixin implements Inventory, NamedScreenHand
     @Unique
     private int modernminecarts$consumeFuelItem() {
         ItemStack stack = getStack(0);
-        int burnTime = MODERNMINECARTS_FUEL_TIMES.getOrDefault(stack.getItem(), 0);
+        int burnTime = modernminecarts$self().getEntityWorld().getFuelRegistry().getFuelTicks(stack);
         if (stack.isEmpty() || burnTime <= 0) {
             return 0;
         }
 
         Item consumedFuel = stack.getItem();
-        Item remainder = consumedFuel.getRecipeRemainder();
+        ItemStack remainder = stack.getRecipeRemainder();
         stack.decrement(1);
         if (stack.isEmpty()) {
-            setStack(0, remainder == null ? ItemStack.EMPTY : new ItemStack(remainder));
+            setStack(0, remainder);
         }
         modernminecarts$refillFuelSlot(consumedFuel);
         return burnTime;
@@ -408,7 +401,7 @@ public abstract class FurnaceMinecartMixin implements Inventory, NamedScreenHand
 
     @Override
     public boolean isValid(int slot, ItemStack stack) {
-        return AbstractFurnaceBlockEntity.canUseAsFuel(stack);
+        return modernminecarts$self().getEntityWorld().getFuelRegistry().isFuel(stack);
     }
 
     @Override
@@ -432,9 +425,9 @@ public abstract class FurnaceMinecartMixin implements Inventory, NamedScreenHand
         if (!cart.isOnRail()) {
             return false;
         }
-        var state = cart.getWorld().getBlockState(cart.getBlockPos());
+        var state = cart.getEntityWorld().getBlockState(cart.getBlockPos());
         if (!(state.getBlock() instanceof net.minecraft.block.AbstractRailBlock)) {
-            state = cart.getWorld().getBlockState(cart.getBlockPos().down());
+            state = cart.getEntityWorld().getBlockState(cart.getBlockPos().down());
         }
         if (state.getBlock() instanceof PoweredRailBlock
                 && !state.isOf(net.minecraft.block.Blocks.ACTIVATOR_RAIL)
@@ -451,10 +444,10 @@ public abstract class FurnaceMinecartMixin implements Inventory, NamedScreenHand
     private double modernminecarts$getRailSpeed() {
         FurnaceMinecartEntity cart = modernminecarts$self();
         BlockPos railPos = cart.getBlockPos();
-        BlockState railState = cart.getWorld().getBlockState(railPos);
+        BlockState railState = cart.getEntityWorld().getBlockState(railPos);
         if (!(railState.getBlock() instanceof AbstractRailBlock)) {
             railPos = railPos.down();
-            railState = cart.getWorld().getBlockState(railPos);
+            railState = cart.getEntityWorld().getBlockState(railPos);
         }
 
         if (!(railState.getBlock() instanceof AbstractRailBlock)) {
@@ -470,10 +463,10 @@ public abstract class FurnaceMinecartMixin implements Inventory, NamedScreenHand
 
         if (railSpeed > 0.5D) {
             BlockPos nextPos = modernminecarts$getNextRailPos(cart, railPos);
-            BlockState nextState = cart.getWorld().getBlockState(nextPos);
+            BlockState nextState = cart.getEntityWorld().getBlockState(nextPos);
             if (!(nextState.getBlock() instanceof AbstractRailBlock)) {
                 nextPos = nextPos.down();
-                nextState = cart.getWorld().getBlockState(nextPos);
+                nextState = cart.getEntityWorld().getBlockState(nextPos);
             }
 
             if (nextState.getBlock() instanceof AbstractRailBlock nextRail
@@ -504,7 +497,7 @@ public abstract class FurnaceMinecartMixin implements Inventory, NamedScreenHand
                 case ASCENDING_WEST -> pos.west().up();
                 default -> pos;
             };
-            return cart.getWorld().getBlockState(launchPos).isAir()
+            return cart.getEntityWorld().getBlockState(launchPos).isAir()
                     ? MinecartTuning.MAXIMUM_JUMP_SPEED
                     : MinecartTuning.ASCENDING_COPPER_RAIL_SPEED;
         }

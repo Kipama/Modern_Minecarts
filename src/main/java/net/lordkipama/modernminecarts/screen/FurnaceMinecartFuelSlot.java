@@ -1,6 +1,5 @@
 package net.lordkipama.modernminecarts.screen;
 
-import net.minecraft.block.entity.AbstractFurnaceBlockEntity;
 import net.minecraft.inventory.Inventory;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
@@ -13,7 +12,7 @@ public class FurnaceMinecartFuelSlot extends Slot {
 
     @Override
     public boolean canInsert(ItemStack stack) {
-        return AbstractFurnaceBlockEntity.canUseAsFuel(stack) || stack.isOf(Items.BUCKET);
+        return inventory.isValid(getIndex(), stack) || stack.isOf(Items.BUCKET);
     }
 
     @Override

@@ -16,7 +16,7 @@ public abstract class HopperMinecartMixin {
     @Inject(method = "tick", at = @At("TAIL"))
     private void modernminecarts$linkTrainInventories(CallbackInfo ci) {
         HopperMinecartEntity hopper = modernminecarts$self();
-        if (hopper.getWorld().isClient()
+        if (hopper.getEntityWorld().isClient()
                 || !hopper.isAlive()
                 || !hopper.isEnabled()) {
             return;

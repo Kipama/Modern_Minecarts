@@ -28,6 +28,7 @@ import net.minecraft.state.property.Properties;
 import net.minecraft.util.ActionResult;
 import net.minecraft.util.Hand;
 import net.minecraft.util.Identifier;
+import net.minecraft.util.Uuids;
 import net.minecraft.util.hit.BlockHitResult;
 import net.minecraft.util.hit.HitResult;
 import net.minecraft.util.math.BlockPos;
@@ -36,6 +37,7 @@ import org.slf4j.LoggerFactory;
 
 import java.util.HashSet;
 import java.util.Set;
+import java.util.UUID;
 
 public class ModernMinecarts implements ModInitializer {
 	public static final String MOD_ID = "modernminecarts";
@@ -209,15 +211,16 @@ public class ModernMinecarts implements ModInitializer {
 			if(entity instanceof AbstractMinecartEntity cart) {
 				ItemStack stack = player.getStackInHand(hand);
 
-				if(player.isSneaking() && stack.isOf(Items.CHAIN)) {
+				if(player.isSneaking() && stack.isOf(Items.IRON_CHAIN)) {
 					if (world instanceof ServerWorld server) {
 						NbtCompound nbt = stack.getOrDefault(
 								DataComponentTypes.CUSTOM_DATA,
 								NbtComponent.DEFAULT
 						).copyNbt();
+						UUID parentEntityUuid = nbt.get("ParentEntity", Uuids.CODEC).orElse(null);
 
-						if (nbt.contains("ParentEntity") && !cart.getUuid().equals(nbt.getUuid("ParentEntity"))) {
-							if (server.getEntity(nbt.getUuid("ParentEntity")) instanceof AbstractMinecartEntity parent) {
+						if (parentEntityUuid != null && !cart.getUuid().equals(parentEntityUuid)) {
+							if (server.getEntity(parentEntityUuid) instanceof AbstractMinecartEntity parent) {
 								Set<ChainMinecartInterface> train = new HashSet<>();
 								train.add((ChainMinecartInterface) parent);
 
@@ -230,12 +233,12 @@ public class ModernMinecarts implements ModInitializer {
 									System.out.println("Train contains cart");
 									if(((ChainMinecartInterface) parent).getLinkedParent()==cart){
 										if(((ChainMinecartInterface) cart).getLinkedParent()!=null){
-											cart.dropStack(new ItemStack(Items.CHAIN));
+											cart.dropStack(server, new ItemStack(Items.IRON_CHAIN));
 											System.out.println("Parent not null");
 											ChainMinecartInterface.unsetParentChild((ChainMinecartInterface) ((ChainMinecartInterface) cart).getLinkedParent(), (ChainMinecartInterface) cart);
 										}
 										if(((ChainMinecartInterface) parent).getLinkedChild()!=null){
-											parent.dropStack(new ItemStack(Items.CHAIN));
+											parent.dropStack(server, new ItemStack(Items.IRON_CHAIN));
 											System.out.println("Child not null");
 											ChainMinecartInterface.unsetParentChild((ChainMinecartInterface) parent, ((ChainMinecartInterface) ((ChainMinecartInterface) parent).getLinkedChild()));
 										}
@@ -248,12 +251,12 @@ public class ModernMinecarts implements ModInitializer {
 										System.out.println("Train doesnt contain cart");
 										if (((ChainMinecartInterface) cart).getLinkedParent() != null) {
 											ChainMinecartInterface.unsetParentChild((ChainMinecartInterface) ((ChainMinecartInterface) cart).getLinkedParent(),(ChainMinecartInterface) cart);
-											cart.dropStack(new ItemStack(Items.CHAIN));
+											cart.dropStack(server, new ItemStack(Items.IRON_CHAIN));
 											System.out.println("Parent not null");
 										}
 										if (((ChainMinecartInterface) parent).getLinkedChild() != null) {
 											ChainMinecartInterface.unsetParentChild((ChainMinecartInterface) parent, (ChainMinecartInterface) ((ChainMinecartInterface) parent).getLinkedChild());
-											parent.dropStack(new ItemStack(Items.CHAIN));
+											parent.dropStack(server, new ItemStack(Items.IRON_CHAIN));
 											System.out.println("Child not null");
 										}
 										if(!player.isCreative()){
@@ -278,14 +281,14 @@ public class ModernMinecarts implements ModInitializer {
 							if (nbt.isEmpty())
 								stack.remove(DataComponentTypes.CUSTOM_DATA);
 						} else {
-							if(nbt.contains("ParentEntity") && cart.getUuid().equals(nbt.getUuid("ParentEntity"))){
+							if(parentEntityUuid != null && cart.getUuid().equals(parentEntityUuid)){
 								nbt.remove("ParentEntity");
 								world.playSound(null, cart.getX(), cart.getY(), cart.getZ(), SoundEvents.BLOCK_CHAIN_HIT, SoundCategory.NEUTRAL, 1F, 1F);
 								if (nbt.isEmpty())
 									stack.remove(DataComponentTypes.CUSTOM_DATA);
 							}
 							else {
-								nbt.putUuid("ParentEntity", cart.getUuid());
+								nbt.put("ParentEntity", Uuids.CODEC, cart.getUuid());
 								stack.set(DataComponentTypes.CUSTOM_DATA, NbtComponent.of(nbt));
 								world.playSound(null, cart.getX(), cart.getY(), cart.getZ(), SoundEvents.BLOCK_CHAIN_HIT, SoundCategory.NEUTRAL, 1F, 1F);
 							}
@@ -296,7 +299,7 @@ public class ModernMinecarts implements ModInitializer {
 							stack.set(DataComponentTypes.CUSTOM_DATA, NbtComponent.of(nbt));
 						}
 					}
-					return ActionResult.success(true);
+					return ActionResult.SUCCESS;
 				}
 			}
 

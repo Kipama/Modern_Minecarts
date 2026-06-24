@@ -1,6 +1,5 @@
 package net.lordkipama.modernminecarts.screen;
 
-import net.minecraft.block.entity.AbstractFurnaceBlockEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.player.PlayerInventory;
 import net.minecraft.inventory.Inventory;
@@ -61,7 +60,7 @@ public class FurnaceMinecartScreenHandler extends ScreenHandler {
                 if (!insertItem(stack, 1, slots.size(), true)) {
                     return ItemStack.EMPTY;
                 }
-            } else if (AbstractFurnaceBlockEntity.canUseAsFuel(stack)) {
+            } else if (player.getEntityWorld().getFuelRegistry().isFuel(stack)) {
                 if (!insertItem(stack, 0, 1, false)) {
                     return ItemStack.EMPTY;
                 }

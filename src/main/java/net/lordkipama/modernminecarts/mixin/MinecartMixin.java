@@ -21,14 +21,17 @@ import net.minecraft.entity.MovementType;
 import net.minecraft.entity.damage.DamageSource;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.vehicle.AbstractMinecartEntity;
+import net.minecraft.entity.vehicle.DefaultMinecartController;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
-import net.minecraft.nbt.NbtCompound;
 import net.minecraft.registry.tag.BlockTags;
 import net.minecraft.server.world.ServerWorld;
+import net.minecraft.storage.ReadView;
+import net.minecraft.storage.WriteView;
 import net.minecraft.state.property.EnumProperty;
 import net.minecraft.state.property.Properties;
 import net.minecraft.util.math.*;
+import net.minecraft.util.Uuids;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.spongepowered.asm.mixin.Mixin;
@@ -57,10 +60,12 @@ public class MinecartMixin implements ChainMinecartInterface {
     /**
      * @author LordKipama
      * @reason Mixins are scary and I'm too bad to add everything separately
-     */
+    */
     @Overwrite
-    public void moveOnRail(BlockPos pos, BlockState state) {
+    public void moveOnRail(ServerWorld world) {
         AbstractMinecartEntity thisObject = (AbstractMinecartEntity)(Object)this;
+        BlockPos pos = thisObject.getRailOrMinecartPos();
+        BlockState state = world.getBlockState(pos);
         double w;
         Vec3d vec3d5;
         double u;
@@ -70,7 +75,7 @@ public class MinecartMixin implements ChainMinecartInterface {
         double d = thisObject.getX();
         double e = thisObject.getY();
         double f = thisObject.getZ();
-        Vec3d vec3d = thisObject.snapPositionToRail(d, e, f);
+        Vec3d vec3d = modernminecarts$snapPositionToRail(d, e, f);
         e = pos.getY();
         boolean bl = false;
         boolean bl2 = false;
@@ -175,7 +180,7 @@ public class MinecartMixin implements ChainMinecartInterface {
         f = p + i * s;
         thisObject.setPosition(d, e, f);
         t = 1; //REMOVED Slowdown for minecart with passangers thisObject.hasPassengers() ? 0.75 : 1.0;
-        u =((MinecartInvoker) thisObject).invokeGetMaxSpeed();
+        u =((MinecartInvoker) thisObject).invokeGetMaxSpeed(world);
         vec3d2 = thisObject.getVelocity();
         vec3d2 = new Vec3d(Math.min(Math.max(vec3d2.x, -u), u),0,Math.min(Math.max(vec3d2.z, -u), u));
 
@@ -187,8 +192,8 @@ public class MinecartMixin implements ChainMinecartInterface {
         } else if (vec3i2.getY() != 0 && MathHelper.floor(thisObject.getX()) - pos.getX() == vec3i2.getX() && MathHelper.floor(thisObject.getZ()) - pos.getZ() == vec3i2.getZ()) {
             thisObject.setPosition(thisObject.getX(), thisObject.getY() + (double)vec3i2.getY(), thisObject.getZ());
         }
-        ((MinecartInvoker) thisObject).invokeApplySlowdown();
-        Vec3d vec3d4 = thisObject.snapPositionToRail(thisObject.getX(), thisObject.getY(), thisObject.getZ());
+        thisObject.setVelocity(((MinecartInvoker) thisObject).invokeApplySlowdown(thisObject.getVelocity()));
+        Vec3d vec3d4 = modernminecarts$snapPositionToRail(thisObject.getX(), thisObject.getY(), thisObject.getZ());
         if (vec3d4 != null && vec3d != null) {
             double v = (vec3d.y - vec3d4.y) * 0.05;
             vec3d5 = thisObject.getVelocity();
@@ -236,14 +241,14 @@ public class MinecartMixin implements ChainMinecartInterface {
     }
 
     @Inject(method = "getMaxSpeed", at = @At("RETURN"), cancellable = true)
-    private void injectedGetMaxSpeed(CallbackInfoReturnable<Double> cir) {
+    private void injectedGetMaxSpeed(ServerWorld world, CallbackInfoReturnable<Double> cir) {
         AbstractMinecartEntity thisObject = (AbstractMinecartEntity)(Object)this;
 
         int i = MathHelper.floor(thisObject.getX());
         int j = MathHelper.floor(thisObject.getY());
         int k = MathHelper.floor(thisObject.getZ());
-        BlockState block = thisObject.getWorld().getBlockState(new BlockPos(i, j , k));
-        BlockState blockUnder = thisObject.getWorld().getBlockState(new BlockPos(i, j - 1, k));
+        BlockState block = thisObject.getEntityWorld().getBlockState(new BlockPos(i, j , k));
+        BlockState blockUnder = thisObject.getEntityWorld().getBlockState(new BlockPos(i, j - 1, k));
 
 
         if (thisObject.isOnRail()){
@@ -280,16 +285,16 @@ public class MinecartMixin implements ChainMinecartInterface {
             else if(blockUnder.isOf(ModBlocks.RAIL_JUMP)){
                 boolean airInFront = false;
                 if(blockUnder.get(SlopedRailBlock.SHAPE)== RailShape.ASCENDING_NORTH){
-                    airInFront = thisObject.getWorld().getBlockState(new BlockPos(i,j,k-1)).isOf(Blocks.AIR);
+                    airInFront = thisObject.getEntityWorld().getBlockState(new BlockPos(i,j,k-1)).isOf(Blocks.AIR);
                 }
                 if(blockUnder.get(SlopedRailBlock.SHAPE)== RailShape.ASCENDING_EAST){
-                    airInFront = thisObject.getWorld().getBlockState(new BlockPos(i+1,j,k)).isOf(Blocks.AIR);
+                    airInFront = thisObject.getEntityWorld().getBlockState(new BlockPos(i+1,j,k)).isOf(Blocks.AIR);
                 }
                 else if(blockUnder.get(SlopedRailBlock.SHAPE)== RailShape.ASCENDING_SOUTH){
-                    airInFront = thisObject.getWorld().getBlockState(new BlockPos(i,j,k+1)).isOf(Blocks.AIR);
+                    airInFront = thisObject.getEntityWorld().getBlockState(new BlockPos(i,j,k+1)).isOf(Blocks.AIR);
                 }
                 else if(blockUnder.get(SlopedRailBlock.SHAPE)== RailShape.ASCENDING_WEST){
-                    airInFront = thisObject.getWorld().getBlockState(new BlockPos(i-1,j,k)).isOf(Blocks.AIR);
+                    airInFront = thisObject.getEntityWorld().getBlockState(new BlockPos(i-1,j,k)).isOf(Blocks.AIR);
                 }
 
                 if(airInFront){
@@ -307,16 +312,16 @@ public class MinecartMixin implements ChainMinecartInterface {
                 BlockPos pos = thisObject.getBlockPos();
                 if (vec3.x > 0) {
                     blockpos = new BlockPos(pos.getX() + 1, pos.getY(), pos.getZ());
-                    frontBlockState = thisObject.getWorld().getBlockState(blockpos);
+                    frontBlockState = thisObject.getEntityWorld().getBlockState(blockpos);
                 } else if (vec3.x < 0) {
                     blockpos = new BlockPos(pos.getX() - 1, pos.getY(), pos.getZ());
-                    frontBlockState = thisObject.getWorld().getBlockState(blockpos);
+                    frontBlockState = thisObject.getEntityWorld().getBlockState(blockpos);
                 } else if (vec3.z > 0) {
                     blockpos = new BlockPos(pos.getX(), pos.getY(), pos.getZ() + 1);
-                    frontBlockState = thisObject.getWorld().getBlockState(blockpos);
+                    frontBlockState = thisObject.getEntityWorld().getBlockState(blockpos);
                 } else {
                     blockpos = new BlockPos(pos.getX(), pos.getY(), pos.getZ() - 1);
-                    frontBlockState = thisObject.getWorld().getBlockState(blockpos);
+                    frontBlockState = thisObject.getEntityWorld().getBlockState(blockpos);
                 }
 
                 if (frontBlockState.isIn(BlockTags.RAILS)) {
@@ -397,14 +402,14 @@ public class MinecartMixin implements ChainMinecartInterface {
      * @author LordKipama
      * @reason Still scary
      */
-    @Overwrite
-    public @Nullable Vec3d snapPositionToRail(double x, double y, double z) {
+    @Unique
+    private @Nullable Vec3d modernminecarts$snapPositionToRail(double x, double y, double z) {
         AbstractMinecartEntity thisObject = (AbstractMinecartEntity) (Object) this;
         int i = MathHelper.floor(x);
         int j = MathHelper.floor(y);
         int k = MathHelper.floor(z);
-        BlockState blockState = thisObject.getWorld().getBlockState(new BlockPos(i, j, k));
-        if (thisObject.getWorld().getBlockState(new BlockPos(i, j - 1, k)).isIn(BlockTags.RAILS)) {
+        BlockState blockState = thisObject.getEntityWorld().getBlockState(new BlockPos(i, j, k));
+        if (thisObject.getEntityWorld().getBlockState(new BlockPos(i, j - 1, k)).isIn(BlockTags.RAILS)) {
             --j;
         }
         if (AbstractRailBlock.isRail(blockState)) {
@@ -413,11 +418,11 @@ public class MinecartMixin implements ChainMinecartInterface {
             if(blockState.isOf(ModBlocks.RAIL_CROSSING) && blockState.getBlock() instanceof AbstractRailBlock AbstractRail){
                 Direction direction = Direction.getFacing(thisObject.getVelocity().getX(), 0, thisObject.getVelocity().getZ());
                 if(railShape == RailShape.NORTH_SOUTH && (direction == Direction.EAST || direction == Direction.WEST)) {
-                    thisObject.getWorld().setBlockState(new BlockPos(i,j,k), blockState.with(AbstractRail.getShapeProperty(), RailShape.EAST_WEST));
+                    thisObject.getEntityWorld().setBlockState(new BlockPos(i,j,k), blockState.with(AbstractRail.getShapeProperty(), RailShape.EAST_WEST));
                 }
 
                 if(railShape == RailShape.EAST_WEST && (direction == Direction.NORTH || direction == Direction.SOUTH)) {
-                    thisObject.getWorld().setBlockState(new BlockPos(i,j,k), blockState.with(AbstractRail.getShapeProperty(), RailShape.NORTH_SOUTH));
+                    thisObject.getEntityWorld().setBlockState(new BlockPos(i,j,k), blockState.with(AbstractRail.getShapeProperty(), RailShape.NORTH_SOUTH));
                 }
             }
             Pair<Vec3i, Vec3i> pair = MinecartInvoker.invokeGetAdjacentRailPositionsByShape(railShape);
@@ -457,12 +462,12 @@ public class MinecartMixin implements ChainMinecartInterface {
     /**
      * @author LordKipama
      * @reason Basically rewrote the entire thing
-     */
+    */
     @Overwrite
-    public void moveOffRail() {
+    public void moveOffRail(ServerWorld world) {
         AbstractMinecartEntity thisObject = (AbstractMinecartEntity) (Object) this;
 
-        double d0 = thisObject.isOnGround() ? ((MinecartInvoker) thisObject).invokeGetMaxSpeed() : 0.8;
+        double d0 = thisObject.isOnGround() ? ((MinecartInvoker) thisObject).invokeGetMaxSpeed(world) : 0.8;
         Vec3d vec3 = thisObject.getVelocity();
 
         //Get hindblock
@@ -477,31 +482,31 @@ public class MinecartMixin implements ChainMinecartInterface {
         if(vec3.x>0){
             BlockPos blockpos = new BlockPos(x-1, y-1, z);
             lateralMomentum = Math.abs(vec3.x);
-            hindBlockState = thisObject.getWorld().getBlockState(blockpos);
+            hindBlockState = thisObject.getEntityWorld().getBlockState(blockpos);
             newVec3 = new Vec3d(Math.min(vec3.x+0.1, maxSpeed),Math.min(lateralMomentum, maxSpeed),0);
         }
         else if(vec3.x<0){
             BlockPos blockpos = new BlockPos(x+1, y-1, z);
             lateralMomentum = Math.abs(vec3.x);
-            hindBlockState = thisObject.getWorld().getBlockState(blockpos);
+            hindBlockState = thisObject.getEntityWorld().getBlockState(blockpos);
             newVec3 = new Vec3d(Math.max(vec3.x-0.1, -maxSpeed),Math.min(lateralMomentum, maxSpeed),0);
         }
         else if(vec3.z>0){
             BlockPos blockpos = new BlockPos(x, y-1, z-1);
             lateralMomentum = Math.abs(vec3.z);
-            hindBlockState = thisObject.getWorld().getBlockState(blockpos);
+            hindBlockState = thisObject.getEntityWorld().getBlockState(blockpos);
             newVec3 = new Vec3d(0,Math.min(lateralMomentum, maxSpeed),Math.min(vec3.z+0.1, maxSpeed));
         }
         else {
             BlockPos blockpos = new BlockPos(x, y-1, z+1);
             lateralMomentum = Math.abs(vec3.z);
-            hindBlockState = thisObject.getWorld().getBlockState(blockpos);
+            hindBlockState = thisObject.getEntityWorld().getBlockState(blockpos);
             newVec3 = new Vec3d(0,Math.min(lateralMomentum, maxSpeed),Math.max(vec3.z-0.1, -maxSpeed));
         }
 
         //Check if cart should jump
         BlockPos belowBlock = new BlockPos(x, y-1,z);
-        if(!jumpedOffSlope && hindBlockState.isOf(ModBlocks.RAIL_JUMP) && thisObject.getWorld().getBlockState(belowBlock).isOf(Blocks.AIR)){
+        if(!jumpedOffSlope && hindBlockState.isOf(ModBlocks.RAIL_JUMP) && thisObject.getEntityWorld().getBlockState(belowBlock).isOf(Blocks.AIR)){
             //modify vec3 if rail is ramp
             vec3 = newVec3;
 
@@ -532,12 +537,12 @@ public class MinecartMixin implements ChainMinecartInterface {
     @Inject(method = "tick", at = @At("HEAD"))
     public void modernminecarts$tick(CallbackInfo info) {
         AbstractMinecartEntity thisObject = (AbstractMinecartEntity) (Object) this;
-        if(!thisObject.getWorld().isClient()) {
+        if(!thisObject.getEntityWorld().isClient()) {
             if(getLinkedParent() != null) {
                 double distance = getLinkedParent().distanceTo(thisObject) - 1;
 
                 if(distance <= 4) {
-                    Vec3d direction = getLinkedParent().getPos().subtract(thisObject.getPos()).normalize();
+                    Vec3d direction = getLinkedParent().getEntityPos().subtract(thisObject.getEntityPos()).normalize();
 
                     if(distance > 1) {
                         Vec3d parentVelocity = getLinkedParent().getVelocity();
@@ -557,7 +562,7 @@ public class MinecartMixin implements ChainMinecartInterface {
                 }
                 else {
                     ChainMinecartInterface.unsetParentChild((ChainMinecartInterface) getLinkedParent(), this);
-                    thisObject.dropStack(new ItemStack(Items.CHAIN));
+                    thisObject.dropStack((ServerWorld) thisObject.getEntityWorld(), new ItemStack(Items.IRON_CHAIN));
                     return;
                 }
 
@@ -571,50 +576,27 @@ public class MinecartMixin implements ChainMinecartInterface {
 
         }
     }
-    @Inject(method = "readCustomDataFromNbt", at = @At("HEAD"))
-    public void injectReadCustomDataFromNbt(NbtCompound nbt, CallbackInfo info) {
-        if(nbt.contains("ParentUuid"))
-            parentUuid = nbt.getUuid("ParentUuid");
-        if(nbt.contains("ChildUuid"))
-            childUuid = nbt.getUuid("ChildUuid");
-        System.out.println(nbt.getKeys());
+    @Inject(method = "readCustomData", at = @At("HEAD"))
+    public void injectReadCustomData(ReadView view, CallbackInfo info) {
+        parentUuid = view.read("ParentUuid", Uuids.CODEC).orElse(null);
+        childUuid = view.read("ChildUuid", Uuids.CODEC).orElse(null);
     }
 
-    @Inject(method = "writeCustomDataToNbt", at = @At("HEAD"))
-    public void injectWriteCustomDataToNbt(NbtCompound nbt, CallbackInfo info) {
-        AbstractMinecartEntity thisObject = (AbstractMinecartEntity) (Object) this;
-
-        if (thisObject.getWorld() instanceof ServerWorld) {
-            System.out.println("Server");
-        } else {
-            System.out.println("Client");
-        }
-
+    @Inject(method = "writeCustomData", at = @At("HEAD"))
+    public void injectWriteCustomData(WriteView view, CallbackInfo info) {
         if (this.parentUuid != null) {
-            System.out.println("ParentUuid not null");
-            try {
-                nbt.putUuid("ParentUuid", this.parentUuid);
-            } catch (Exception e) {
-                System.err.println("Failed to write ParentUuid: " + e.getMessage());
-            }
+            view.put("ParentUuid", Uuids.CODEC, this.parentUuid);
         }
 
         if (this.childUuid != null) {
-            System.out.println("ChildUuid not null");
-            try {
-                nbt.putUuid("ChildUuid", this.childUuid);
-            } catch (Exception e) {
-                System.err.println("Failed to write ChildUuid: " + e.getMessage());
-            }
+            view.put("ChildUuid", Uuids.CODEC, this.childUuid);
         }
-
-        System.out.println("FinalNBT: " + nbt.getKeys());
     }
 
     @Override
     public AbstractMinecartEntity getLinkedParent() {
         AbstractMinecartEntity thisObject = (AbstractMinecartEntity) (Object) this;
-        var entity = thisObject.getWorld() instanceof ServerWorld serverWorld && this.parentUuid != null ? serverWorld.getEntity(this.parentUuid) : thisObject.getWorld().getEntityById(this.parentIdClient);
+        var entity = thisObject.getEntityWorld() instanceof ServerWorld serverWorld && this.parentUuid != null ? serverWorld.getEntity(this.parentUuid) : thisObject.getEntityWorld().getEntityById(this.parentIdClient);
         return entity instanceof AbstractMinecartEntity abstractMinecartEntity ? abstractMinecartEntity : null;
     }
 
@@ -629,7 +611,7 @@ public class MinecartMixin implements ChainMinecartInterface {
             this.parentIdClient = -1;
         }
 
-        if (!thisObject.getWorld().isClient()) {
+        if (!thisObject.getEntityWorld().isClient()) {
             PlayerLookup.tracking(thisObject).forEach(player -> net.lordkipama.modernminecarts.SyncChainedMinecartPacket.send(this.getLinkedParent(), (AbstractMinecartEntity) (Object) this, player));
         }
     }
@@ -643,7 +625,7 @@ public class MinecartMixin implements ChainMinecartInterface {
     @Override
     public AbstractMinecartEntity getLinkedChild() {
         AbstractMinecartEntity thisObject = (AbstractMinecartEntity) (Object) this;
-        var entity = thisObject.getWorld() instanceof ServerWorld serverWorld && this.childUuid != null ? ((ServerWorld) thisObject.getWorld()).getEntity(this.childUuid) : thisObject.getWorld().getEntityById(this.childIdClient);
+        var entity = thisObject.getEntityWorld() instanceof ServerWorld serverWorld && this.childUuid != null ? ((ServerWorld) thisObject.getEntityWorld()).getEntity(this.childUuid) : thisObject.getEntityWorld().getEntityById(this.childIdClient);
         return entity instanceof AbstractMinecartEntity abstractMinecartEntity ? abstractMinecartEntity : null;
     }
     @Override
@@ -666,18 +648,17 @@ public class MinecartMixin implements ChainMinecartInterface {
     /**
      * @author
      * @reason
-     */
+    */
     @Overwrite
-    public void applySlowdown() {
+    public Vec3d applySlowdown(Vec3d velocity) {
         AbstractMinecartEntity thisObject = (AbstractMinecartEntity) (Object) this;
         double d = 0.96; //REMOVED Slowdown for minecart with passangers thisObject.hasPassengers() ? 0.997 : 0.96;
-        Vec3d vec3d = thisObject.getVelocity();
-        vec3d = vec3d.multiply(d, 0.0, d);
+        Vec3d vec3d = velocity.multiply(d, 0.0, d);
         if (thisObject.isTouchingWater()) {
             vec3d = vec3d.multiply(0.949999988079071);
         }
 
-        thisObject.setVelocity(vec3d);
+        return vec3d;
     }
 
 }

@@ -18,7 +18,7 @@ import net.minecraft.server.world.ServerWorld;
 import net.minecraft.sound.SoundCategory;
 import net.minecraft.sound.SoundEvent;
 import net.minecraft.sound.SoundEvents;
-import net.minecraft.util.ItemActionResult;
+import net.minecraft.util.ActionResult;
 import net.minecraft.util.Hand;
 import net.minecraft.util.hit.BlockHitResult;
 import net.minecraft.util.math.BlockPos;
@@ -54,7 +54,7 @@ public class CopperRailBlock extends PoweredRailBlock implements CustomOxidizabl
 
     @Override
     public boolean hasRandomTicks(BlockState state) {
-        return CustomOxidizable.getIncreasedOxidationBlock(state.getBlock()).isPresent();
+        return oxidationLevel != Oxidizable.OxidationLevel.OXIDIZED;
     }
 
     @Override
@@ -63,7 +63,7 @@ public class CopperRailBlock extends PoweredRailBlock implements CustomOxidizabl
     }
 
     @Override
-    protected ItemActionResult onUseWithItem(ItemStack itemstack, BlockState state, World world, BlockPos pos, PlayerEntity player, Hand hand, BlockHitResult hit){
+    protected ActionResult onUseWithItem(ItemStack itemstack, BlockState state, World world, BlockPos pos, PlayerEntity player, Hand hand, BlockHitResult hit){
 
         if (itemstack.getItem() == Items.HONEYCOMB) {
 
@@ -102,7 +102,7 @@ public class CopperRailBlock extends PoweredRailBlock implements CustomOxidizabl
             //Play sound and particle events
             world.syncWorldEvent(player, 3003, pos, 0);
             player.swingHand(hand);
-            return ItemActionResult.success(world.isClient());
+            return ActionResult.SUCCESS;
 
         } else if (itemstack.isIn(ItemTags.AXES)) {
 
@@ -110,7 +110,7 @@ public class CopperRailBlock extends PoweredRailBlock implements CustomOxidizabl
             if(!world.isClient()) {
                 //Replace block with younger version
                 if (this.oxidationLevel == Oxidizable.OxidationLevel.UNAFFECTED) {
-                    return ItemActionResult.PASS_TO_DEFAULT_BLOCK_INTERACTION;
+                    return ActionResult.PASS_TO_DEFAULT_BLOCK_ACTION;
                 } else if (this.oxidationLevel == Oxidizable.OxidationLevel.EXPOSED) {
                     world.setBlockState(pos, ModBlocks.COPPER_RAIL.getStateWithProperties(state), 1);
                 } else if (this.oxidationLevel == Oxidizable.OxidationLevel.WEATHERED) {
@@ -122,7 +122,7 @@ public class CopperRailBlock extends PoweredRailBlock implements CustomOxidizabl
             //ClientSide
             else{
                 if (this.oxidationLevel == Oxidizable.OxidationLevel.UNAFFECTED) {
-                    return ItemActionResult.PASS_TO_DEFAULT_BLOCK_INTERACTION;
+                    return ActionResult.PASS_TO_DEFAULT_BLOCK_ACTION;
                 }
                 else {
                     player.swingHand(hand);
@@ -136,7 +136,7 @@ public class CopperRailBlock extends PoweredRailBlock implements CustomOxidizabl
                 }
             }
         }
-        return ItemActionResult.PASS_TO_DEFAULT_BLOCK_INTERACTION;
+        return ActionResult.PASS_TO_DEFAULT_BLOCK_ACTION;
     }
 
     @Override

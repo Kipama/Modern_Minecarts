@@ -1,98 +1,163 @@
 package net.lordkipama.modernminecarts.mixin;
 
-import net.lordkipama.modernminecarts.interfaces.ChainMinecartInterface;
 import net.lordkipama.modernminecarts.ModernMinecarts;
+import net.lordkipama.modernminecarts.interfaces.ChainMinecartInterface;
 import net.minecraft.client.render.OverlayTexture;
 import net.minecraft.client.render.RenderLayer;
+import net.minecraft.client.render.RenderLayers;
 import net.minecraft.client.render.VertexConsumer;
-import net.minecraft.client.render.VertexConsumerProvider;
-import net.minecraft.client.render.entity.EntityRenderer;
-import net.minecraft.client.render.entity.EntityRendererFactory;
-import net.minecraft.client.render.entity.MinecartEntityRenderer;
+import net.minecraft.client.render.command.OrderedRenderCommandQueue;
+import net.minecraft.client.render.entity.AbstractMinecartEntityRenderer;
+import net.minecraft.client.render.entity.state.MinecartEntityRenderState;
+import net.minecraft.client.render.state.CameraRenderState;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.entity.vehicle.AbstractMinecartEntity;
 import net.minecraft.util.Identifier;
-
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.RotationAxis;
-import org.joml.Matrix3f;
-import org.joml.Matrix4f;
+import net.minecraft.util.math.Vec3d;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
-@Mixin(MinecartEntityRenderer.class)
-public abstract class MinecartEntityRendererMixin<T extends AbstractMinecartEntity> extends EntityRenderer<T> {
-    @Unique private static final Identifier CHAIN_TEXTURE = ModernMinecarts.id("textures/entity/chain.png");
-    @Unique private static final RenderLayer CHAIN_LAYER = RenderLayer.getEntitySmoothCutout(CHAIN_TEXTURE);
+import java.util.Map;
+import java.util.WeakHashMap;
 
-    protected MinecartEntityRendererMixin(EntityRendererFactory.Context ctx) { super(ctx); }
+@Mixin(AbstractMinecartEntityRenderer.class)
+public abstract class MinecartEntityRendererMixin {
+    @Unique
+    private static final Identifier CHAIN_TEXTURE =
+            ModernMinecarts.id("textures/entity/chain.png");
+    @Unique
+    private static final RenderLayer CHAIN_LAYER =
+            RenderLayers.entitySmoothCutout(CHAIN_TEXTURE);
+    @Unique
+    private static final Map<MinecartEntityRenderState, Vec3d> CHAIN_OFFSETS =
+            new WeakHashMap<>();
 
-    @Inject(method = "render(Lnet/minecraft/entity/vehicle/AbstractMinecartEntity;FFLnet/minecraft/client/util/math/MatrixStack;Lnet/minecraft/client/render/VertexConsumerProvider;I)V", at = @At("TAIL"))
-    public void minecarttweaks$render(T child, float yaw, float tickDelta, MatrixStack stack, VertexConsumerProvider provider, int light, CallbackInfo info) {
-        AbstractMinecartEntity parent = ((ChainMinecartInterface)child).getLinkedParent();
-        if(parent != null) {
-            double startX = parent.getX();
-            double startY = parent.getY();
-            double startZ = parent.getZ();
-            double endX = child.getX();
-            double endY = child.getY();
-            double endZ = child.getZ();
-
-            float distanceX = (float) (startX - endX);
-            float distanceY = (float) (startY - endY);
-            float distanceZ = (float) (startZ - endZ);
-            float distance = child.distanceTo(parent);
-
-            double hAngle = Math.toDegrees(Math.atan2(endZ - startZ, endX - startX));
-            hAngle += Math.ceil(-hAngle / 360) * 360;
-
-            double vAngle = Math.asin(distanceY / distance);
-
-            renderChain(distanceX, distanceY, distanceZ, (float) hAngle, (float) vAngle, stack, provider, light);
+    @Inject(method = "updateRenderState", at = @At("TAIL"))
+    private void modernminecarts$updateChainState(
+            AbstractMinecartEntity child,
+            MinecartEntityRenderState state,
+            float tickDelta,
+            CallbackInfo ci
+    ) {
+        AbstractMinecartEntity parent = ((ChainMinecartInterface) child).getLinkedParent();
+        if (parent == null) {
+            CHAIN_OFFSETS.remove(state);
+            return;
         }
+
+        CHAIN_OFFSETS.put(
+                state,
+                parent.getLerpedPos(tickDelta).subtract(child.getLerpedPos(tickDelta))
+        );
+    }
+
+    @Inject(method = "render", at = @At("TAIL"))
+    private void modernminecarts$renderChain(
+            MinecartEntityRenderState state,
+            MatrixStack matrices,
+            OrderedRenderCommandQueue queue,
+            CameraRenderState cameraState,
+            CallbackInfo ci
+    ) {
+        Vec3d offset = CHAIN_OFFSETS.get(state);
+        if (offset == null || offset.lengthSquared() < 1.0E-6D) {
+            return;
+        }
+
+        float x = (float) offset.x;
+        float y = (float) offset.y;
+        float z = (float) offset.z;
+        float distance = MathHelper.sqrt(x * x + y * y + z * z);
+        float horizontalAngle = (float) Math.toDegrees(Math.atan2(-z, -x));
+        float verticalAngle = (float) Math.asin(y / distance);
+        modernminecarts$submitChain(
+                x,
+                y,
+                z,
+                horizontalAngle,
+                verticalAngle,
+                matrices,
+                queue,
+                state.light
+        );
     }
 
     @Unique
-    public void renderChain(float x, float y, float z, float hAngle, float vAngle, MatrixStack stack, VertexConsumerProvider provider, int light) {
-        float squaredLength = x * x + y * y + z * z;
-        float length = MathHelper.sqrt(squaredLength) - 1F;
+    private static void modernminecarts$submitChain(
+            float x,
+            float y,
+            float z,
+            float horizontalAngle,
+            float verticalAngle,
+            MatrixStack matrices,
+            OrderedRenderCommandQueue queue,
+            int light
+    ) {
+        float length = MathHelper.sqrt(x * x + y * y + z * z) - 1.0F;
+        matrices.push();
+        matrices.multiply(RotationAxis.POSITIVE_Y.rotationDegrees(-horizontalAngle - 90.0F));
+        matrices.multiply(RotationAxis.POSITIVE_X.rotation(-verticalAngle));
+        matrices.translate(0.0F, 0.0F, 0.5F);
 
-        stack.push();
-        stack.multiply(RotationAxis.POSITIVE_Y.rotationDegrees(-hAngle - 90));
-        stack.multiply(RotationAxis.POSITIVE_X.rotation(-vAngle));
-        stack.translate(0, 0, 0.5);
-        stack.push();
+        queue.submitCustom(
+                matrices,
+                CHAIN_LAYER,
+                (entry, vertices) -> modernminecarts$drawChainPlane(vertices, entry, length, light)
+        );
 
-        VertexConsumer vertexConsumer = provider.getBuffer(CHAIN_LAYER);
-        float vertX1 = 0F;
-        float vertY1 = 0.25F;
-        float vertX2 = MathHelper.sin(6.2831855F) * 0.125F;
-        float vertY2 = MathHelper.cos(6.2831855F) * 0.125F;
-        float minU = 0F;
-        float maxU = 0.1875F;
-        float minV = 0F;
-        float maxV = length / 10;
-        MatrixStack.Entry entry = stack.peek();
-        Matrix4f matrix4f = entry.getPositionMatrix();
-        vertexConsumer.vertex(matrix4f, vertX1, vertY1, 0F).color(0, 0, 0, 255).texture(minU, minV).overlay(OverlayTexture.DEFAULT_UV).light(light).normal(entry, 0.0F, -1.0F, 0.0F);
-        vertexConsumer.vertex(matrix4f, vertX1, vertY1, length).color(255, 255, 255, 255).texture(minU, maxV).overlay(OverlayTexture.DEFAULT_UV).light(light).normal(entry, 0.0F, -1.0F, 0.0F);
-        vertexConsumer.vertex(matrix4f, vertX2, vertY2, length).color(255, 255, 255, 255).texture(maxU, maxV).overlay(OverlayTexture.DEFAULT_UV).light(light).normal(entry, 0.0F, -1.0F, 0.0F);
-        vertexConsumer.vertex(matrix4f, vertX2, vertY2, 0F).color(0, 0, 0, 255).texture(maxU, minV).overlay(OverlayTexture.DEFAULT_UV).light(light).normal(entry, 0.0F, -1.0F, 0.0F);
+        matrices.translate(0.19F, 0.19F, 0.0F);
+        matrices.multiply(RotationAxis.POSITIVE_Z.rotationDegrees(90.0F));
+        queue.submitCustom(
+                matrices,
+                CHAIN_LAYER,
+                (entry, vertices) -> modernminecarts$drawChainPlane(vertices, entry, length, light)
+        );
+        matrices.pop();
+    }
 
-        stack.pop();
-        stack.translate(0.19, 0.19, 0);
-        stack.multiply(RotationAxis.POSITIVE_Z.rotationDegrees(90));
+    @Unique
+    private static void modernminecarts$drawChainPlane(
+            VertexConsumer vertices,
+            MatrixStack.Entry entry,
+            float length,
+            int light
+    ) {
+        float x1 = 0.0F;
+        float y1 = 0.25F;
+        float x2 = 0.0F;
+        float y2 = 0.125F;
+        float maxV = length / 10.0F;
 
-        entry = stack.peek();
-        matrix4f = entry.getPositionMatrix();
-        vertexConsumer.vertex(matrix4f, vertX1, vertY1, 0F).color(0, 0, 0, 255).texture(minU, minV).overlay(OverlayTexture.DEFAULT_UV).light(light).normal(entry, 0.0F, -1.0F, 0.0F);
-        vertexConsumer.vertex(matrix4f, vertX1, vertY1, length).color(255, 255, 255, 255).texture(minU, maxV).overlay(OverlayTexture.DEFAULT_UV).light(light).normal(entry, 0.0F, -1.0F, 0.0F);
-        vertexConsumer.vertex(matrix4f, vertX2, vertY2, length).color(255, 255, 255, 255).texture(maxU, maxV).overlay(OverlayTexture.DEFAULT_UV).light(light).normal(entry, 0.0F, -1.0F, 0.0F);
-        vertexConsumer.vertex(matrix4f, vertX2, vertY2, 0F).color(0, 0, 0, 255).texture(maxU, minV).overlay(OverlayTexture.DEFAULT_UV).light(light).normal(entry, 0.0F, -1.0F, 0.0F);
+        modernminecarts$vertex(vertices, entry, x1, y1, 0.0F, 0, 0, 0, 0.0F, 0.0F, light);
+        modernminecarts$vertex(vertices, entry, x1, y1, length, 255, 255, 255, 0.0F, maxV, light);
+        modernminecarts$vertex(vertices, entry, x2, y2, length, 255, 255, 255, 0.1875F, maxV, light);
+        modernminecarts$vertex(vertices, entry, x2, y2, 0.0F, 0, 0, 0, 0.1875F, 0.0F, light);
+    }
 
-        stack.pop();
+    @Unique
+    private static void modernminecarts$vertex(
+            VertexConsumer vertices,
+            MatrixStack.Entry entry,
+            float x,
+            float y,
+            float z,
+            int red,
+            int green,
+            int blue,
+            float u,
+            float v,
+            int light
+    ) {
+        vertices.vertex(entry, x, y, z)
+                .color(red, green, blue, 255)
+                .texture(u, v)
+                .overlay(OverlayTexture.DEFAULT_UV)
+                .light(light)
+                .normal(entry, 0.0F, -1.0F, 0.0F);
     }
 }

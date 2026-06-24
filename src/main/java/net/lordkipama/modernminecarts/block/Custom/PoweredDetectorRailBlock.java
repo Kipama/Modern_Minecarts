@@ -6,6 +6,7 @@ import net.minecraft.block.BlockState;
 import net.minecraft.block.DetectorRailBlock;
 import net.minecraft.block.enums.RailShape;
 import net.minecraft.entity.Entity;
+import net.minecraft.entity.EntityCollisionHandler;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.vehicle.AbstractMinecartEntity;
 import net.minecraft.entity.vehicle.CommandBlockMinecartEntity;
@@ -23,7 +24,6 @@ import net.minecraft.state.property.EnumProperty;
 import net.minecraft.state.property.Properties;
 import net.minecraft.state.property.Property;
 import net.minecraft.util.ActionResult;
-import net.minecraft.util.ItemActionResult;
 import net.minecraft.util.Hand;
 import net.minecraft.util.hit.BlockHitResult;
 import net.minecraft.util.math.BlockPos;
@@ -68,7 +68,9 @@ public class PoweredDetectorRailBlock extends DetectorRailBlock {
             BlockState state,
             World world,
             BlockPos pos,
-            Entity entity
+            Entity entity,
+            EntityCollisionHandler handler,
+            boolean collision
     ) {
         if (!world.isClient()) {
             updatePoweredStatus(world, pos, state);
@@ -100,7 +102,7 @@ public class PoweredDetectorRailBlock extends DetectorRailBlock {
     }
 
     @Override
-    protected ItemActionResult onUseWithItem(
+    protected ActionResult onUseWithItem(
             ItemStack stack,
             BlockState state,
             World world,
@@ -113,7 +115,7 @@ public class PoweredDetectorRailBlock extends DetectorRailBlock {
                 || stack.isOf(Items.HOPPER)
                 || stack.isOf(Items.CHEST)
                 || stack.isOf(Items.BARREL)) {
-            return ItemActionResult.PASS_TO_DEFAULT_BLOCK_INTERACTION;
+            return ActionResult.PASS_TO_DEFAULT_BLOCK_ACTION;
         }
 
         if (!world.isClient()) {
@@ -143,7 +145,7 @@ public class PoweredDetectorRailBlock extends DetectorRailBlock {
             updatePoweredStatus(world, pos, state);
         }
 
-        return ItemActionResult.success(world.isClient());
+        return ActionResult.SUCCESS;
     }
 
     @Override
@@ -177,7 +179,7 @@ public class PoweredDetectorRailBlock extends DetectorRailBlock {
     }
 
     @Override
-    public int getComparatorOutput(BlockState state, World world, BlockPos pos) {
+    public int getComparatorOutput(BlockState state, World world, BlockPos pos, Direction direction) {
         List<CommandBlockMinecartEntity> commandCarts =
                 getCarts(world, pos, CommandBlockMinecartEntity.class, Entity::isAlive);
         if (!commandCarts.isEmpty()) {
@@ -204,8 +206,8 @@ public class PoweredDetectorRailBlock extends DetectorRailBlock {
             BlockState updatedState = state.with(POWERED, shouldPower);
             world.setBlockState(pos, updatedState, Block.NOTIFY_ALL);
             updateNearbyRails(world, pos, updatedState, shouldPower);
-            world.updateNeighborsAlways(pos, this);
-            world.updateNeighborsAlways(pos.down(), this);
+            world.updateNeighborsAlways(pos, this, null);
+            world.updateNeighborsAlways(pos.down(), this, null);
             world.scheduleBlockRerenderIfNeeded(pos, state, updatedState);
             state = updatedState;
         }

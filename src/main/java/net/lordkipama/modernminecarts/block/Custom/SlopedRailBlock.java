@@ -18,6 +18,7 @@ import net.minecraft.state.property.Property;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
 import net.minecraft.world.World;
+import net.minecraft.world.block.WireOrientation;
 
 public class SlopedRailBlock extends AbstractRailBlock {
     public static final MapCodec<SlopedRailBlock> CODEC = createCodec(SlopedRailBlock::new);
@@ -74,8 +75,8 @@ public class SlopedRailBlock extends AbstractRailBlock {
 
 
     @Override
-    public void neighborUpdate(BlockState state, World world, BlockPos pos, Block sourceBlock, BlockPos sourcePos, boolean notify) {
-        if (world.isClient || !world.getBlockState(pos).isOf(this)) {
+    public void neighborUpdate(BlockState state, World world, BlockPos pos, Block sourceBlock, WireOrientation orientation, boolean notify) {
+        if (world.isClient() || !world.getBlockState(pos).isOf(this)) {
             return;
         }
         if (shouldDropRail(pos, world)) {
