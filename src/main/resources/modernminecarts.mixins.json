@@ -5,6 +5,7 @@
   "mixins": [
     "MinecartInvoker",
     "MinecartMixin",
+    "FurnaceMinecartMixin",
     "EntityTrackerEntryMixin"
   ],
   "injectors": {

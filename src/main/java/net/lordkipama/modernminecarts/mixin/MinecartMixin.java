@@ -5,6 +5,7 @@ import com.llamalad7.mixinextras.sugar.ref.LocalRef;
 import com.mojang.datafixers.util.Pair;
 import net.fabricmc.fabric.api.networking.v1.PlayerLookup;
 import net.lordkipama.modernminecarts.interfaces.ChainMinecartInterface;
+import net.lordkipama.modernminecarts.interfaces.ContainerMinecartInteface;
 import net.lordkipama.modernminecarts.ModernMinecarts;
 import net.lordkipama.modernminecarts.block.Custom.CopperRailBlock;
 import net.lordkipama.modernminecarts.block.Custom.SlopedRailBlock;
@@ -20,12 +21,14 @@ import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.vehicle.AbstractMinecartEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
+import net.minecraft.inventory.Inventory;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.registry.tag.BlockTags;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.state.property.EnumProperty;
 import net.minecraft.state.property.Properties;
 import net.minecraft.util.math.*;
+import net.minecraft.util.ItemScatterer;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.spongepowered.asm.mixin.Mixin;
@@ -354,6 +357,10 @@ public class MinecartMixin implements ChainMinecartInterface {
                 }
             }
         }
+
+        if (thisObject instanceof ContainerMinecartInteface furnaceMinecart) {
+            cir.setReturnValue(furnaceMinecart.limitTrainSpeed(cir.getReturnValue()));
+        }
     }
 
     /**
@@ -631,6 +638,10 @@ public class MinecartMixin implements ChainMinecartInterface {
         AbstractMinecartEntity thisObject = (AbstractMinecartEntity) (Object) this;
         if(getLinkedParent() != null || getLinkedChild() != null)
             thisObject.dropStack(new ItemStack(Items.CHAIN));
+        if (thisObject instanceof Inventory inventory && !thisObject.getWorld().isClient()) {
+            ItemScatterer.spawn(thisObject.getWorld(), thisObject, inventory);
+            inventory.clear();
+        }
     }
 
     /**
