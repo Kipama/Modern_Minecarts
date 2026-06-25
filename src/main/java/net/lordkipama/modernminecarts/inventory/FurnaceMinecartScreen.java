@@ -14,12 +14,12 @@ import net.minecraft.world.inventory.AbstractFurnaceMenu;
 import net.minecraft.world.inventory.ClickType;
 import net.minecraft.world.inventory.FurnaceMenu;
 import net.minecraft.world.inventory.Slot;
-import net.minecraftforge.api.distmarker.Dist;
-import net.minecraftforge.api.distmarker.OnlyIn;
+import net.neoforged.api.distmarker.Dist;
+import net.neoforged.api.distmarker.OnlyIn;
 
 @OnlyIn(Dist.CLIENT)
 public class FurnaceMinecartScreen extends AbstractContainerScreen<FurnaceMinecartMenu> implements RecipeUpdateListener {
-    private static final ResourceLocation RECIPE_BUTTON_LOCATION = new ResourceLocation("textures/gui/recipe_button.png");
+    private static final ResourceLocation RECIPE_BUTTON_LOCATION = ResourceLocation.withDefaultNamespace("textures/gui/recipe_button.png");
     public final AbstractFurnaceRecipeBookComponent recipeBookComponent;
     private boolean widthTooNarrow;
     private final ResourceLocation texture;
@@ -27,7 +27,7 @@ public class FurnaceMinecartScreen extends AbstractContainerScreen<FurnaceMineca
     public FurnaceMinecartScreen(FurnaceMinecartMenu pMenu, Inventory pPlayerInventory, Component pTitle) {
         super(pMenu, pPlayerInventory, pTitle);
         this.recipeBookComponent = new SmeltingRecipeBookComponent();
-        texture = new ResourceLocation("modernminecarts","textures/gui/furnace_minecart_gui.png");
+        texture = ResourceLocation.fromNamespaceAndPath("modernminecarts", "textures/gui/furnace_minecart_gui.png");
     }
 
     public void init() {
@@ -50,7 +50,7 @@ public class FurnaceMinecartScreen extends AbstractContainerScreen<FurnaceMineca
     }
 
     public void render(GuiGraphics pGuiGraphics, int pMouseX, int pMouseY, float pPartialTick) {
-        this.renderBackground(pGuiGraphics);
+        this.renderBackground(pGuiGraphics, pMouseX, pMouseY, pPartialTick);
         if (this.recipeBookComponent.isVisible() && this.widthTooNarrow) {
             this.renderBg(pGuiGraphics, pPartialTick, pMouseX, pMouseY);
             //this.recipeBookComponent.render(pGuiGraphics, pMouseX, pMouseY, pPartialTick);

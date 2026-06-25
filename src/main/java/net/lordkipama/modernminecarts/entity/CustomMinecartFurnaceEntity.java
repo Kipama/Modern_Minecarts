@@ -26,7 +26,6 @@ import net.minecraft.world.level.block.*;
 import net.minecraft.world.level.block.entity.AbstractFurnaceBlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.Vec3;
-import net.minecraftforge.common.ForgeHooks;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -179,7 +178,7 @@ public class CustomMinecartFurnaceEntity extends CustomAbstractMinecartContainer
     public int tryBurnFuel(){
         ItemStack fuelSlot = this.getSlot(0).get();
         if(fuelSlot.is(Items.LAVA_BUCKET)){
-            fuel = ForgeHooks.getBurnTime(fuelSlot, RecipeType.SMELTING);
+            fuel = fuelSlot.getBurnTime(RecipeType.SMELTING);
             fuelBurnTime = fuel;
             fuelSlot.getCraftingRemainingItem();
             this.getSlot(0).set(fuelSlot);
@@ -194,7 +193,7 @@ public class CustomMinecartFurnaceEntity extends CustomAbstractMinecartContainer
             ItemStack tempFuelSlot = fuelSlot.copy();
 
 
-            fuel = ForgeHooks.getBurnTime(fuelSlot, RecipeType.SMELTING);
+            fuel = fuelSlot.getBurnTime(RecipeType.SMELTING);
             fuelBurnTime = fuel;
             fuelSlot.setCount(fuelSlot.getCount() - 1);
             if(fuelSlot.getCount()<1){

@@ -2,40 +2,42 @@ package net.lordkipama.modernminecarts;
 
 import net.lordkipama.modernminecarts.Item.ModItems;
 import net.lordkipama.modernminecarts.Item.VanillaItems;
-import net.lordkipama.modernminecarts.Proxy.IProxy;
 import net.lordkipama.modernminecarts.Proxy.ModernMinecartsPacketHandler;
 import net.lordkipama.modernminecarts.block.ModBlocks;
 import net.lordkipama.modernminecarts.block.VanillaBlocks;
-import net.lordkipama.modernminecarts.entity.*;
+import net.lordkipama.modernminecarts.entity.CustomMinecartChestEntity;
+import net.lordkipama.modernminecarts.entity.CustomMinecartCommandBlockEntity;
+import net.lordkipama.modernminecarts.entity.CustomMinecartEntity;
+import net.lordkipama.modernminecarts.entity.CustomMinecartFurnaceEntity;
+import net.lordkipama.modernminecarts.entity.CustomMinecartHopperEntity;
+import net.lordkipama.modernminecarts.entity.CustomMinecartSpawnerEntity;
+import net.lordkipama.modernminecarts.entity.CustomMinecartTNTEntity;
+import net.lordkipama.modernminecarts.entity.ModEntities;
+import net.lordkipama.modernminecarts.entity.VanillaEntities;
 import net.lordkipama.modernminecarts.inventory.FurnaceMinecartScreen;
 import net.lordkipama.modernminecarts.inventory.ModMenus;
 import net.lordkipama.modernminecarts.renderer.CustomMinecartRenderer;
-import net.minecraft.client.gui.screens.MenuScreens;
 import net.minecraft.client.model.geom.ModelLayers;
 import net.minecraft.client.renderer.entity.EntityRenderer;
 import net.minecraft.client.renderer.entity.EntityRendererProvider;
 import net.minecraft.client.renderer.entity.EntityRenderers;
 import net.minecraft.world.item.CreativeModeTabs;
-import net.minecraftforge.api.distmarker.Dist;
-import net.minecraftforge.common.MinecraftForge;
-import net.minecraftforge.event.BuildCreativeModeTabContentsEvent;
-import net.minecraftforge.eventbus.api.IEventBus;
-import net.minecraftforge.eventbus.api.SubscribeEvent;
-import net.minecraftforge.fml.DistExecutor;
-import net.minecraftforge.fml.common.Mod;
-import net.minecraftforge.fml.event.lifecycle.FMLClientSetupEvent;
-import net.minecraftforge.fml.event.lifecycle.FMLCommonSetupEvent;
-import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
-import net.lordkipama.modernminecarts.Proxy.ClientProxy;
-import net.lordkipama.modernminecarts.Proxy.ServerProxy;
+import net.neoforged.api.distmarker.Dist;
+import net.neoforged.bus.api.IEventBus;
+import net.neoforged.bus.api.SubscribeEvent;
+import net.neoforged.fml.ModContainer;
+import net.neoforged.fml.common.EventBusSubscriber;
+import net.neoforged.fml.common.Mod;
+import net.neoforged.fml.event.lifecycle.FMLClientSetupEvent;
+import net.neoforged.fml.event.lifecycle.FMLCommonSetupEvent;
+import net.neoforged.neoforge.client.event.RegisterMenuScreensEvent;
+import net.neoforged.neoforge.event.BuildCreativeModeTabContentsEvent;
 
-@Mod(net.lordkipama.modernminecarts.ModernMinecarts.MOD_ID)
+@Mod(ModernMinecarts.MOD_ID)
 public class ModernMinecarts {
     public static final String MOD_ID = "modernminecarts";
-    public static IProxy PROXY = DistExecutor.runForDist(() -> ClientProxy::new, () -> ServerProxy::new);
-    public ModernMinecarts() {
-        IEventBus modEventBus = FMLJavaModLoadingContext.get().getModEventBus();
 
+    public ModernMinecarts(IEventBus modEventBus, ModContainer modContainer) {
         ModItems.register(modEventBus);
         ModBlocks.register(modEventBus);
         ModEntities.register(modEventBus);
@@ -45,17 +47,11 @@ public class ModernMinecarts {
         ModMenus.register(modEventBus);
 
         modEventBus.addListener(this::commonSetup);
-
-
-        MinecraftForge.EVENT_BUS.register(this);
         modEventBus.addListener(this::addCreative);
-
-        ModernMinecartsPacketHandler.Init();
-
+        modEventBus.addListener(ModernMinecartsPacketHandler::register);
     }
 
     private void commonSetup(final FMLCommonSetupEvent event) {
-
     }
 
     private void addCreative(BuildCreativeModeTabContentsEvent event) {
@@ -71,13 +67,9 @@ public class ModernMinecarts {
             event.accept(ModBlocks.WAXED_OXIDIZED_COPPER_RAIL);
 
             event.accept(ModBlocks.RAIL_CROSSING);
-
             event.accept(ModBlocks.POWERED_DETECTOR_RAIL);
-
             event.accept(ModBlocks.SLOPED_RAIL);
-
-        }
-        else if (event.getTabKey() == CreativeModeTabs.TOOLS_AND_UTILITIES) {
+        } else if (event.getTabKey() == CreativeModeTabs.TOOLS_AND_UTILITIES) {
             event.accept(ModBlocks.COPPER_RAIL);
             event.accept(ModBlocks.EXPOSED_COPPER_RAIL);
             event.accept(ModBlocks.WEATHERED_COPPER_RAIL);
@@ -89,16 +81,12 @@ public class ModernMinecarts {
             event.accept(ModBlocks.WAXED_OXIDIZED_COPPER_RAIL);
 
             event.accept(ModBlocks.RAIL_CROSSING);
-
             event.accept(ModBlocks.POWERED_DETECTOR_RAIL);
         }
     }
 
-
-    // You can use EventBusSubscriber to automatically register all static methods in the class annotated with @SubscribeEvent
-    @Mod.EventBusSubscriber(modid = MOD_ID, bus = Mod.EventBusSubscriber.Bus.MOD, value = Dist.CLIENT)
+    @EventBusSubscriber(modid = MOD_ID, bus = EventBusSubscriber.Bus.MOD, value = Dist.CLIENT)
     public static class ClientModEvents {
-
         @SubscribeEvent
         public static void clientSetup(FMLClientSetupEvent event) {
             EntityRenderers.register(VanillaEntities.MINECART_ENTITY.get(), new CustomMinecartEntityRenderFactory());
@@ -108,58 +96,59 @@ public class ModernMinecarts {
             EntityRenderers.register(VanillaEntities.HOPPER_MINECART_ENTITY.get(), new CustomMinecartHopperEntityRenderFactory());
             EntityRenderers.register(VanillaEntities.SPAWNER_MINECART_ENTITY.get(), new CustomMinecartSpawnerEntityRenderFactory());
             EntityRenderers.register(VanillaEntities.TNT_MINECART_ENTITY.get(), new CustomMinecartTNTEntityRenderFactory());
-            event.enqueueWork(
-                    () -> MenuScreens.register(ModMenus.FURNACE_MINECART_MENU.get(), FurnaceMinecartScreen::new)
-            );
+        }
 
+        @SubscribeEvent
+        public static void registerMenuScreens(RegisterMenuScreensEvent event) {
+            event.register(ModMenus.FURNACE_MINECART_MENU.get(), FurnaceMinecartScreen::new);
         }
 
         private static class CustomMinecartEntityRenderFactory implements EntityRendererProvider<CustomMinecartEntity> {
             @Override
             public EntityRenderer<CustomMinecartEntity> create(Context context) {
-                return new CustomMinecartRenderer(context, ModelLayers.MINECART);
+                return new CustomMinecartRenderer<>(context, ModelLayers.MINECART);
             }
         }
 
         private static class CustomMinecartChestEntityRenderFactory implements EntityRendererProvider<CustomMinecartChestEntity> {
             @Override
             public EntityRenderer<CustomMinecartChestEntity> create(Context context) {
-                return new CustomMinecartRenderer(context, ModelLayers.CHEST_MINECART);
+                return new CustomMinecartRenderer<>(context, ModelLayers.CHEST_MINECART);
             }
         }
 
         private static class CustomMinecartCommandBlockEntityRenderFactory implements EntityRendererProvider<CustomMinecartCommandBlockEntity> {
             @Override
             public EntityRenderer<CustomMinecartCommandBlockEntity> create(Context context) {
-                return new CustomMinecartRenderer(context, ModelLayers.COMMAND_BLOCK_MINECART);
+                return new CustomMinecartRenderer<>(context, ModelLayers.COMMAND_BLOCK_MINECART);
             }
         }
 
         private static class CustomMinecartFurnaceEntityRenderFactory implements EntityRendererProvider<CustomMinecartFurnaceEntity> {
             @Override
             public EntityRenderer<CustomMinecartFurnaceEntity> create(Context context) {
-                return new CustomMinecartRenderer(context, ModelLayers.FURNACE_MINECART);
+                return new CustomMinecartRenderer<>(context, ModelLayers.FURNACE_MINECART);
             }
         }
 
         private static class CustomMinecartHopperEntityRenderFactory implements EntityRendererProvider<CustomMinecartHopperEntity> {
             @Override
             public EntityRenderer<CustomMinecartHopperEntity> create(Context context) {
-                return new CustomMinecartRenderer(context, ModelLayers.HOPPER_MINECART);
+                return new CustomMinecartRenderer<>(context, ModelLayers.HOPPER_MINECART);
             }
         }
 
         private static class CustomMinecartSpawnerEntityRenderFactory implements EntityRendererProvider<CustomMinecartSpawnerEntity> {
             @Override
             public EntityRenderer<CustomMinecartSpawnerEntity> create(Context context) {
-                return new CustomMinecartRenderer(context, ModelLayers.SPAWNER_MINECART);
+                return new CustomMinecartRenderer<>(context, ModelLayers.SPAWNER_MINECART);
             }
         }
 
         private static class CustomMinecartTNTEntityRenderFactory implements EntityRendererProvider<CustomMinecartTNTEntity> {
             @Override
             public EntityRenderer<CustomMinecartTNTEntity> create(Context context) {
-                return new CustomMinecartRenderer(context, ModelLayers.TNT_MINECART);
+                return new CustomMinecartRenderer<>(context, ModelLayers.TNT_MINECART);
             }
         }
     }

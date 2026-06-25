@@ -2,8 +2,10 @@ package net.lordkipama.modernminecarts.entity;
 
 
 import javax.annotation.Nullable;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.core.NonNullList;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.Containers;
 import net.minecraft.world.InteractionHand;
@@ -19,11 +21,12 @@ import net.minecraft.world.entity.vehicle.ContainerEntity;
 import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.storage.loot.LootTable;
 
 public abstract class CustomAbstractMinecartContainerEntity extends CustomAbstractMinecartEntity implements ContainerEntity {
     private NonNullList<ItemStack> itemStacks = NonNullList.withSize(36, ItemStack.EMPTY);
     @Nullable
-    private ResourceLocation lootTable;
+    private ResourceKey<LootTable> lootTable;
     private long lootTableSeed;
 
     protected CustomAbstractMinecartContainerEntity(EntityType<?> pEntityType, Level pLevel) {
@@ -95,7 +98,7 @@ public abstract class CustomAbstractMinecartContainerEntity extends CustomAbstra
 
     protected void addAdditionalSaveData(CompoundTag pCompound) {
         super.addAdditionalSaveData(pCompound);
-        this.addChestVehicleSaveData(pCompound);
+        this.addChestVehicleSaveData(pCompound, this.registryAccess());
     }
 
     /**
@@ -103,7 +106,7 @@ public abstract class CustomAbstractMinecartContainerEntity extends CustomAbstra
      */
     protected void readAdditionalSaveData(CompoundTag pCompound) {
         super.readAdditionalSaveData(pCompound);
-        this.readChestVehicleSaveData(pCompound);
+        this.readChestVehicleSaveData(pCompound, this.registryAccess());
     }
 
     public InteractionResult interact(Player pPlayer, InteractionHand pHand) {
@@ -138,7 +141,7 @@ public abstract class CustomAbstractMinecartContainerEntity extends CustomAbstra
         this.clearChestVehicleContent();
     }
 
-    public void setLootTable(ResourceLocation pLootTable, long pLootTableSeed) {
+    public void setLootTable(ResourceKey<LootTable> pLootTable, long pLootTableSeed) {
         this.lootTable = pLootTable;
         this.lootTableSeed = pLootTableSeed;
     }
@@ -155,34 +158,12 @@ public abstract class CustomAbstractMinecartContainerEntity extends CustomAbstra
 
     protected abstract AbstractContainerMenu createMenu(int pContainerId, Inventory pPlayerInventory);
 
-    // Forge Start
-    private net.minecraftforge.common.util.LazyOptional<?> itemHandler = net.minecraftforge.common.util.LazyOptional.of(() -> new net.minecraftforge.items.wrapper.InvWrapper(this));
-
-    @Override
-    public <T> net.minecraftforge.common.util.LazyOptional<T> getCapability(net.minecraftforge.common.capabilities.Capability<T> capability, @Nullable net.minecraft.core.Direction facing) {
-        if (this.isAlive() && capability == net.minecraftforge.common.capabilities.ForgeCapabilities.ITEM_HANDLER)
-            return itemHandler.cast();
-        return super.getCapability(capability, facing);
-    }
-
-    @Override
-    public void invalidateCaps() {
-        super.invalidateCaps();
-        itemHandler.invalidate();
-    }
-
-    @Override
-    public void reviveCaps() {
-        super.reviveCaps();
-        itemHandler = net.minecraftforge.common.util.LazyOptional.of(() -> new net.minecraftforge.items.wrapper.InvWrapper(this));
-    }
-
     @Nullable
-    public ResourceLocation getLootTable() {
+    public ResourceKey<LootTable> getLootTable() {
         return this.lootTable;
     }
 
-    public void setLootTable(@Nullable ResourceLocation pLootTable) {
+    public void setLootTable(@Nullable ResourceKey<LootTable> pLootTable) {
         this.lootTable = pLootTable;
     }
 

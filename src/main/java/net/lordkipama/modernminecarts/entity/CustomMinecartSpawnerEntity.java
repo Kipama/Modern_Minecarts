@@ -1,5 +1,6 @@
 package net.lordkipama.modernminecarts.entity;
 
+import com.mojang.datafixers.util.Either;
 import net.lordkipama.modernminecarts.Item.VanillaItems;
 import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
@@ -22,9 +23,8 @@ public class CustomMinecartSpawnerEntity extends CustomAbstractMinecartEntity {
         }
 
         @Override
-        @org.jetbrains.annotations.Nullable
-        public net.minecraft.world.entity.Entity getSpawnerEntity() {
-            return net.lordkipama.modernminecarts.entity.CustomMinecartSpawnerEntity.this;
+        public Either<net.minecraft.world.level.block.entity.BlockEntity, net.minecraft.world.entity.Entity> getOwner() {
+            return Either.right(net.lordkipama.modernminecarts.entity.CustomMinecartSpawnerEntity.this);
         }
     };
     private final Runnable ticker;

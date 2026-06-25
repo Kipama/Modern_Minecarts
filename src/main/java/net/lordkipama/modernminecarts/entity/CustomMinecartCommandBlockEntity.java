@@ -36,17 +36,17 @@ public class CustomMinecartCommandBlockEntity extends CustomAbstractMinecartEnti
     }
 
     public CustomMinecartCommandBlockEntity(Level pLevel, double pX, double pY, double pZ) {
-        super(EntityType.COMMAND_BLOCK_MINECART, pLevel, pX, pY, pZ);
+        super(VanillaEntities.COMMAND_BLOCK_MINECART_ENTITY.get(), pLevel, pX, pY, pZ);
     }
 
     protected Item getDropItem() {
-        return VanillaItems.MINECART_ITEM.get();
+        return VanillaItems.COMMAND_BLOCK_MINECART_ITEM.get();
     }
 
-    protected void defineSynchedData() {
-        super.defineSynchedData();
-        this.getEntityData().define(DATA_ID_COMMAND_NAME, "");
-        this.getEntityData().define(DATA_ID_LAST_OUTPUT, CommonComponents.EMPTY);
+    protected void defineSynchedData(SynchedEntityData.Builder builder) {
+        super.defineSynchedData(builder);
+        builder.define(DATA_ID_COMMAND_NAME, "");
+        builder.define(DATA_ID_LAST_OUTPUT, CommonComponents.EMPTY);
     }
 
     /**
@@ -54,14 +54,14 @@ public class CustomMinecartCommandBlockEntity extends CustomAbstractMinecartEnti
      */
     protected void readAdditionalSaveData(CompoundTag pCompound) {
         super.readAdditionalSaveData(pCompound);
-        this.commandBlock.load(pCompound);
+        this.commandBlock.load(pCompound, this.registryAccess());
         this.getEntityData().set(DATA_ID_COMMAND_NAME, this.getCommandBlock().getCommand());
         this.getEntityData().set(DATA_ID_LAST_OUTPUT, this.getCommandBlock().getLastOutput());
     }
 
     protected void addAdditionalSaveData(CompoundTag pCompound) {
         super.addAdditionalSaveData(pCompound);
-        this.commandBlock.save(pCompound);
+        this.commandBlock.save(pCompound, this.registryAccess());
     }
 
     public AbstractMinecart.Type getMinecartType() {

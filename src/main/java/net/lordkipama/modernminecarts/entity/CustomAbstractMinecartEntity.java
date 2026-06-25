@@ -38,7 +38,7 @@ import net.minecraft.world.level.block.state.properties.RailShape;
 import net.minecraft.world.level.gameevent.GameEvent;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
-import net.minecraftforge.network.PacketDistributor;
+import net.neoforged.neoforge.network.PacketDistributor;
 
 import javax.annotation.Nullable;
 import java.util.List;
@@ -258,7 +258,7 @@ public abstract class CustomAbstractMinecartEntity extends AbstractMinecart impl
 
 
                 if (distance <= 4) {
-                    ModernMinecartsPacketHandler.INSTANCE.send(PacketDistributor.TRACKING_ENTITY.with(()->this), new ModernMinecartsPacketHandler.CouplePacket(getLinkedParent().getId(), this.getId()));
+                    PacketDistributor.sendToPlayersTrackingEntity(this, new ModernMinecartsPacketHandler.CouplePacket(getLinkedParent().getId(), this.getId()));
 
                     Vec3 direction = getLinkedParent().position().subtract(this.position()).normalize();
                     Vec3 parentVelocity = getLinkedParent().getDeltaMovement();
@@ -331,7 +331,7 @@ public abstract class CustomAbstractMinecartEntity extends AbstractMinecart impl
         }
 
         this.checkBelowWorld();
-        this.handleNetherPortal();
+        this.handlePortal();
         if (this.level().isClientSide) {
             if (this.lSteps > 0) {
                 double d5 = this.getX() + (this.lx - this.getX()) / (double)this.lSteps;
@@ -482,7 +482,7 @@ public abstract class CustomAbstractMinecartEntity extends AbstractMinecart impl
         }
 
         if (!this.level().isClientSide()) {
-            ModernMinecartsPacketHandler.INSTANCE.send(PacketDistributor.TRACKING_ENTITY.with(()->this), new ModernMinecartsPacketHandler.CouplePacket(this.getParentIdClient(), this.getId()));
+            PacketDistributor.sendToPlayersTrackingEntity(this, new ModernMinecartsPacketHandler.CouplePacket(this.getParentIdClient(), this.getId()));
         }
         this.startRefreshTrain();
     }
@@ -781,7 +781,7 @@ public abstract class CustomAbstractMinecartEntity extends AbstractMinecart impl
     }
 
     @Override
-    public void lerpTo(double pX, double pY, double pZ, float pYaw, float pPitch, int pPosRotationIncrements, boolean pTeleport) {
+    public void lerpTo(double pX, double pY, double pZ, float pYaw, float pPitch, int pPosRotationIncrements) {
         this.lx = pX;
         this.ly = pY;
         this.lz = pZ;
@@ -789,7 +789,7 @@ public abstract class CustomAbstractMinecartEntity extends AbstractMinecart impl
         this.lxr = pPitch;
         this.lSteps = pPosRotationIncrements + 2;
         this.setDeltaMovement(this.lxd, this.lyd, this.lzd);
-        super.lerpTo(pX,pY,pZ,pYaw,pPitch, pPosRotationIncrements, pTeleport);
+        super.lerpTo(pX, pY, pZ, pYaw, pPitch, pPosRotationIncrements);
     }
 
     @Override
