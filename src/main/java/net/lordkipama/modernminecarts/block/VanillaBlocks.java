@@ -18,8 +18,6 @@ public class VanillaBlocks {
     public static final DeferredRegister<Block> VANILLA_BLOCKS =
             DeferredRegister.create(ForgeRegistries.BLOCKS, "minecraft");
 
-    public static final RegistryObject<Block> VANILLA_RAIL = registerBlock("rail",
-            () -> new CustomRailBlock(BlockBehaviour.Properties.copy(Blocks.RAIL)));
 
     private static <T extends Block> RegistryObject<T> registerBlock(String name, Supplier<T> block) {
         RegistryObject<T> toReturn = VANILLA_BLOCKS.register(name, block);
