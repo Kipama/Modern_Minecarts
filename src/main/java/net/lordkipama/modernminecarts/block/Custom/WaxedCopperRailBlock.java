@@ -13,6 +13,7 @@ import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.vehicle.AbstractMinecart;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.PoweredRailBlock;
@@ -62,7 +63,7 @@ public class WaxedCopperRailBlock extends PoweredRailBlock{
     public InteractionResult use(BlockState state, Level level, BlockPos pos, Player player, InteractionHand interactionHand, BlockHitResult blockHitResult) {
         ItemStack itemstack = player.getItemInHand(interactionHand);
 
-        if (!itemstack.is(ItemTags.AXES)) {
+        if (!isAxe(itemstack)) {
             return InteractionResult.PASS;
         }
 
@@ -99,6 +100,14 @@ public class WaxedCopperRailBlock extends PoweredRailBlock{
         level.levelEvent(player, 3004, pos, 0);
 
         return InteractionResult.sidedSuccess(level.isClientSide());
+    }
+
+    private static boolean isAxe(ItemStack itemstack) {
+        return itemstack.is(Items.WOODEN_AXE)
+                || itemstack.is(Items.STONE_AXE)
+                || itemstack.is(Items.IRON_AXE)
+                || itemstack.is(Items.GOLDEN_AXE)
+                || itemstack.is(Items.DIAMOND_AXE);
     }
 
     public static enum WaxedWeatherState {
