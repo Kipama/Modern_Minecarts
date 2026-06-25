@@ -116,13 +116,17 @@ public class CustomMinecartFurnaceEntity extends CustomAbstractMinecartContainer
         super.tick();
 
         if(this.level instanceof ServerLevel server) {
-            Block block = level.getBlockState(this.getOnPos()).getBlock();
+            BlockState railState = level.getBlockState(this.getOnPos());
+            Block block = railState.getBlock();
             Vec3 movement = this.getDeltaMovement();
             boolean isMoving = movement.horizontalDistanceSqr() > 0.001D;
             boolean hasChild = this.getLinkedChild() != null;
-            boolean consumeFuel = (((!(block instanceof PoweredRailBlock) || ((PoweredRailBlock) block).isActivatorRail()) && !(block instanceof PoweredDetectorRailBlock)) || level.getBlockState(this.getOnPos()).getValue(PoweredRailBlock.POWERED))
-                    && level.getBlockState(this.getOnPos()).is(BlockTags.RAILS)
+            boolean isPoweredRail = block instanceof PoweredRailBlock && !((PoweredRailBlock) block).isActivatorRail();
+            boolean isDetectorRail = block instanceof PoweredDetectorRailBlock;
+            boolean isRailPowered = (isPoweredRail || isDetectorRail) && railState.getValue(PoweredRailBlock.POWERED);
+            boolean consumeFuel = railState.is(BlockTags.RAILS)
                     && this.getLinkedParent() == null
+                    && !isRailPowered
                     && (hasChild || isMoving);
             if (fuel > 0) {
                 --fuel;
