@@ -32,7 +32,7 @@ public class CopperRailBlock extends PoweredRailBlock implements WeatheringRailB
     }
 
     @Override
-    protected MapCodec<? extends PoweredRailBlock> codec() {
+    public MapCodec<PoweredRailBlock> codec() {
         return MapCodec.unit(this);
     }
 

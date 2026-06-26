@@ -25,7 +25,7 @@ public class CustomRailBlock extends RailBlock {
     }
 
     @Override
-    protected MapCodec<? extends RailBlock> codec() {
+    public MapCodec<RailBlock> codec() {
         return MapCodec.unit(this);
     }
 

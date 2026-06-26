@@ -186,6 +186,6 @@ public class CustomMinecartRenderer<T extends CustomAbstractMinecartEntity> exte
                 .setUv(u, v)
                 .setOverlay(OverlayTexture.NO_OVERLAY)
                 .setLight(packedLight)
-                .setNormal(normalMatrix, 0.0F, -1.0F, 0.0F);
+                .setNormal(0.0F, -1.0F, 0.0F);
     }
 }

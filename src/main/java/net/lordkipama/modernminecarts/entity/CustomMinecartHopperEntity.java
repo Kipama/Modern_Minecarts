@@ -101,6 +101,11 @@ public class CustomMinecartHopperEntity extends CustomAbstractMinecartContainerE
         return this.getZ();
     }
 
+    @Override
+    public boolean isGridAligned() {
+        return false;
+    }
+
     /**
      * Called to update the entity's position/logic.
      */
@@ -114,7 +119,6 @@ public class CustomMinecartHopperEntity extends CustomAbstractMinecartContainerE
     @Override
     public void setChestVehicleItem(int pSlot, ItemStack pStack) {
         super.setChestVehicleItem(pSlot, pStack);
-        System.out.println(AbstractContainerMenu.getRedstoneSignalFromContainer(this));
         if(AbstractContainerMenu.getRedstoneSignalFromContainer(this)>=3){
             moveToStorage();
         }

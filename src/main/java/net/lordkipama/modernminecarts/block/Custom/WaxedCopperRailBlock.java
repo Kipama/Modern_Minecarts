@@ -29,7 +29,7 @@ public class WaxedCopperRailBlock extends PoweredRailBlock {
     }
 
     @Override
-    protected MapCodec<? extends PoweredRailBlock> codec() {
+    public MapCodec<PoweredRailBlock> codec() {
         return MapCodec.unit(this);
     }
 
