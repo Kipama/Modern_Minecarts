@@ -3,7 +3,8 @@
   "package": "net.lordkipama.modernminecarts.mixin",
   "compatibilityLevel": "JAVA_21",
   "mixins": [
-    "AbstractMinecartMixin"
+    "AbstractMinecartMixin",
+    "HoneycombItemMixin"
   ],
   "injectors": {
     "defaultRequire": 1
