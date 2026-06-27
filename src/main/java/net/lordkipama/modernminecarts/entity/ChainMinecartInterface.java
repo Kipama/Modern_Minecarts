@@ -1,5 +1,6 @@
 package net.lordkipama.modernminecarts.entity;
 
+import net.minecraft.world.entity.vehicle.AbstractMinecart;
 import org.jetbrains.annotations.NotNull;
 
 import javax.annotation.Nullable;
@@ -21,26 +22,26 @@ restrictions:
 *
 * */
 public interface ChainMinecartInterface {
-    default @Nullable CustomAbstractMinecartEntity getLinkedParent() {
+    default @Nullable AbstractMinecart getLinkedParent() {
         return null;
     }
-    default void setLinkedParent(@Nullable CustomAbstractMinecartEntity parent) {}
+    default void setLinkedParent(@Nullable AbstractMinecart parent) {}
 
-    default @Nullable CustomAbstractMinecartEntity getLinkedChild() {
+    default @Nullable AbstractMinecart getLinkedChild() {
         return null;
     }
-    default void setLinkedChild(@Nullable CustomAbstractMinecartEntity child) {}
+    default void setLinkedChild(@Nullable AbstractMinecart child) {}
 
     default void setLinkedParentClient(int id) {}
     default void setLinkedChildClient(int id) {}
 
-    default CustomAbstractMinecartEntity asCustomAbstractMinecartEntity() { return (CustomAbstractMinecartEntity) this; }
+    default AbstractMinecart asAbstractMinecart() { return (AbstractMinecart) this; }
 
     static void setParentChild(@NotNull ChainMinecartInterface parent, @NotNull ChainMinecartInterface child) {
-        unsetParentChild(parent, parent.getLinkedChild());
+        unsetParentChild(parent, parent.getLinkedChild() instanceof ChainMinecartInterface linkedChild ? linkedChild : null);
         //unsetParentChild(child, child.getLinkedParent()); This line leads to bugs when connecting to the front of trains
-        parent.setLinkedChild(child.asCustomAbstractMinecartEntity());
-        child.setLinkedParent(parent.asCustomAbstractMinecartEntity());
+        parent.setLinkedChild(child.asAbstractMinecart());
+        child.setLinkedParent(parent.asAbstractMinecart());
     }
 
     static void unsetParentChild(@Nullable ChainMinecartInterface parent, @Nullable ChainMinecartInterface child) {

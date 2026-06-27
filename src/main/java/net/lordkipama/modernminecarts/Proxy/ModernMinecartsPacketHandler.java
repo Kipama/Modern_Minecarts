@@ -1,13 +1,14 @@
 package net.lordkipama.modernminecarts.Proxy;
 
 import net.lordkipama.modernminecarts.ModernMinecarts;
-import net.lordkipama.modernminecarts.entity.CustomAbstractMinecartEntity;
+import net.lordkipama.modernminecarts.util.MinecartLinkHelper;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.vehicle.AbstractMinecart;
 import net.minecraft.world.level.Level;
 import net.neoforged.neoforge.network.event.RegisterPayloadHandlersEvent;
 import net.neoforged.neoforge.network.handling.IPayloadContext;
@@ -42,13 +43,13 @@ public class ModernMinecartsPacketHandler {
             Level world = context.player().level();
             context.enqueueWork(() -> {
                 Entity childEntity = world.getEntity(msg.childID());
-                if (childEntity instanceof CustomAbstractMinecartEntity child) {
-                    child.setLinkedParentClient(msg.parentID());
+                if (childEntity instanceof AbstractMinecart child) {
+                    MinecartLinkHelper.setLinkedParentClient(child, msg.parentID());
                 }
 
                 Entity parentEntity = world.getEntity(msg.parentID());
-                if (parentEntity instanceof CustomAbstractMinecartEntity parent) {
-                    parent.setLinkedChildClient(msg.childID());
+                if (parentEntity instanceof AbstractMinecart parent) {
+                    MinecartLinkHelper.setLinkedChildClient(parent, msg.childID());
                 }
             });
         }

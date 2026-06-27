@@ -472,7 +472,7 @@ public abstract class CustomAbstractMinecartEntity extends AbstractMinecart impl
     public int getParentIdClient(){return parentIdClient;}
 
 
-    public void setLinkedParent(@Nullable CustomAbstractMinecartEntity parent) {
+    public void setLinkedParent(@Nullable AbstractMinecart parent) {
         if (parent != null) {
             this.parentUUID = parent.getUUID();
             this.parentIdClient = parent.getId();
@@ -515,7 +515,7 @@ public abstract class CustomAbstractMinecartEntity extends AbstractMinecart impl
         else return null;
     }
 
-    public void setLinkedChild(@Nullable CustomAbstractMinecartEntity child) {
+    public void setLinkedChild(@Nullable AbstractMinecart child) {
         if (child != null) {
             this.childUUID = child.getUUID();
             this.childIdClient = child.getId();

@@ -1,0 +1,11 @@
+{
+  "required": true,
+  "package": "net.lordkipama.modernminecarts.mixin",
+  "compatibilityLevel": "JAVA_21",
+  "mixins": [
+    "AbstractMinecartMixin"
+  ],
+  "injectors": {
+    "defaultRequire": 1
+  }
+}

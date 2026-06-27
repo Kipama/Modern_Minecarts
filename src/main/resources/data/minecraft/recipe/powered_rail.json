@@ -19,7 +19,7 @@
   ],
   "result": {
     "count": 12,
-    "item": "minecraft:powered_rail"
+    "id": "minecraft:powered_rail"
   },
   "show_notification": true
 }

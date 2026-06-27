@@ -136,7 +136,7 @@ public class CustomMinecartRenderer<T extends CustomAbstractMinecartEntity> exte
         this.blockRenderer.renderSingleBlock(state, matrixStack, buffer, packedLight, OverlayTexture.NO_OVERLAY);
     }
 
-    public void renderChain(float x, float y, float z, float hAngle, float vAngle, PoseStack matrixStack, MultiBufferSource buffer, int packedLight) {
+    public static void renderChain(float x, float y, float z, float hAngle, float vAngle, PoseStack matrixStack, MultiBufferSource buffer, int packedLight) {
         float squaredLength = x * x + y * y + z * z;
         float length = (float) Math.sqrt(squaredLength) - 1F;
 

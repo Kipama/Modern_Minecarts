@@ -1,10 +1,11 @@
 package net.lordkipama.modernminecarts;
 
+import com.mojang.logging.LogUtils;
 import net.lordkipama.modernminecarts.Item.ModItems;
 import net.lordkipama.modernminecarts.Item.VanillaItems;
 import net.lordkipama.modernminecarts.Proxy.ModernMinecartsPacketHandler;
+import net.lordkipama.modernminecarts.attachment.MinecartAttachmentTypes;
 import net.lordkipama.modernminecarts.block.ModBlocks;
-import net.lordkipama.modernminecarts.block.VanillaBlocks;
 import net.lordkipama.modernminecarts.entity.CustomMinecartChestEntity;
 import net.lordkipama.modernminecarts.entity.CustomMinecartCommandBlockEntity;
 import net.lordkipama.modernminecarts.entity.CustomMinecartEntity;
@@ -32,18 +33,28 @@ import net.neoforged.fml.event.lifecycle.FMLClientSetupEvent;
 import net.neoforged.fml.event.lifecycle.FMLCommonSetupEvent;
 import net.neoforged.neoforge.client.event.RegisterMenuScreensEvent;
 import net.neoforged.neoforge.event.BuildCreativeModeTabContentsEvent;
+import org.slf4j.Logger;
 
 @Mod(ModernMinecarts.MOD_ID)
 public class ModernMinecarts {
     public static final String MOD_ID = "modernminecarts";
+    private static final Logger LOGGER = LogUtils.getLogger();
+    /**
+     * NeoForge 1.21 iterates built-in registries through dense ID-backed arrays during creative tab rebuilds and
+     * registry validation. Replacing vanilla minecart entries in the minecraft namespace currently leaves null holes
+     * there, so keep those overrides disabled until the port switches to a 1.21-safe replacement strategy.
+     */
+    public static final boolean ENABLE_VANILLA_NAMESPACE_OVERRIDES = false;
 
     public ModernMinecarts(IEventBus modEventBus, ModContainer modContainer) {
         ModItems.register(modEventBus);
         ModBlocks.register(modEventBus);
         ModEntities.register(modEventBus);
-        VanillaEntities.register(modEventBus);
-        VanillaItems.register(modEventBus);
-        VanillaBlocks.register(modEventBus);
+        MinecartAttachmentTypes.register(modEventBus);
+        if (ENABLE_VANILLA_NAMESPACE_OVERRIDES) {
+            VanillaEntities.register(modEventBus);
+            VanillaItems.register(modEventBus);
+        }
         ModMenus.register(modEventBus);
 
         modEventBus.addListener(this::commonSetup);
@@ -52,6 +63,9 @@ public class ModernMinecarts {
     }
 
     private void commonSetup(final FMLCommonSetupEvent event) {
+        if (!ENABLE_VANILLA_NAMESPACE_OVERRIDES) {
+            LOGGER.warn("Vanilla minecart item/entity overrides are disabled on the 1.21 port because minecraft namespace registry replacements currently crash creative tab rebuilding.");
+        }
     }
 
     private void addCreative(BuildCreativeModeTabContentsEvent event) {
@@ -89,6 +103,10 @@ public class ModernMinecarts {
     public static class ClientModEvents {
         @SubscribeEvent
         public static void clientSetup(FMLClientSetupEvent event) {
+            if (!ENABLE_VANILLA_NAMESPACE_OVERRIDES) {
+                return;
+            }
+
             EntityRenderers.register(VanillaEntities.MINECART_ENTITY.get(), new CustomMinecartEntityRenderFactory());
             EntityRenderers.register(VanillaEntities.CHEST_MINECART_ENTITY.get(), new CustomMinecartChestEntityRenderFactory());
             EntityRenderers.register(VanillaEntities.COMMAND_BLOCK_MINECART_ENTITY.get(), new CustomMinecartCommandBlockEntityRenderFactory());

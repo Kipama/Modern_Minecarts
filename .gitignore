@@ -16,10 +16,15 @@ out
 # gradle
 build
 .gradle
+.gradle-user-home
 
 # other
 eclipse
 run
+.worktrees
+
+# neoforge
+runs
 
 # Files from Forge MDK
 forge*changelog.txt
