@@ -7,8 +7,11 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.vehicle.AbstractMinecart;
 import net.minecraft.world.entity.vehicle.MinecartFurnace;
+import net.minecraft.world.level.block.BaseRailBlock;
+import net.minecraft.world.level.block.PoweredRailBlock;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.block.state.properties.RailShape;
 import net.minecraft.world.entity.MoverType;
 import net.minecraft.world.phys.Vec3;
 import org.spongepowered.asm.mixin.Mixin;
@@ -55,6 +58,59 @@ abstract class AbstractMinecartMixin {
     private void modernminecarts$restoreAirDrag(CallbackInfoReturnable<Double> cir) {
         if (cir.getReturnValue() < modernminecarts$legacyAirDrag) {
             cir.setReturnValue(modernminecarts$legacyAirDrag);
+        }
+    }
+
+    @Inject(method = "moveAlongTrack", at = @At("HEAD"))
+    private void modernminecarts$applyPoweredDetectorRailMotion(BlockPos pos, BlockState state, CallbackInfo ci) {
+        if (!(state.getBlock() instanceof BaseRailBlock railBlock) || !(railBlock instanceof net.lordkipama.modernminecarts.block.Custom.PoweredDetectorRailBlock detectorRail)) {
+            return;
+        }
+
+        AbstractMinecart minecart = (AbstractMinecart) (Object) this;
+        if (MinecartLinkHelper.getLinkedParent(minecart) != null) {
+            return;
+        }
+
+        boolean powered = state.getValue(PoweredRailBlock.POWERED);
+        Vec3 motion = minecart.getDeltaMovement();
+        RailShape shape = detectorRail.getRailShape(state);
+        boolean northSouth = shape == RailShape.NORTH_SOUTH || shape == RailShape.ASCENDING_NORTH || shape == RailShape.ASCENDING_SOUTH;
+
+        if (detectorRail.getDirInverted(state)) {
+            if (northSouth) {
+                if (motion.z < -0.2D) {
+                    minecart.setDeltaMovement(motion.x, motion.y, motion.z / 8.0D + 0.1D);
+                } else if (powered) {
+                    minecart.setDeltaMovement(motion.x, motion.y, motion.z + 0.02D);
+                } else {
+                    minecart.setDeltaMovement(motion.x, motion.y, motion.z / 7.0D);
+                }
+            } else {
+                if (motion.x > 0.2D) {
+                    minecart.setDeltaMovement(motion.x / 8.0D - 0.1D, motion.y, motion.z);
+                } else if (powered) {
+                    minecart.setDeltaMovement(motion.x - 0.02D, motion.y, motion.z);
+                } else {
+                    minecart.setDeltaMovement(motion.x / 7.0D, motion.y, motion.z);
+                }
+            }
+        } else if (northSouth) {
+            if (motion.z > 0.2D) {
+                minecart.setDeltaMovement(motion.x, motion.y, motion.z / 8.0D - 0.1D);
+            } else if (powered) {
+                minecart.setDeltaMovement(motion.x, motion.y, motion.z - 0.02D);
+            } else {
+                minecart.setDeltaMovement(motion.x, motion.y, motion.z / 7.0D);
+            }
+        } else {
+            if (motion.x < -0.2D) {
+                minecart.setDeltaMovement(motion.x / 8.0D + 0.1D, motion.y, motion.z);
+            } else if (powered) {
+                minecart.setDeltaMovement(motion.x + 0.02D, motion.y, motion.z);
+            } else {
+                minecart.setDeltaMovement(motion.x / 7.0D, motion.y, motion.z);
+            }
         }
     }
 

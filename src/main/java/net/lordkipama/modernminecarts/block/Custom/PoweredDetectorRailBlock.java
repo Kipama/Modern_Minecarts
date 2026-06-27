@@ -3,9 +3,6 @@ package net.lordkipama.modernminecarts.block.Custom;
 import com.mojang.serialization.MapCodec;
 import net.lordkipama.modernminecarts.Item.AbstractMinecartItem;
 import net.lordkipama.modernminecarts.block.ModBlocks;
-import net.lordkipama.modernminecarts.entity.CustomAbstractMinecartContainerEntity;
-import net.lordkipama.modernminecarts.entity.CustomAbstractMinecartEntity;
-import net.lordkipama.modernminecarts.entity.CustomMinecartCommandBlockEntity;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.server.level.ServerLevel;
@@ -19,6 +16,7 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntitySelector;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.vehicle.AbstractMinecart;
+import net.minecraft.world.entity.vehicle.MinecartCommandBlock;
 import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
@@ -130,8 +128,8 @@ public class PoweredDetectorRailBlock extends BaseRailBlock {
         if (this.canSurvive(state, level, pos)) {
             boolean isPowered = state.getValue(POWERED);
             boolean isInverted = state.getValue(WEIGHT_INVERTED);
-            List<CustomAbstractMinecartEntity> mclist = this.getInteractingMinecartOfType(level, pos, CustomAbstractMinecartEntity.class, candidate -> true);
-            List<CustomAbstractMinecartContainerEntity> containerList = this.getInteractingMinecartOfType(level, pos, CustomAbstractMinecartContainerEntity.class, candidate -> true);
+            List<AbstractMinecart> mclist = this.getInteractingMinecartOfType(level, pos, AbstractMinecart.class, candidate -> true);
+            List<AbstractMinecart> containerList = mclist.stream().filter(EntitySelector.CONTAINER_ENTITY_SELECTOR).toList();
             boolean isContainer = !containerList.isEmpty();
             boolean minecartFull = mclist.stream().anyMatch(Entity::isVehicle);
 
@@ -158,7 +156,7 @@ public class PoweredDetectorRailBlock extends BaseRailBlock {
         level.setBlocksDirty(pos, state, blockState);
     }
 
-    private <T extends CustomAbstractMinecartEntity> List<T> getInteractingMinecartOfType(Level level, BlockPos pos, Class<T> cartType, Predicate<Entity> filter) {
+    private <T extends AbstractMinecart> List<T> getInteractingMinecartOfType(Level level, BlockPos pos, Class<T> cartType, Predicate<Entity> filter) {
         return level.getEntitiesOfClass(cartType, this.getSearchBB(pos), filter);
     }
 
@@ -203,16 +201,16 @@ public class PoweredDetectorRailBlock extends BaseRailBlock {
 
     @Override
     public int getAnalogOutputSignal(BlockState blockState, Level level, BlockPos pos) {
-        List<CustomMinecartCommandBlockEntity> commandBlocks = this.getInteractingMinecartOfType(level, pos, CustomMinecartCommandBlockEntity.class, candidate -> true);
+        List<MinecartCommandBlock> commandBlocks = this.getInteractingMinecartOfType(level, pos, MinecartCommandBlock.class, candidate -> true);
         if (!commandBlocks.isEmpty()) {
             return commandBlocks.get(0).getCommandBlock().getSuccessCount();
         }
 
-        List<CustomAbstractMinecartEntity> carts = this.getInteractingMinecartOfType(level, pos, CustomAbstractMinecartEntity.class, Entity::isAlive);
+        List<AbstractMinecart> carts = this.getInteractingMinecartOfType(level, pos, AbstractMinecart.class, Entity::isAlive);
         if (!carts.isEmpty() && carts.get(0).getComparatorLevel() > -1) {
             return carts.get(0).getComparatorLevel();
         }
-        List<AbstractMinecart> list = carts.stream().filter(EntitySelector.CONTAINER_ENTITY_SELECTOR).map(cart -> (AbstractMinecart) cart).toList();
+        List<AbstractMinecart> list = carts.stream().filter(EntitySelector.CONTAINER_ENTITY_SELECTOR).toList();
         if (!list.isEmpty()) {
             return AbstractContainerMenu.getRedstoneSignalFromContainer((Container) list.get(0));
         }
