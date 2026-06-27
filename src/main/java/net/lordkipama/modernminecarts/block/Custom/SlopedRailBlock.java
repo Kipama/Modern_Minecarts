@@ -3,6 +3,7 @@ package net.lordkipama.modernminecarts.block.Custom;
 import com.mojang.serialization.MapCodec;
 import net.lordkipama.modernminecarts.ModernMinecartsConfig;
 import net.lordkipama.modernminecarts.block.ModBlocks;
+import net.lordkipama.modernminecarts.util.RailShapeHelper;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.world.entity.vehicle.AbstractMinecart;
@@ -15,11 +16,11 @@ import net.minecraft.world.level.LevelReader;
 import net.minecraft.world.level.block.BaseRailBlock;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.redstone.Orientation;
 import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
-import net.minecraft.world.level.block.state.properties.DirectionProperty;
 import net.minecraft.world.level.block.state.properties.EnumProperty;
 import net.minecraft.world.level.block.state.properties.Property;
 import net.minecraft.world.level.block.state.properties.RailShape;
@@ -27,7 +28,7 @@ import net.minecraft.world.level.material.FluidState;
 import net.minecraft.world.level.material.Fluids;
 
 public class SlopedRailBlock extends BaseRailBlock {
-    public static final DirectionProperty FACING = BlockStateProperties.HORIZONTAL_FACING;
+    public static final EnumProperty<Direction> FACING = BlockStateProperties.HORIZONTAL_FACING;
     public static final EnumProperty<RailShape> SHAPE = BlockStateProperties.RAIL_SHAPE;
     public static final EnumProperty<RailShape> CONST_SHAPE = EnumProperty.create("const_shape", RailShape.class);
 
@@ -55,7 +56,7 @@ public class SlopedRailBlock extends BaseRailBlock {
             case SOUTH -> blockState = blockState.setValue(this.getShapeProperty(), RailShape.ASCENDING_SOUTH).setValue(WATERLOGGED, flag);
         }
 
-        if (!blockState.getValue(CONST_SHAPE).isAscending()) {
+        if (!RailShapeHelper.isAscending(blockState.getValue(CONST_SHAPE))) {
             blockState = blockState.setValue(CONST_SHAPE, blockState.getValue(SHAPE));
         }
 
@@ -73,23 +74,18 @@ public class SlopedRailBlock extends BaseRailBlock {
     }
 
     @Override
-    public BlockState updateShape(BlockState state, Direction direction, BlockState neighborState, LevelAccessor level, BlockPos currentPos, BlockPos neighborPos) {
-        return state;
-    }
-
-    @Override
     protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) {
         builder.add(FACING, SHAPE, WATERLOGGED, CONST_SHAPE);
     }
 
     @Override
-    public void neighborChanged(BlockState state, Level level, BlockPos pos, Block block, BlockPos fromPos, boolean isMoving) {
+    protected void neighborChanged(BlockState state, Level level, BlockPos pos, Block block, Orientation orientation, boolean isMoving) {
         if (!level.isClientSide && level.getBlockState(pos).is(this)) {
             if (!canSupportRigidBlock(level, pos.below())) {
                 dropResources(state, level, pos);
                 level.removeBlock(pos, isMoving);
             } else {
-                if (!state.getValue(CONST_SHAPE).isAscending()) {
+                if (!RailShapeHelper.isAscending(state.getValue(CONST_SHAPE))) {
                     state = state.setValue(CONST_SHAPE, state.getValue(SHAPE));
                 } else {
                     state = state.setValue(SHAPE, state.getValue(CONST_SHAPE));
@@ -102,11 +98,6 @@ public class SlopedRailBlock extends BaseRailBlock {
                 level.setBlock(pos, state, 0);
             }
         }
-    }
-
-    @Override
-    protected BlockState updateState(BlockState state, Level level, BlockPos pos, boolean movedByPiston) {
-        return state;
     }
 
     @Override
@@ -134,8 +125,11 @@ public class SlopedRailBlock extends BaseRailBlock {
         return state.getValue(SHAPE);
     }
 
-    @Override
     public ItemStack getCloneItemStack(LevelReader level, BlockPos pos, BlockState state) {
         return new ItemStack(ModBlocks.SLOPED_RAIL.get());
+    }
+
+    protected ItemStack getCloneItemStack(LevelReader level, BlockPos pos, BlockState state, boolean includeData) {
+        return this.getCloneItemStack(level, pos, state);
     }
 }

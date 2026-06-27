@@ -4,6 +4,7 @@ import net.lordkipama.modernminecarts.block.ModBlocks;
 import net.lordkipama.modernminecarts.util.FurnaceMinecartHelper;
 import net.lordkipama.modernminecarts.util.MinecartLinkHelper;
 import net.minecraft.core.BlockPos;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.vehicle.AbstractMinecart;
 import net.minecraft.world.entity.vehicle.MinecartFurnace;
@@ -26,6 +27,8 @@ abstract class AbstractMinecartMixin {
     @Unique
     private static final float modernminecarts$legacyAirLateralSpeed = 0.8F;
     @Unique
+    private static final float modernminecarts$legacyAirVerticalSpeed = -1.0F;
+    @Unique
     private static final double modernminecarts$legacyAirDrag = 0.975D;
 
     @Unique
@@ -47,27 +50,15 @@ abstract class AbstractMinecartMixin {
         }
     }
 
-    @Inject(method = "getMaxSpeedAirLateral", at = @At("RETURN"), cancellable = true)
-    private void modernminecarts$restoreAirLateralSpeed(CallbackInfoReturnable<Float> cir) {
-        if (cir.getReturnValue() < modernminecarts$legacyAirLateralSpeed) {
-            cir.setReturnValue(modernminecarts$legacyAirLateralSpeed);
-        }
-    }
-
-    @Inject(method = "getDragAir", at = @At("RETURN"), cancellable = true)
-    private void modernminecarts$restoreAirDrag(CallbackInfoReturnable<Double> cir) {
-        if (cir.getReturnValue() < modernminecarts$legacyAirDrag) {
-            cir.setReturnValue(modernminecarts$legacyAirDrag);
-        }
-    }
-
     @Inject(method = "moveAlongTrack", at = @At("HEAD"))
-    private void modernminecarts$applyPoweredDetectorRailMotion(BlockPos pos, BlockState state, CallbackInfo ci) {
+    private void modernminecarts$applyPoweredDetectorRailMotion(ServerLevel level, CallbackInfo ci) {
+        AbstractMinecart minecart = (AbstractMinecart) (Object) this;
+        BlockPos pos = minecart.getCurrentBlockPosOrRailBelow();
+        BlockState state = level.getBlockState(pos);
         if (!(state.getBlock() instanceof BaseRailBlock railBlock) || !(railBlock instanceof net.lordkipama.modernminecarts.block.Custom.PoweredDetectorRailBlock detectorRail)) {
             return;
         }
 
-        AbstractMinecart minecart = (AbstractMinecart) (Object) this;
         if (MinecartLinkHelper.getLinkedParent(minecart) != null) {
             return;
         }
@@ -115,9 +106,9 @@ abstract class AbstractMinecartMixin {
     }
 
     @Inject(method = "comeOffTrack", at = @At("HEAD"), cancellable = true)
-    private void modernminecarts$jumpOffSlopedRail(CallbackInfo cir) {
+    private void modernminecarts$jumpOffSlopedRail(ServerLevel level, CallbackInfo cir) {
         AbstractMinecart minecart = (AbstractMinecart) (Object) this;
-        double maxSpeed = minecart.getMaxSpeedAirLateral();
+        double maxSpeed = modernminecarts$legacyAirLateralSpeed;
         Vec3 motion = minecart.getDeltaMovement();
 
         int x = Mth.floor(minecart.getX());
@@ -154,7 +145,7 @@ abstract class AbstractMinecartMixin {
             minecart.setDeltaMovement(minecart.getDeltaMovement().scale(0.5D));
         }
 
-        double maxVerticalSpeed = minecart.getMaxSpeedAirVertical();
+        double maxVerticalSpeed = modernminecarts$legacyAirVerticalSpeed;
         if (maxVerticalSpeed > 0.0D && minecart.getDeltaMovement().y > maxVerticalSpeed) {
             if (Math.abs(minecart.getDeltaMovement().x) < 0.3F && Math.abs(minecart.getDeltaMovement().z) < 0.3F) {
                 minecart.setDeltaMovement(minecart.getDeltaMovement().x, 0.15D, minecart.getDeltaMovement().z);
@@ -165,7 +156,7 @@ abstract class AbstractMinecartMixin {
 
         minecart.move(MoverType.SELF, minecart.getDeltaMovement());
         if (!minecart.onGround()) {
-            minecart.setDeltaMovement(minecart.getDeltaMovement().scale(minecart.getDragAir()));
+            minecart.setDeltaMovement(minecart.getDeltaMovement().scale(modernminecarts$legacyAirDrag));
         }
 
         cir.cancel();

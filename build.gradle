@@ -32,6 +32,8 @@ repositories {
 }
 
 runs {
+    def dataArguments = ['--mod', project.mod_id, '--all', '--output', file('src/generated/resources/').getAbsolutePath(), '--existing', file('src/main/resources/').getAbsolutePath()]
+
     configureEach {
         systemProperty 'forge.logging.markers', 'REGISTRIES'
         systemProperty 'forge.logging.console.level', 'debug'
@@ -52,8 +54,14 @@ runs {
         systemProperty 'neoforge.enabledGameTestNamespaces', project.mod_id
     }
 
-    data {
-        arguments.addAll '--mod', project.mod_id, '--all', '--output', file('src/generated/resources/').getAbsolutePath(), '--existing', file('src/main/resources/').getAbsolutePath()
+    def legacyDataRun = findByName('data')
+    if (legacyDataRun != null) {
+        legacyDataRun.arguments.addAll(dataArguments)
+    }
+
+    def clientDataRun = findByName('clientData')
+    if (clientDataRun != null) {
+        clientDataRun.arguments.addAll(dataArguments)
     }
 }
 

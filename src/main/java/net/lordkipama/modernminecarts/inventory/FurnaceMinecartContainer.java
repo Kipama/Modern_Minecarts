@@ -14,6 +14,10 @@ public class FurnaceMinecartContainer implements Container {
         this.minecart = minecart;
     }
 
+    public MinecartFurnace getMinecart() {
+        return minecart;
+    }
+
     private FurnaceMinecartData data() {
         return FurnaceMinecartHelper.getData(minecart);
     }

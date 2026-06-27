@@ -29,7 +29,7 @@ import net.minecraft.world.level.block.BaseRailBlock;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.FurnaceBlock;
 import net.minecraft.world.level.block.PoweredRailBlock;
-import net.minecraft.world.level.block.entity.AbstractFurnaceBlockEntity;
+import net.minecraft.world.level.block.entity.FuelValues;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.Vec3;
 import net.neoforged.fml.util.ObfuscationReflectionHelper;
@@ -115,24 +115,21 @@ public final class FurnaceMinecartHelper {
         }
 
         ItemStack fuelSlot = data.getFuelSlot();
-        if (AbstractFurnaceBlockEntity.isFuel(fuelSlot) && fuelSlot.getCount() < fuelSlot.getMaxStackSize()) {
+        if (minecart.level().fuelValues().isFuel(fuelSlot) && fuelSlot.getCount() < fuelSlot.getMaxStackSize()) {
             fillFuelSlot(minecart, fuelSlot);
         }
 
-        if (fuel > 0 && minecart.xPush == 0.0D && minecart.zPush == 0.0D) {
+        if (fuel > 0 && minecart.push.horizontalDistanceSqr() <= 1.0E-7D) {
             AbstractMinecart child = MinecartLinkHelper.getLinkedChild(minecart);
             if (child != null) {
-                minecart.xPush = minecart.getX() - child.getX();
-                minecart.zPush = minecart.getZ() - child.getZ();
+                minecart.push = new Vec3(minecart.getX() - child.getX(), 0.0D, minecart.getZ() - child.getZ());
             } else if (isMoving) {
-                minecart.xPush = movement.x;
-                minecart.zPush = movement.z;
+                minecart.push = new Vec3(movement.x, 0.0D, movement.z);
             }
         }
 
         if (fuel <= 0) {
-            minecart.xPush = 0.0D;
-            minecart.zPush = 0.0D;
+            minecart.push = Vec3.ZERO;
         } else if (MinecartLinkHelper.getLinkedParent(minecart) == null) {
             setCurrentSpeedCapOnRailUnchecked(minecart, (float) getTargetSpeed(minecart, stats));
             applyTargetSpeed(minecart, getTargetSpeed(minecart, stats), hasChild || isMoving);
@@ -149,7 +146,7 @@ public final class FurnaceMinecartHelper {
     public static int tryBurnFuel(MinecartFurnace minecart, FurnaceMinecartData data) {
         ItemStack fuelSlot = data.getFuelSlot();
         if (fuelSlot.is(Items.LAVA_BUCKET)) {
-            setFuel(minecart, fuelSlot.getBurnTime(RecipeType.SMELTING));
+            setFuel(minecart, fuelSlot.getBurnTime(RecipeType.SMELTING, minecart.level().fuelValues()));
             data.setFuelBurnTime(getFuel(minecart));
             data.setFuelSlot(new ItemStack(Items.BUCKET));
             if (MinecartLinkHelper.getLinkedChild(minecart) instanceof MinecartFurnace childFurnace) {
@@ -158,9 +155,9 @@ public final class FurnaceMinecartHelper {
             return 1;
         }
 
-        if (AbstractFurnaceBlockEntity.isFuel(fuelSlot)) {
+        if (minecart.level().fuelValues().isFuel(fuelSlot)) {
             ItemStack template = fuelSlot.copy();
-            setFuel(minecart, fuelSlot.getBurnTime(RecipeType.SMELTING));
+            setFuel(minecart, fuelSlot.getBurnTime(RecipeType.SMELTING, minecart.level().fuelValues()));
             data.setFuelBurnTime(getFuel(minecart));
             fuelSlot.shrink(1);
             if (fuelSlot.isEmpty()) {
@@ -215,7 +212,7 @@ public final class FurnaceMinecartHelper {
         AbstractMinecart current = head;
         while (current != null) {
             if (current instanceof ContainerEntity containerEntity) {
-                boolean skip = !checkHoppers && current.getMinecartType() == AbstractMinecart.Type.HOPPER;
+                boolean skip = !checkHoppers && current instanceof net.minecraft.world.entity.vehicle.MinecartHopper;
                 if (!skip) {
                     containers.add(containerEntity);
                 }
@@ -278,7 +275,7 @@ public final class FurnaceMinecartHelper {
         Vec3 movement = minecart.getDeltaMovement();
         double horizontalSpeed = movement.horizontalDistance();
         if (horizontalSpeed <= 1.0E-5D) {
-            Vec3 pushDirection = new Vec3(minecart.xPush, 0.0D, minecart.zPush);
+            Vec3 pushDirection = minecart.push;
             if (pushDirection.horizontalDistanceSqr() <= 1.0E-5D) {
                 return;
             }

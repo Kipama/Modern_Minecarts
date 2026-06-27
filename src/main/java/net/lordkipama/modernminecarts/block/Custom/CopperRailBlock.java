@@ -4,6 +4,7 @@ import com.mojang.serialization.MapCodec;
 import net.lordkipama.modernminecarts.ModernMinecartsConfig;
 import net.lordkipama.modernminecarts.block.ModBlocks;
 import net.lordkipama.modernminecarts.util.AdvancementHelper;
+import net.lordkipama.modernminecarts.util.RailShapeHelper;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
@@ -12,7 +13,7 @@ import net.minecraft.sounds.SoundSource;
 import net.minecraft.tags.ItemTags;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.InteractionHand;
-import net.minecraft.world.ItemInteractionResult;
+import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.vehicle.AbstractMinecart;
 import net.minecraft.world.item.ItemStack;
@@ -37,7 +38,7 @@ public class CopperRailBlock extends PoweredRailBlock implements WeatheringRailB
     }
 
     @Override
-    protected ItemInteractionResult useItemOn(ItemStack itemStack, BlockState state, Level level, BlockPos pos, Player player, InteractionHand interactionHand, BlockHitResult blockHitResult) {
+    protected InteractionResult useItemOn(ItemStack itemStack, BlockState state, Level level, BlockPos pos, Player player, InteractionHand interactionHand, BlockHitResult blockHitResult) {
         if (itemStack.getItem() == Items.HONEYCOMB) {
             if (!level.isClientSide()) {
                 if (!player.isCreative() && !player.isSpectator()) {
@@ -61,14 +62,14 @@ public class CopperRailBlock extends PoweredRailBlock implements WeatheringRailB
 
             level.levelEvent(player, 3003, pos, 0);
             player.swing(interactionHand);
-            return ItemInteractionResult.sidedSuccess(level.isClientSide());
+            return level.isClientSide() ? InteractionResult.SUCCESS : InteractionResult.SUCCESS_SERVER;
         }
 
         if (!itemStack.is(ItemTags.AXES)) {
-            return ItemInteractionResult.PASS_TO_DEFAULT_BLOCK_INTERACTION;
+            return InteractionResult.PASS;
         }
         if (this.weatherState == WeatherState.UNAFFECTED) {
-            return ItemInteractionResult.PASS_TO_DEFAULT_BLOCK_INTERACTION;
+            return InteractionResult.PASS;
         }
 
         if (!level.isClientSide()) {
@@ -88,7 +89,7 @@ public class CopperRailBlock extends PoweredRailBlock implements WeatheringRailB
         player.swing(interactionHand);
         level.playSound(player, pos, SoundEvents.AXE_SCRAPE, SoundSource.BLOCKS, 1.0F, 1.0F);
         level.levelEvent(player, 3005, pos, 0);
-        return ItemInteractionResult.sidedSuccess(level.isClientSide());
+        return level.isClientSide() ? InteractionResult.SUCCESS : InteractionResult.SUCCESS_SERVER;
     }
 
     @Override
@@ -112,7 +113,7 @@ public class CopperRailBlock extends PoweredRailBlock implements WeatheringRailB
             finalSpeed = ModernMinecartsConfig.oxidized_copper_speed;
         }
 
-        if (getRailDirection(state, level, pos, null).isAscending() && finalSpeed >= ModernMinecartsConfig.max_ascending_speed) {
+        if (RailShapeHelper.isAscending(getRailDirection(state, level, pos, null)) && finalSpeed >= ModernMinecartsConfig.max_ascending_speed) {
             return ModernMinecartsConfig.max_ascending_speed;
         }
 

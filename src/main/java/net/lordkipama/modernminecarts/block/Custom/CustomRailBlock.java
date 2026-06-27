@@ -3,12 +3,13 @@ package net.lordkipama.modernminecarts.block.Custom;
 import com.mojang.serialization.MapCodec;
 import net.lordkipama.modernminecarts.ModernMinecartsConfig;
 import net.lordkipama.modernminecarts.block.ModBlocks;
+import net.lordkipama.modernminecarts.util.RailShapeHelper;
 import net.minecraft.core.BlockPos;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.tags.BlockTags;
 import net.minecraft.world.InteractionHand;
-import net.minecraft.world.ItemInteractionResult;
+import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.vehicle.AbstractMinecart;
 import net.minecraft.world.item.ItemStack;
@@ -31,17 +32,17 @@ public class CustomRailBlock extends RailBlock {
 
     @Override
     public float getRailMaxSpeed(BlockState state, Level level, BlockPos pos, AbstractMinecart cart) {
-        if (getRailDirection(state, level, pos, null).isAscending()) {
+        if (RailShapeHelper.isAscending(getRailDirection(state, level, pos, null))) {
             return ModernMinecartsConfig.max_ascending_speed;
         }
         return ModernMinecartsConfig.copper_speed;
     }
 
     @Override
-    protected ItemInteractionResult useItemOn(ItemStack itemStack, BlockState state, Level level, BlockPos pos, Player player, InteractionHand interactionHand, BlockHitResult blockHitResult) {
+    protected InteractionResult useItemOn(ItemStack itemStack, BlockState state, Level level, BlockPos pos, Player player, InteractionHand interactionHand, BlockHitResult blockHitResult) {
         BlockState replacementState = this.getReplacementState(state, level, pos);
         if (replacementState == null) {
-            return ItemInteractionResult.PASS_TO_DEFAULT_BLOCK_INTERACTION;
+            return InteractionResult.PASS;
         }
 
         if (!level.isClientSide()) {
@@ -53,7 +54,7 @@ public class CustomRailBlock extends RailBlock {
 
         player.swing(interactionHand);
         level.playSound(player, pos, SoundEvents.WOOD_PLACE, SoundSource.BLOCKS, 1.0F, 1.0F);
-        return ItemInteractionResult.sidedSuccess(level.isClientSide());
+        return level.isClientSide() ? InteractionResult.SUCCESS : InteractionResult.SUCCESS_SERVER;
     }
 
     private BlockState getReplacementState(BlockState state, Level level, BlockPos pos) {

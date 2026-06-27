@@ -10,7 +10,7 @@ import net.minecraft.sounds.SoundSource;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.Container;
 import net.minecraft.world.InteractionHand;
-import net.minecraft.world.ItemInteractionResult;
+import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntitySelector;
 import net.minecraft.world.entity.player.Player;
@@ -25,6 +25,7 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.BaseRailBlock;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.RailState;
+import net.minecraft.world.level.redstone.Orientation;
 import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
@@ -94,9 +95,9 @@ public class PoweredDetectorRailBlock extends BaseRailBlock {
     }
 
     @Override
-    protected ItemInteractionResult useItemOn(ItemStack itemStack, BlockState state, Level level, BlockPos pos, Player player, InteractionHand interactionHand, BlockHitResult blockHitResult) {
+    protected InteractionResult useItemOn(ItemStack itemStack, BlockState state, Level level, BlockPos pos, Player player, InteractionHand interactionHand, BlockHitResult blockHitResult) {
         if (itemStack.getItem() instanceof MinecartItem || itemStack.is(Items.HOPPER) || itemStack.is(Items.CHEST) || itemStack.is(Items.BARREL)) {
-            return ItemInteractionResult.PASS_TO_DEFAULT_BLOCK_INTERACTION;
+            return InteractionResult.PASS;
         }
 
         if (player.isCrouching()) {
@@ -114,13 +115,13 @@ public class PoweredDetectorRailBlock extends BaseRailBlock {
             level.playSound(player, pos, SoundEvents.COMPARATOR_CLICK, SoundSource.BLOCKS, 0.3F, state.getValue(WEIGHT_INVERTED) ? 0.55F : 0.5F);
         }
 
-        return ItemInteractionResult.sidedSuccess(level.isClientSide());
+        return level.isClientSide() ? InteractionResult.SUCCESS : InteractionResult.SUCCESS_SERVER;
     }
 
     @Override
     protected BlockState updateState(BlockState state, Level level, BlockPos pos, boolean movedByPiston) {
         state = this.updateDir(level, pos, state, true);
-        level.neighborChanged(state, pos, this, pos, movedByPiston);
+        level.neighborChanged(state, pos, this, null, movedByPiston);
         return state;
     }
 
@@ -177,7 +178,7 @@ public class PoweredDetectorRailBlock extends BaseRailBlock {
 
         for (BlockPos blockPos : railState.getConnections()) {
             BlockState blockState = level.getBlockState(blockPos);
-            level.neighborChanged(blockState, blockPos, blockState.getBlock(), pos, false);
+            level.neighborChanged(blockState, blockPos, blockState.getBlock(), (Orientation) null, false);
         }
     }
 
@@ -206,11 +207,7 @@ public class PoweredDetectorRailBlock extends BaseRailBlock {
             return commandBlocks.get(0).getCommandBlock().getSuccessCount();
         }
 
-        List<AbstractMinecart> carts = this.getInteractingMinecartOfType(level, pos, AbstractMinecart.class, Entity::isAlive);
-        if (!carts.isEmpty() && carts.get(0).getComparatorLevel() > -1) {
-            return carts.get(0).getComparatorLevel();
-        }
-        List<AbstractMinecart> list = carts.stream().filter(EntitySelector.CONTAINER_ENTITY_SELECTOR).toList();
+        List<AbstractMinecart> list = this.getInteractingMinecartOfType(level, pos, AbstractMinecart.class, EntitySelector.CONTAINER_ENTITY_SELECTOR);
         if (!list.isEmpty()) {
             return AbstractContainerMenu.getRedstoneSignalFromContainer((Container) list.get(0));
         }

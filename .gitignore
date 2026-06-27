@@ -16,6 +16,7 @@ out
 # gradle
 build
 .gradle
+.gradle-local
 .gradle-user-home
 
 # other

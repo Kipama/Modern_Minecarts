@@ -4,13 +4,14 @@ import com.mojang.serialization.MapCodec;
 import net.lordkipama.modernminecarts.ModernMinecartsConfig;
 import net.lordkipama.modernminecarts.block.ModBlocks;
 import net.lordkipama.modernminecarts.util.AdvancementHelper;
+import net.lordkipama.modernminecarts.util.RailShapeHelper;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.tags.ItemTags;
 import net.minecraft.world.InteractionHand;
-import net.minecraft.world.ItemInteractionResult;
+import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.vehicle.AbstractMinecart;
 import net.minecraft.world.item.ItemStack;
@@ -54,7 +55,7 @@ public class WaxedCopperRailBlock extends PoweredRailBlock {
             finalSpeed = ModernMinecartsConfig.oxidized_copper_speed;
         }
 
-        if (getRailDirection(state, level, pos, null).isAscending() && finalSpeed >= ModernMinecartsConfig.max_ascending_speed) {
+        if (RailShapeHelper.isAscending(getRailDirection(state, level, pos, null)) && finalSpeed >= ModernMinecartsConfig.max_ascending_speed) {
             return ModernMinecartsConfig.max_ascending_speed;
         }
 
@@ -62,9 +63,9 @@ public class WaxedCopperRailBlock extends PoweredRailBlock {
     }
 
     @Override
-    protected ItemInteractionResult useItemOn(ItemStack itemStack, BlockState state, Level level, BlockPos pos, Player player, InteractionHand interactionHand, BlockHitResult blockHitResult) {
+    protected InteractionResult useItemOn(ItemStack itemStack, BlockState state, Level level, BlockPos pos, Player player, InteractionHand interactionHand, BlockHitResult blockHitResult) {
         if (!itemStack.is(ItemTags.AXES)) {
-            return ItemInteractionResult.PASS_TO_DEFAULT_BLOCK_INTERACTION;
+            return InteractionResult.PASS;
         }
 
         if (!level.isClientSide()) {
@@ -90,7 +91,7 @@ public class WaxedCopperRailBlock extends PoweredRailBlock {
         player.swing(interactionHand);
         level.playSound(player, pos, SoundEvents.AXE_WAX_OFF, SoundSource.BLOCKS, 1.0F, 1.0F);
         level.levelEvent(player, 3004, pos, 0);
-        return ItemInteractionResult.sidedSuccess(level.isClientSide());
+        return level.isClientSide() ? InteractionResult.SUCCESS : InteractionResult.SUCCESS_SERVER;
     }
 
     public enum WaxedWeatherState {

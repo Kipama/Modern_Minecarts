@@ -4,12 +4,9 @@ import net.lordkipama.modernminecarts.ModernMinecarts;
 import net.lordkipama.modernminecarts.util.FurnaceMinecartHelper;
 import net.lordkipama.modernminecarts.util.MinecartLinkHelper;
 import net.minecraft.core.BlockPos;
-import net.minecraft.core.HolderLookup;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.nbt.CompoundTag;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
-import net.minecraft.server.MinecraftServer;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.InteractionResult;
@@ -21,35 +18,18 @@ import net.minecraft.world.entity.vehicle.AbstractMinecart;
 import net.minecraft.world.entity.vehicle.MinecartFurnace;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
-import net.minecraft.world.item.crafting.Recipe;
-import net.minecraft.world.item.crafting.RecipeHolder;
-import net.minecraft.world.item.crafting.RecipeManager;
 import net.minecraft.world.item.component.CustomData;
 import net.minecraft.world.level.ClipContext;
 import net.minecraft.world.level.Level;
-import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.EntityHitResult;
 import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
-import net.neoforged.neoforge.event.AddReloadListenerEvent;
 import net.neoforged.neoforge.event.entity.EntityLeaveLevelEvent;
 import net.neoforged.neoforge.event.entity.player.PlayerInteractEvent;
 import net.neoforged.neoforge.event.tick.EntityTickEvent;
-import com.google.gson.JsonObject;
-import com.google.gson.JsonParser;
-import com.mojang.serialization.JsonOps;
-
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-import net.minecraft.server.packs.resources.ResourceManager;
-import net.minecraft.server.packs.resources.SimplePreparableReloadListener;
-import net.minecraft.util.profiling.ProfilerFiller;
 
 @EventBusSubscriber(modid = ModernMinecarts.MOD_ID)
 public final class ModEvents {
@@ -91,7 +71,7 @@ public final class ModEvents {
             if (!event.getLevel().isClientSide()) {
                 player.openMenu(FurnaceMinecartHelper.createMenuProvider(furnaceCart));
             }
-            event.setCancellationResult(InteractionResult.sidedSuccess(event.getLevel().isClientSide()));
+            event.setCancellationResult(event.getLevel().isClientSide() ? InteractionResult.SUCCESS : InteractionResult.SUCCESS_SERVER);
             event.setCanceled(true);
             return;
         }
@@ -182,63 +162,6 @@ public final class ModEvents {
         if (child != null) {
             MinecartLinkHelper.dropChainItem(minecart);
             MinecartLinkHelper.unsetParentChild(minecart, child);
-        }
-    }
-
-    @SubscribeEvent
-    public static void onAddReloadListener(AddReloadListenerEvent event) {
-        event.addListener(new SimplePreparableReloadListener<Void>() {
-            @Override
-            protected Void prepare(ResourceManager resourceManager, ProfilerFiller profiler) {
-                return null;
-            }
-
-            @Override
-            protected void apply(Void object, ResourceManager resourceManager, ProfilerFiller profiler) {
-                replacePoweredRailRecipe(event.getServerResources().getRecipeManager(), event.getServerResources().getRegistryLookup());
-            }
-        });
-    }
-
-    private static void replacePoweredRailRecipe(RecipeManager recipeManager, HolderLookup.Provider registries) {
-        ResourceLocation recipeId = ResourceLocation.withDefaultNamespace("powered_rail");
-        RecipeHolder<?> replacement = loadRecipe(recipeId, registries);
-        if (replacement == null) {
-            return;
-        }
-
-        Collection<RecipeHolder<?>> existingRecipes = recipeManager.getRecipes();
-        List<RecipeHolder<?>> updatedRecipes = new ArrayList<>(existingRecipes.size());
-        boolean replaced = false;
-        for (RecipeHolder<?> recipeHolder : existingRecipes) {
-            if (recipeHolder.id().equals(recipeId)) {
-                updatedRecipes.add(replacement);
-                replaced = true;
-            } else {
-                updatedRecipes.add(recipeHolder);
-            }
-        }
-
-        if (!replaced) {
-            updatedRecipes.add(replacement);
-        }
-
-        recipeManager.replaceRecipes(updatedRecipes);
-    }
-
-    private static RecipeHolder<?> loadRecipe(ResourceLocation recipeId, HolderLookup.Provider registries) {
-        try (InputStream inputStream = ModEvents.class.getResourceAsStream("/data/minecraft/recipe/powered_rail.json")) {
-            if (inputStream == null) {
-                return null;
-            }
-
-            try (InputStreamReader reader = new InputStreamReader(inputStream)) {
-                JsonObject json = JsonParser.parseReader(reader).getAsJsonObject();
-                Recipe<?> recipe = Recipe.CODEC.parse(registries.createSerializationContext(JsonOps.INSTANCE), json).getOrThrow();
-                return new RecipeHolder<>(recipeId, recipe);
-            }
-        } catch (Exception ignored) {
-            return null;
         }
     }
 
