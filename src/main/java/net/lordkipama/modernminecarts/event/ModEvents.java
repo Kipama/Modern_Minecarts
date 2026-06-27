@@ -1,6 +1,8 @@
 package net.lordkipama.modernminecarts.event;
 
 import net.lordkipama.modernminecarts.ModernMinecarts;
+import net.lordkipama.modernminecarts.block.ModBlocks;
+import net.lordkipama.modernminecarts.util.AdvancementHelper;
 import net.lordkipama.modernminecarts.util.FurnaceMinecartHelper;
 import net.lordkipama.modernminecarts.util.MinecartLinkHelper;
 import net.minecraft.core.BlockPos;
@@ -27,6 +29,7 @@ import net.minecraft.world.item.crafting.RecipeManager;
 import net.minecraft.world.item.component.CustomData;
 import net.minecraft.world.level.ClipContext;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.EntityHitResult;
 import net.minecraft.world.phys.HitResult;
@@ -36,6 +39,7 @@ import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.event.AddReloadListenerEvent;
 import net.neoforged.neoforge.event.entity.EntityLeaveLevelEvent;
 import net.neoforged.neoforge.event.entity.player.PlayerInteractEvent;
+import net.neoforged.neoforge.event.entity.player.UseItemOnBlockEvent;
 import net.neoforged.neoforge.event.tick.EntityTickEvent;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
@@ -78,6 +82,29 @@ public final class ModEvents {
                 event.setCanceled(true);
             }
         }
+    }
+
+    @SubscribeEvent
+    public static void onUseItemOnBlock(UseItemOnBlockEvent event) {
+        if (event.getLevel().isClientSide() || event.getUsePhase() != UseItemOnBlockEvent.UsePhase.BLOCK) {
+            return;
+        }
+
+        if (!(event.getPlayer() instanceof net.minecraft.server.level.ServerPlayer serverPlayer) || !event.getItemStack().is(Items.HONEYCOMB)) {
+            return;
+        }
+
+        BlockState blockState = event.getLevel().getBlockState(event.getPos());
+        if (isCopperRail(blockState)) {
+            AdvancementHelper.awardWaxOn(serverPlayer);
+        }
+    }
+
+    private static boolean isCopperRail(BlockState state) {
+        return state.is(ModBlocks.COPPER_RAIL.get())
+            || state.is(ModBlocks.EXPOSED_COPPER_RAIL.get())
+            || state.is(ModBlocks.WEATHERED_COPPER_RAIL.get())
+            || state.is(ModBlocks.OXIDIZED_COPPER_RAIL.get());
     }
 
     @SubscribeEvent

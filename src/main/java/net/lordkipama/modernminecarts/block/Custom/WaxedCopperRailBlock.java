@@ -3,7 +3,7 @@ package net.lordkipama.modernminecarts.block.Custom;
 import com.mojang.serialization.MapCodec;
 import net.lordkipama.modernminecarts.ModernMinecartsConfig;
 import net.lordkipama.modernminecarts.block.ModBlocks;
-import net.minecraft.advancements.CriteriaTriggers;
+import net.lordkipama.modernminecarts.util.AdvancementHelper;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvents;
@@ -69,29 +69,21 @@ public class WaxedCopperRailBlock extends PoweredRailBlock {
 
         if (!level.isClientSide()) {
             if (this.waxedWeatherState == WaxedCopperRailBlock.WaxedWeatherState.WAXED_UNAFFECTED) {
-                if (player instanceof ServerPlayer serverPlayer) {
-                    CriteriaTriggers.ITEM_USED_ON_BLOCK.trigger(serverPlayer, pos, itemStack);
-                }
                 level.setBlock(pos, ModBlocks.COPPER_RAIL.get().withPropertiesOf(state), 1);
             } else if (this.waxedWeatherState == WaxedCopperRailBlock.WaxedWeatherState.WAXED_EXPOSED) {
-                if (player instanceof ServerPlayer serverPlayer) {
-                    CriteriaTriggers.ITEM_USED_ON_BLOCK.trigger(serverPlayer, pos, itemStack);
-                }
                 level.setBlock(pos, ModBlocks.EXPOSED_COPPER_RAIL.get().withPropertiesOf(state), 1);
             } else if (this.waxedWeatherState == WaxedCopperRailBlock.WaxedWeatherState.WAXED_WEATHERED) {
-                if (player instanceof ServerPlayer serverPlayer) {
-                    CriteriaTriggers.ITEM_USED_ON_BLOCK.trigger(serverPlayer, pos, itemStack);
-                }
                 level.setBlock(pos, ModBlocks.WEATHERED_COPPER_RAIL.get().withPropertiesOf(state), 1);
             } else if (this.waxedWeatherState == WaxedCopperRailBlock.WaxedWeatherState.WAXED_OXIDIZED) {
-                if (player instanceof ServerPlayer serverPlayer) {
-                    CriteriaTriggers.ITEM_USED_ON_BLOCK.trigger(serverPlayer, pos, itemStack);
-                }
                 level.setBlock(pos, ModBlocks.OXIDIZED_COPPER_RAIL.get().withPropertiesOf(state), 1);
             }
 
             if (!player.isCreative() && !player.isSpectator()) {
                 itemStack.setDamageValue(itemStack.getDamageValue() + 1);
+            }
+
+            if (player instanceof ServerPlayer serverPlayer) {
+                AdvancementHelper.awardWaxOff(serverPlayer);
             }
         }
 

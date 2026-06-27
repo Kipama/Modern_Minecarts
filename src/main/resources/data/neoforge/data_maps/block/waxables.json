@@ -1,0 +1,17 @@
+{
+  "replace": false,
+  "values": {
+    "modernminecarts:copper_rail": {
+      "waxed": "modernminecarts:waxed_copper_rail"
+    },
+    "modernminecarts:exposed_copper_rail": {
+      "waxed": "modernminecarts:waxed_exposed_copper_rail"
+    },
+    "modernminecarts:weathered_copper_rail": {
+      "waxed": "modernminecarts:waxed_weathered_copper_rail"
+    },
+    "modernminecarts:oxidized_copper_rail": {
+      "waxed": "modernminecarts:waxed_oxidized_copper_rail"
+    }
+  }
+}

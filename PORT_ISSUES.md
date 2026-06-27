@@ -28,14 +28,6 @@ This file tracks the known blockers for the NeoForge 1.21 port until the port is
     - `src/main/java/net/lordkipama/modernminecarts/entity/CustomAbstractMinecartEntity.java`
     - `src/main/java/net/lordkipama/modernminecarts/entity/CustomMinecartFurnaceEntity.java`
 
-- [ ] Powered rail recipe output is still wrong.
-  - The 1.21 recipe loader expects `result.id` rather than the older `result.item`, and the override resource now uses the new format.
-  - A reload-time recipe replacement hook is also in place, so the next test should confirm whether the in-game output now reaches 12 consistently.
-
-- [ ] Wax on / Wax off advancement hooks do not trigger for copper rails.
-  - Waxing and dewaxing the custom copper rail blocks works mechanically, but the vanilla advancement criteria are not being awarded.
-  - Likely needs explicit criterion triggering or parity with vanilla honeycomb/axe interaction hooks.
-
 - [ ] Sloped rail blockstate/model definitions are incomplete in 1.21.
   - The logs currently report many missing variants for `modernminecarts:blockstates/sloped_rail.json`.
   - Current symptom: repeated `BlockStateModelLoader` warnings for missing `sloped_rail` variants, which likely means some visual states are falling back or rendering incorrectly.
