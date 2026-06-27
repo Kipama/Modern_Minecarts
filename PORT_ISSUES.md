@@ -22,6 +22,7 @@ This file tracks the known blockers for the NeoForge 1.21 port until the port is
 - [ ] Sloped rail blockstate/model definitions are incomplete in 1.21.
   - The logs currently report many missing variants for `modernminecarts:blockstates/sloped_rail.json`.
   - Current symptom: repeated `BlockStateModelLoader` warnings for missing `sloped_rail` variants. Not gamebreaking but needs to be adressed for clean console logs.
+  - The sloped rail block also doesnt work yet. The logic for the "jump" needs to be ported.
 
 ## 1.21 minecart port direction
 

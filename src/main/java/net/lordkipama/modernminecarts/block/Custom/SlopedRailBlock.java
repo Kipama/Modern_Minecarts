@@ -95,7 +95,7 @@ public class SlopedRailBlock extends BaseRailBlock {
                     state = state.setValue(SHAPE, state.getValue(CONST_SHAPE));
                 }
 
-                if (state.getValue(SHAPE).toString().equals("east_west") || state.getValue(SHAPE).toString().equals("north_south")) {
+                if (state.getValue(SHAPE) == RailShape.EAST_WEST || state.getValue(SHAPE) == RailShape.NORTH_SOUTH) {
                     level.setBlock(pos, state, 0);
                 }
 
