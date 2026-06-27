@@ -1,7 +1,6 @@
 package net.lordkipama.modernminecarts.block.Custom;
 
 import com.mojang.serialization.MapCodec;
-import net.lordkipama.modernminecarts.Item.AbstractMinecartItem;
 import net.lordkipama.modernminecarts.block.ModBlocks;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -20,6 +19,7 @@ import net.minecraft.world.entity.vehicle.MinecartCommandBlock;
 import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
+import net.minecraft.world.item.MinecartItem;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.BaseRailBlock;
@@ -95,7 +95,7 @@ public class PoweredDetectorRailBlock extends BaseRailBlock {
 
     @Override
     protected ItemInteractionResult useItemOn(ItemStack itemStack, BlockState state, Level level, BlockPos pos, Player player, InteractionHand interactionHand, BlockHitResult blockHitResult) {
-        if (itemStack.getItem() instanceof AbstractMinecartItem || itemStack.is(Items.HOPPER) || itemStack.is(Items.CHEST) || itemStack.is(Items.BARREL)) {
+        if (itemStack.getItem() instanceof MinecartItem || itemStack.is(Items.HOPPER) || itemStack.is(Items.CHEST) || itemStack.is(Items.BARREL)) {
             return ItemInteractionResult.PASS_TO_DEFAULT_BLOCK_INTERACTION;
         }
 
