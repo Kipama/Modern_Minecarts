@@ -7,17 +7,8 @@ This file tracks the known blockers for the NeoForge 1.21 port until the port is
 ## Active issues
 
 - [ ] Vanilla minecart feature parity is currently broken.
-  - Most of the chain linking and furnace minecart behavior has now been moved onto vanilla `AbstractMinecart` / `MinecartFurnace` via attachments, events, and helper classes instead of replacing vanilla registry entries.
-  - Current status: direct vanilla registry replacement remains disabled because it crashes 1.21 creative tab rebuilding and later registry validation.
-  - Remaining minecart-side work is now mainly verification and parity checking rather than bootstrap work:
-    - verify the new mixin-based furnace rail speed override restores vanilla powered-rail top speed in 1.21
-    - verify train speed reduction with long trains
-    - verify multiple burning furnace carts correctly offset the speed penalty
-    - verify chain rendering/alignment in more edge cases
-    - verify chain item drops and uncoupling behavior across all break/remove cases
     - verify shift-right-click no longer opens chest and hopper minecarts when chain interactions should take priority
     - verify hopper minecarts correctly distribute items across the train, especially alongside chest minecarts
-    - verify furnace minecart fuel items are not being pulled out by hopper-style inventory sharing
   - Relevant files:
     - `src/main/java/net/lordkipama/modernminecarts/ModernMinecarts.java`
     - `src/main/java/net/lordkipama/modernminecarts/event/ModEvents.java`
@@ -30,7 +21,7 @@ This file tracks the known blockers for the NeoForge 1.21 port until the port is
 
 - [ ] Sloped rail blockstate/model definitions are incomplete in 1.21.
   - The logs currently report many missing variants for `modernminecarts:blockstates/sloped_rail.json`.
-  - Current symptom: repeated `BlockStateModelLoader` warnings for missing `sloped_rail` variants, which likely means some visual states are falling back or rendering incorrectly.
+  - Current symptom: repeated `BlockStateModelLoader` warnings for missing `sloped_rail` variants. Not gamebreaking but needs to be adressed for clean console logs.
 
 ## 1.21 minecart port direction
 
