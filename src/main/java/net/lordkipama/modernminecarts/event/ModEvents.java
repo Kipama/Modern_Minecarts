@@ -4,6 +4,7 @@ import net.lordkipama.modernminecarts.ModernMinecarts;
 import net.lordkipama.modernminecarts.util.FurnaceMinecartHelper;
 import net.lordkipama.modernminecarts.util.MinecartLinkHelper;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.UUIDUtil;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.server.level.ServerLevel;
@@ -14,8 +15,8 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.projectile.ProjectileUtil;
-import net.minecraft.world.entity.vehicle.AbstractMinecart;
-import net.minecraft.world.entity.vehicle.MinecartFurnace;
+import net.minecraft.world.entity.vehicle.minecart.AbstractMinecart;
+import net.minecraft.world.entity.vehicle.minecart.MinecartFurnace;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.component.CustomData;
@@ -45,7 +46,7 @@ public final class ModEvents {
 
         if (!event.getLevel().isClientSide()
                 && player.isCrouching()
-                && stack.getItem() == Items.CHAIN
+                && stack.getItem() == Items.IRON_CHAIN
                 && stack.has(DataComponents.CUSTOM_DATA)
                 && isRightClickingAir(player, event.getLevel())) {
             CompoundTag nbt = getCustomDataTag(stack);
@@ -76,24 +77,25 @@ public final class ModEvents {
             return;
         }
 
-        if (!(entity instanceof AbstractMinecart cart) || stack.getItem() != Items.CHAIN || !player.isCrouching() || !(event.getLevel() instanceof ServerLevel server)) {
+        if (!(entity instanceof AbstractMinecart cart) || stack.getItem() != Items.IRON_CHAIN || !player.isCrouching() || !(event.getLevel() instanceof ServerLevel server)) {
             return;
         }
 
         CompoundTag nbt = getCustomDataTag(stack);
-        if (nbt.contains(PARENT_ENTITY_TAG)) {
-            if (!nbt.getUUID(PARENT_ENTITY_TAG).equals(cart.getUUID())
-                    && server.getEntity(nbt.getUUID(PARENT_ENTITY_TAG)) instanceof AbstractMinecart parent) {
+        var storedParentId = nbt.read(PARENT_ENTITY_TAG, UUIDUtil.CODEC);
+        if (storedParentId.isPresent()) {
+            if (!storedParentId.get().equals(cart.getUUID())
+                    && server.getEntity(storedParentId.get()) instanceof AbstractMinecart parent) {
                 if (MinecartLinkHelper.isTrainCircular(parent, cart)) {
                     if (MinecartLinkHelper.getLinkedParent(parent) == cart) {
                         if (MinecartLinkHelper.getLinkedParent(cart) != null) {
                             BlockPos pos = MinecartLinkHelper.getLinkedParent(cart).blockPosition();
-                            event.getLevel().addFreshEntity(new ItemEntity(event.getLevel(), pos.getX(), pos.getY(), pos.getZ(), new ItemStack(Items.CHAIN)));
+                            event.getLevel().addFreshEntity(new ItemEntity(event.getLevel(), pos.getX(), pos.getY(), pos.getZ(), new ItemStack(Items.IRON_CHAIN)));
                             MinecartLinkHelper.unsetParentChild(MinecartLinkHelper.getLinkedParent(cart), cart);
                         }
                         if (MinecartLinkHelper.getLinkedChild(parent) != null) {
                             BlockPos pos = MinecartLinkHelper.getLinkedChild(parent).blockPosition();
-                            event.getLevel().addFreshEntity(new ItemEntity(event.getLevel(), pos.getX(), pos.getY(), pos.getZ(), new ItemStack(Items.CHAIN)));
+                            event.getLevel().addFreshEntity(new ItemEntity(event.getLevel(), pos.getX(), pos.getY(), pos.getZ(), new ItemStack(Items.IRON_CHAIN)));
                             MinecartLinkHelper.unsetParentChild(parent, MinecartLinkHelper.getLinkedChild(parent));
                         }
 
@@ -104,11 +106,11 @@ public final class ModEvents {
                     if (MinecartLinkHelper.getLinkedParent(cart) != null) {
                         MinecartLinkHelper.unsetParentChild(MinecartLinkHelper.getLinkedParent(cart), cart);
                         BlockPos pos = entity.blockPosition();
-                        event.getLevel().addFreshEntity(new ItemEntity(event.getLevel(), pos.getX(), pos.getY(), pos.getZ(), new ItemStack(Items.CHAIN)));
+                        event.getLevel().addFreshEntity(new ItemEntity(event.getLevel(), pos.getX(), pos.getY(), pos.getZ(), new ItemStack(Items.IRON_CHAIN)));
                     }
                     if (MinecartLinkHelper.getLinkedChild(parent) != null) {
                         BlockPos pos = MinecartLinkHelper.getLinkedChild(parent).blockPosition();
-                        event.getLevel().addFreshEntity(new ItemEntity(event.getLevel(), pos.getX(), pos.getY(), pos.getZ(), new ItemStack(Items.CHAIN)));
+                        event.getLevel().addFreshEntity(new ItemEntity(event.getLevel(), pos.getX(), pos.getY(), pos.getZ(), new ItemStack(Items.IRON_CHAIN)));
                         MinecartLinkHelper.unsetParentChild(parent, MinecartLinkHelper.getLinkedChild(parent));
                     }
                     if (!player.isCreative()) {
@@ -122,7 +124,7 @@ public final class ModEvents {
             nbt.remove(PARENT_ENTITY_TAG);
             saveCustomDataTag(stack, nbt);
         } else {
-            nbt.putUUID(PARENT_ENTITY_TAG, cart.getUUID());
+            nbt.store(PARENT_ENTITY_TAG, UUIDUtil.CODEC, cart.getUUID());
             saveCustomDataTag(stack, nbt);
             event.getLevel().playSound(null, entity.getX(), entity.getY(), entity.getZ(), SoundEvents.CHAIN_HIT, SoundSource.NEUTRAL, 1F, 1F);
         }
@@ -188,12 +190,12 @@ public final class ModEvents {
                 .inflate(1.0D);
 
         EntityHitResult entityHit = ProjectileUtil.getEntityHitResult(
-                level,
                 player,
                 eyePosition,
                 endPosition,
                 searchBox,
-                entity -> !entity.isSpectator() && entity.isPickable()
+                entity -> !entity.isSpectator() && entity.isPickable(),
+                reachDistance * reachDistance
         );
 
         return entityHit == null;

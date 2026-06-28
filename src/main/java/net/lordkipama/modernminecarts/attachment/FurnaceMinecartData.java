@@ -1,11 +1,11 @@
 package net.lordkipama.modernminecarts.attachment;
 
-import net.minecraft.core.HolderLookup;
-import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.item.ItemStack;
-import net.neoforged.neoforge.common.util.INBTSerializable;
+import net.minecraft.world.level.storage.ValueInput;
+import net.minecraft.world.level.storage.ValueOutput;
+import net.neoforged.neoforge.common.util.ValueIOSerializable;
 
-public class FurnaceMinecartData implements INBTSerializable<CompoundTag> {
+public class FurnaceMinecartData implements ValueIOSerializable {
     private static final String FUEL_SLOT_TAG = "FuelSlot";
     private static final String FUEL_BURN_TIME_TAG = "FuelBurnTime";
 
@@ -29,18 +29,14 @@ public class FurnaceMinecartData implements INBTSerializable<CompoundTag> {
     }
 
     @Override
-    public CompoundTag serializeNBT(HolderLookup.Provider provider) {
-        CompoundTag tag = new CompoundTag();
-        if (!fuelSlot.isEmpty()) {
-            tag.put(FUEL_SLOT_TAG, fuelSlot.saveOptional(provider));
-        }
-        tag.putInt(FUEL_BURN_TIME_TAG, fuelBurnTime);
-        return tag;
+    public void serialize(ValueOutput output) {
+        output.store(FUEL_SLOT_TAG, ItemStack.OPTIONAL_CODEC, fuelSlot);
+        output.putInt(FUEL_BURN_TIME_TAG, fuelBurnTime);
     }
 
     @Override
-    public void deserializeNBT(HolderLookup.Provider provider, CompoundTag tag) {
-        fuelSlot = tag.contains(FUEL_SLOT_TAG) ? ItemStack.parseOptional(provider, tag.getCompound(FUEL_SLOT_TAG)) : ItemStack.EMPTY;
-        fuelBurnTime = tag.getInt(FUEL_BURN_TIME_TAG);
+    public void deserialize(ValueInput input) {
+        fuelSlot = input.read(FUEL_SLOT_TAG, ItemStack.OPTIONAL_CODEC).orElse(ItemStack.EMPTY);
+        fuelBurnTime = input.getIntOr(FUEL_BURN_TIME_TAG, 0);
     }
 }

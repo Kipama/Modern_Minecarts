@@ -6,7 +6,7 @@ import net.lordkipama.modernminecarts.block.ModBlocks;
 import net.lordkipama.modernminecarts.util.RailShapeHelper;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
-import net.minecraft.world.entity.vehicle.AbstractMinecart;
+import net.minecraft.world.entity.vehicle.minecart.AbstractMinecart;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.level.BlockGetter;
@@ -80,7 +80,7 @@ public class SlopedRailBlock extends BaseRailBlock {
 
     @Override
     protected void neighborChanged(BlockState state, Level level, BlockPos pos, Block block, Orientation orientation, boolean isMoving) {
-        if (!level.isClientSide && level.getBlockState(pos).is(this)) {
+        if (!level.isClientSide() && level.getBlockState(pos).is(this)) {
             if (!canSupportRigidBlock(level, pos.below())) {
                 dropResources(state, level, pos);
                 level.removeBlock(pos, isMoving);

@@ -6,9 +6,9 @@ import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.entity.Entity;
-import net.minecraft.world.entity.vehicle.AbstractMinecart;
+import net.minecraft.world.entity.vehicle.minecart.AbstractMinecart;
 import net.minecraft.world.level.Level;
 import net.neoforged.neoforge.network.event.RegisterPayloadHandlersEvent;
 import net.neoforged.neoforge.network.handling.IPayloadContext;
@@ -25,7 +25,7 @@ public class ModernMinecartsPacketHandler {
 
     public record CouplePacket(int parentID, int childID) implements CustomPacketPayload {
         public static final Type<CouplePacket> TYPE =
-                new Type<>(ResourceLocation.fromNamespaceAndPath(ModernMinecarts.MOD_ID, "couple"));
+                new Type<>(Identifier.fromNamespaceAndPath(ModernMinecarts.MOD_ID, "couple"));
         public static final StreamCodec<RegistryFriendlyByteBuf, CouplePacket> STREAM_CODEC = StreamCodec.composite(
                 ByteBufCodecs.VAR_INT,
                 CouplePacket::parentID,

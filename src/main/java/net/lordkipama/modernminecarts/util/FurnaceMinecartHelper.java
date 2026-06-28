@@ -15,9 +15,9 @@ import net.minecraft.tags.BlockTags;
 import net.minecraft.world.MenuProvider;
 import net.minecraft.world.entity.MoverType;
 import net.minecraft.world.entity.player.Inventory;
-import net.minecraft.world.entity.vehicle.AbstractMinecart;
+import net.minecraft.world.entity.vehicle.minecart.AbstractMinecart;
 import net.minecraft.world.entity.vehicle.ContainerEntity;
-import net.minecraft.world.entity.vehicle.MinecartFurnace;
+import net.minecraft.world.entity.vehicle.minecart.MinecartFurnace;
 import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
@@ -38,6 +38,7 @@ import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 public final class FurnaceMinecartHelper {
     private static final Field FUEL_FIELD = ObfuscationReflectionHelper.findField(MinecartFurnace.class, "fuel");
@@ -135,11 +136,11 @@ public final class FurnaceMinecartHelper {
             applyTargetSpeed(minecart, getTargetSpeed(minecart, stats), hasChild || isMoving);
         }
 
-        minecart.setDisplayBlockState(Blocks.FURNACE.defaultBlockState().setValue(FurnaceBlock.FACING, Direction.NORTH).setValue(FurnaceBlock.LIT, fuel > 0));
+        minecart.setCustomDisplayBlockState(Optional.of(Blocks.FURNACE.defaultBlockState().setValue(FurnaceBlock.FACING, Direction.NORTH).setValue(FurnaceBlock.LIT, fuel > 0)));
 
         if (fuel > 0 && minecart.level() instanceof ServerLevel server && ModernMinecartsConfig.allowFurnaceMinecartChunkloading) {
             ChunkPos chunkPos = new ChunkPos(BlockPos.containing(minecart.getX(), minecart.getY(), minecart.getZ()));
-            server.getChunkSource().addRegionTicket(TicketType.PORTAL, chunkPos, 3, minecart.blockPosition());
+            server.getChunkSource().addTicketWithRadius(TicketType.PORTAL, chunkPos, 3);
         }
     }
 
@@ -212,7 +213,7 @@ public final class FurnaceMinecartHelper {
         AbstractMinecart current = head;
         while (current != null) {
             if (current instanceof ContainerEntity containerEntity) {
-                boolean skip = !checkHoppers && current instanceof net.minecraft.world.entity.vehicle.MinecartHopper;
+                boolean skip = !checkHoppers && current instanceof net.minecraft.world.entity.vehicle.minecart.MinecartHopper;
                 if (!skip) {
                     containers.add(containerEntity);
                 }

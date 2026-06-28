@@ -6,7 +6,7 @@ import net.lordkipama.modernminecarts.attachment.MinecartAttachmentTypes;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.item.ItemEntity;
-import net.minecraft.world.entity.vehicle.AbstractMinecart;
+import net.minecraft.world.entity.vehicle.minecart.AbstractMinecart;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.phys.Vec3;
@@ -167,6 +167,6 @@ public final class MinecartLinkHelper {
     }
 
     public static void dropChainItem(AbstractMinecart minecart) {
-        minecart.level().addFreshEntity(new ItemEntity(minecart.level(), minecart.getX(), minecart.getY(), minecart.getZ(), new ItemStack(Items.CHAIN)));
+        minecart.level().addFreshEntity(new ItemEntity(minecart.level(), minecart.getX(), minecart.getY(), minecart.getZ(), new ItemStack(Items.IRON_CHAIN)));
     }
 }

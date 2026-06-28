@@ -1,7 +1,7 @@
 package net.lordkipama.modernminecarts.mixin;
 
 import net.lordkipama.modernminecarts.util.HopperMinecartHelper;
-import net.minecraft.world.entity.vehicle.MinecartHopper;
+import net.minecraft.world.entity.vehicle.minecart.MinecartHopper;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;

@@ -2,7 +2,7 @@ package net.lordkipama.modernminecarts.inventory;
 
 import net.lordkipama.modernminecarts.attachment.FurnaceMinecartData;
 import net.lordkipama.modernminecarts.util.FurnaceMinecartHelper;
-import net.minecraft.world.entity.vehicle.MinecartFurnace;
+import net.minecraft.world.entity.vehicle.minecart.MinecartFurnace;
 import net.minecraft.world.inventory.ContainerData;
 
 public class FurnaceMinecartDataAccess implements ContainerData {

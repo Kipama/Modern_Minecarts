@@ -13,9 +13,10 @@ import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntitySelector;
+import net.minecraft.world.entity.InsideBlockEffectApplier;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.entity.vehicle.AbstractMinecart;
-import net.minecraft.world.entity.vehicle.MinecartCommandBlock;
+import net.minecraft.world.entity.vehicle.minecart.AbstractMinecart;
+import net.minecraft.world.entity.vehicle.minecart.MinecartCommandBlock;
 import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
@@ -74,7 +75,7 @@ public class PoweredDetectorRailBlock extends BaseRailBlock {
     }
 
     @Override
-    public boolean isSignalSource(BlockState state) {
+    protected boolean isSignalSource(BlockState state) {
         return true;
     }
 
@@ -88,8 +89,8 @@ public class PoweredDetectorRailBlock extends BaseRailBlock {
     }
 
     @Override
-    public void entityInside(BlockState state, Level level, BlockPos pos, Entity entity) {
-        if (!level.isClientSide && !state.getValue(POWERED)) {
+    protected void entityInside(BlockState state, Level level, BlockPos pos, Entity entity, InsideBlockEffectApplier insideBlockEffectApplier, boolean triggersType) {
+        if (!level.isClientSide() && !state.getValue(POWERED)) {
             this.checkPressed(level, pos, state);
         }
     }
@@ -129,14 +130,15 @@ public class PoweredDetectorRailBlock extends BaseRailBlock {
         if (this.canSurvive(state, level, pos)) {
             boolean isPowered = state.getValue(POWERED);
             boolean isInverted = state.getValue(WEIGHT_INVERTED);
+            int analogSignal = getComparatorSignal(state, level, pos);
             List<AbstractMinecart> mclist = this.getInteractingMinecartOfType(level, pos, AbstractMinecart.class, candidate -> true);
             List<AbstractMinecart> containerList = mclist.stream().filter(EntitySelector.CONTAINER_ENTITY_SELECTOR).toList();
             boolean isContainer = !containerList.isEmpty();
             boolean minecartFull = mclist.stream().anyMatch(Entity::isVehicle);
 
-            if ((getAnalogOutputSignal(state, level, pos) == 15 && !isInverted && isContainer) || (getAnalogOutputSignal(state, level, pos) == 0 && isInverted && isContainer)) {
+            if ((analogSignal == 15 && !isInverted && isContainer) || (analogSignal == 0 && isInverted && isContainer)) {
                 updateRailState(level, pos, true, state);
-            } else if ((getAnalogOutputSignal(state, level, pos) != 0 && isInverted && isContainer) || (getAnalogOutputSignal(state, level, pos) != 15 && !isInverted && isContainer)) {
+            } else if ((analogSignal != 0 && isInverted && isContainer) || (analogSignal != 15 && !isInverted && isContainer)) {
                 updateRailState(level, pos, false, state);
             } else if ((!isPowered && minecartFull && !isInverted && !isContainer) || (!isPowered && !minecartFull && isInverted && !isContainer)) {
                 updateRailState(level, pos, true, state);
@@ -166,7 +168,7 @@ public class PoweredDetectorRailBlock extends BaseRailBlock {
     }
 
     @Override
-    public void onPlace(BlockState state, Level level, BlockPos pos, BlockState oldState, boolean isMoving) {
+    protected void onPlace(BlockState state, Level level, BlockPos pos, BlockState oldState, boolean isMoving) {
         if (!oldState.is(state.getBlock())) {
             BlockState blockState = this.updateState(state, level, pos, isMoving);
             this.checkPressed(level, pos, blockState);
@@ -183,17 +185,17 @@ public class PoweredDetectorRailBlock extends BaseRailBlock {
     }
 
     @Override
-    public void tick(BlockState state, ServerLevel level, BlockPos pos, RandomSource random) {
+    protected void tick(BlockState state, ServerLevel level, BlockPos pos, RandomSource random) {
         this.checkPressed(level, pos, state);
     }
 
     @Override
-    public int getSignal(BlockState blockState, BlockGetter blockAccess, BlockPos pos, Direction side) {
+    protected int getSignal(BlockState blockState, BlockGetter blockAccess, BlockPos pos, Direction side) {
         return blockState.getValue(POWERED) ? 15 : 0;
     }
 
     @Override
-    public int getDirectSignal(BlockState blockState, BlockGetter blockAccess, BlockPos pos, Direction side) {
+    protected int getDirectSignal(BlockState blockState, BlockGetter blockAccess, BlockPos pos, Direction side) {
         if (!blockState.getValue(POWERED)) {
             return 0;
         }
@@ -201,7 +203,16 @@ public class PoweredDetectorRailBlock extends BaseRailBlock {
     }
 
     @Override
-    public int getAnalogOutputSignal(BlockState blockState, Level level, BlockPos pos) {
+    protected boolean hasAnalogOutputSignal(BlockState state) {
+        return true;
+    }
+
+    private int getComparatorSignal(BlockState blockState, Level level, BlockPos pos) {
+        return this.getAnalogOutputSignal(blockState, level, pos, Direction.UP);
+    }
+
+    @Override
+    protected int getAnalogOutputSignal(BlockState blockState, Level level, BlockPos pos, Direction side) {
         List<MinecartCommandBlock> commandBlocks = this.getInteractingMinecartOfType(level, pos, MinecartCommandBlock.class, candidate -> true);
         if (!commandBlocks.isEmpty()) {
             return commandBlocks.get(0).getCommandBlock().getSuccessCount();

@@ -1,13 +1,14 @@
 package net.lordkipama.modernminecarts.attachment;
 
-import net.minecraft.core.HolderLookup;
-import net.minecraft.nbt.CompoundTag;
-import net.neoforged.neoforge.common.util.INBTSerializable;
+import net.minecraft.core.UUIDUtil;
+import net.minecraft.world.level.storage.ValueInput;
+import net.minecraft.world.level.storage.ValueOutput;
+import net.neoforged.neoforge.common.util.ValueIOSerializable;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.UUID;
 
-public class ChainMinecartData implements INBTSerializable<CompoundTag> {
+public class ChainMinecartData implements ValueIOSerializable {
     private static final String PARENT_UUID_TAG = "ParentUuid";
     private static final String CHILD_UUID_TAG = "ChildUuid";
     private static final String PARENT_ID_CLIENT_TAG = "ParentIdClient";
@@ -57,24 +58,18 @@ public class ChainMinecartData implements INBTSerializable<CompoundTag> {
     }
 
     @Override
-    public CompoundTag serializeNBT(HolderLookup.Provider provider) {
-        CompoundTag tag = new CompoundTag();
-        if (parentUuid != null) {
-            tag.putUUID(PARENT_UUID_TAG, parentUuid);
-        }
-        if (childUuid != null) {
-            tag.putUUID(CHILD_UUID_TAG, childUuid);
-        }
-        tag.putInt(PARENT_ID_CLIENT_TAG, parentIdClient);
-        tag.putInt(CHILD_ID_CLIENT_TAG, childIdClient);
-        return tag;
+    public void serialize(ValueOutput output) {
+        output.storeNullable(PARENT_UUID_TAG, UUIDUtil.CODEC, parentUuid);
+        output.storeNullable(CHILD_UUID_TAG, UUIDUtil.CODEC, childUuid);
+        output.putInt(PARENT_ID_CLIENT_TAG, parentIdClient);
+        output.putInt(CHILD_ID_CLIENT_TAG, childIdClient);
     }
 
     @Override
-    public void deserializeNBT(HolderLookup.Provider provider, CompoundTag tag) {
-        parentUuid = tag.hasUUID(PARENT_UUID_TAG) ? tag.getUUID(PARENT_UUID_TAG) : null;
-        childUuid = tag.hasUUID(CHILD_UUID_TAG) ? tag.getUUID(CHILD_UUID_TAG) : null;
-        parentIdClient = tag.contains(PARENT_ID_CLIENT_TAG) ? tag.getInt(PARENT_ID_CLIENT_TAG) : -1;
-        childIdClient = tag.contains(CHILD_ID_CLIENT_TAG) ? tag.getInt(CHILD_ID_CLIENT_TAG) : -1;
+    public void deserialize(ValueInput input) {
+        parentUuid = input.read(PARENT_UUID_TAG, UUIDUtil.CODEC).orElse(null);
+        childUuid = input.read(CHILD_UUID_TAG, UUIDUtil.CODEC).orElse(null);
+        parentIdClient = input.getIntOr(PARENT_ID_CLIENT_TAG, -1);
+        childIdClient = input.getIntOr(CHILD_ID_CLIENT_TAG, -1);
     }
 }

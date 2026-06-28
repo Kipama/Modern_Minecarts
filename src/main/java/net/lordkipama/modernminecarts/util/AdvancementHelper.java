@@ -1,12 +1,12 @@
 package net.lordkipama.modernminecarts.util;
 
 import net.minecraft.advancements.AdvancementHolder;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerPlayer;
 
 public final class AdvancementHelper {
-    private static final ResourceLocation WAX_ON = ResourceLocation.fromNamespaceAndPath("minecraft", "husbandry/wax_on");
-    private static final ResourceLocation WAX_OFF = ResourceLocation.fromNamespaceAndPath("minecraft", "husbandry/wax_off");
+    private static final Identifier WAX_ON = Identifier.fromNamespaceAndPath("minecraft", "husbandry/wax_on");
+    private static final Identifier WAX_OFF = Identifier.fromNamespaceAndPath("minecraft", "husbandry/wax_off");
 
     private AdvancementHelper() {
     }
@@ -19,12 +19,12 @@ public final class AdvancementHelper {
         awardCriterion(player, WAX_OFF, "wax_off");
     }
 
-    private static void awardCriterion(ServerPlayer player, ResourceLocation advancementId, String criterion) {
+    private static void awardCriterion(ServerPlayer player, Identifier advancementId, String criterion) {
         if (player == null) {
             return;
         }
 
-        var server = player.getServer();
+        var server = player.level().getServer();
         if (server == null) {
             return;
         }
