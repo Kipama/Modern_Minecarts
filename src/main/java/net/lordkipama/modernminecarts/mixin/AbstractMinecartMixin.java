@@ -19,6 +19,7 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.RailShape;
 import net.minecraft.world.phys.Vec3;
 import org.spongepowered.asm.mixin.Mixin;
+import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
@@ -27,6 +28,9 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 @Mixin(AbstractMinecart.class)
 abstract class AbstractMinecartMixin {
+    @Shadow
+    protected abstract double getMaxSpeed(ServerLevel level);
+
     @Unique
     private static final float modernminecarts$legacyAirLateralSpeed = 0.8F;
     @Unique
@@ -121,22 +125,17 @@ abstract class AbstractMinecartMixin {
         }
     }
 
-    @Inject(method = "moveMinecartOnRail", at = @At("HEAD"))
-    private void modernminecarts$syncAppliedRailSpeed(BlockPos pos, CallbackInfo ci) {
-        AbstractMinecart minecart = (AbstractMinecart) (Object) this;
-        double maxRailSpeed = minecart.getMaxSpeedWithRail();
-        Vec3 motion = minecart.getDeltaMovement();
-
-        // Keep deltaMovement aligned with the clamped rail speed so slope jumps
-        // use the actual motion applied on the rail instead of the uncapped accumulator.
-        minecart.setDeltaMovement(Mth.clamp(motion.x, -maxRailSpeed, maxRailSpeed), 0.0D, Mth.clamp(motion.z, -maxRailSpeed, maxRailSpeed));
-    }
-
     @Inject(method = "comeOffTrack", at = @At("HEAD"), cancellable = true)
     private void modernminecarts$jumpOffSlopedRail(ServerLevel level, CallbackInfo cir) {
         AbstractMinecart minecart = (AbstractMinecart) (Object) this;
-        Vec3 motion = minecart.getDeltaMovement();
         double maxSpeed = modernminecarts$legacyAirLateralSpeed;
+        double maxRailSpeed = this.getMaxSpeed(level);
+        Vec3 rawMotion = minecart.getDeltaMovement();
+        Vec3 motion = new Vec3(
+                Mth.clamp(rawMotion.x, -maxRailSpeed, maxRailSpeed),
+                rawMotion.y,
+                Mth.clamp(rawMotion.z, -maxRailSpeed, maxRailSpeed)
+        );
 
         int x = Mth.floor(minecart.getX());
         int y = Mth.floor(minecart.getY());
