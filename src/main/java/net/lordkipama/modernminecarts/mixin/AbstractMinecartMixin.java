@@ -1,19 +1,22 @@
 package net.lordkipama.modernminecarts.mixin;
 
+import net.lordkipama.modernminecarts.ModernMinecarts;
+import net.lordkipama.modernminecarts.ModernMinecartsConfig;
 import net.lordkipama.modernminecarts.block.ModBlocks;
 import net.lordkipama.modernminecarts.util.FurnaceMinecartHelper;
 import net.lordkipama.modernminecarts.util.MinecartLinkHelper;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.util.Mth;
+import net.minecraft.world.entity.MoverType;
 import net.minecraft.world.entity.vehicle.AbstractMinecart;
 import net.minecraft.world.entity.vehicle.MinecartFurnace;
+import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.BaseRailBlock;
 import net.minecraft.world.level.block.PoweredRailBlock;
-import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.RailShape;
-import net.minecraft.world.entity.MoverType;
 import net.minecraft.world.phys.Vec3;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Unique;
@@ -34,19 +37,31 @@ abstract class AbstractMinecartMixin {
     @Unique
     private boolean modernminecarts$jumpedOffSlope;
 
-    @Inject(method = "getMaxSpeedWithRail", at = @At("RETURN"), cancellable = true)
-    private void modernminecarts$raiseFurnaceRailSpeed(CallbackInfoReturnable<Double> cir) {
-        if (!((Object) this instanceof MinecartFurnace furnaceMinecart)) {
-            return;
+    @Inject(method = "getMaxSpeed", at = @At("RETURN"), cancellable = true)
+    private void modernminecarts$applyRailSpeedOverrides(ServerLevel level, CallbackInfoReturnable<Double> cir) {
+        AbstractMinecart minecart = (AbstractMinecart) (Object) this;
+        BlockPos railPos = minecart.getCurrentBlockPosOrRailBelow();
+        BlockState railState = level.getBlockState(railPos);
+
+        if (railState.getBlock() instanceof BaseRailBlock railBlock
+                && ModernMinecarts.MOD_ID.equals(BuiltInRegistries.BLOCK.getKey(railState.getBlock()).getNamespace())) {
+            float railMaxSpeed = railBlock.getRailMaxSpeed(railState, level, railPos, minecart);
+            if (MinecartLinkHelper.getLinkedParent(minecart) != null) {
+                railMaxSpeed = modernminecarts$legacyAirLateralSpeed;
+            } else if (minecart.isInWater()) {
+                railMaxSpeed /= 2.0F;
+            }
+
+            cir.setReturnValue((double) modernminecarts$getFrontAdjustedRailSpeed(minecart, level, railPos, railMaxSpeed));
         }
 
-        if (MinecartLinkHelper.getLinkedParent(furnaceMinecart) != null || FurnaceMinecartHelper.getFuel(furnaceMinecart) <= 0) {
-            return;
-        }
-
-        double targetSpeed = FurnaceMinecartHelper.getAppliedRailSpeed(furnaceMinecart);
-        if (targetSpeed > cir.getReturnValue()) {
-            cir.setReturnValue(targetSpeed);
+        if ((Object) this instanceof MinecartFurnace furnaceMinecart
+                && MinecartLinkHelper.getLinkedParent(furnaceMinecart) == null
+                && FurnaceMinecartHelper.getFuel(furnaceMinecart) > 0) {
+            double targetSpeed = FurnaceMinecartHelper.getAppliedRailSpeed(furnaceMinecart);
+            if (targetSpeed > cir.getReturnValue()) {
+                cir.setReturnValue(targetSpeed);
+            }
         }
     }
 
@@ -55,6 +70,7 @@ abstract class AbstractMinecartMixin {
         AbstractMinecart minecart = (AbstractMinecart) (Object) this;
         BlockPos pos = minecart.getCurrentBlockPosOrRailBelow();
         BlockState state = level.getBlockState(pos);
+
         if (!(state.getBlock() instanceof BaseRailBlock railBlock) || !(railBlock instanceof net.lordkipama.modernminecarts.block.Custom.PoweredDetectorRailBlock detectorRail)) {
             return;
         }
@@ -108,8 +124,8 @@ abstract class AbstractMinecartMixin {
     @Inject(method = "comeOffTrack", at = @At("HEAD"), cancellable = true)
     private void modernminecarts$jumpOffSlopedRail(ServerLevel level, CallbackInfo cir) {
         AbstractMinecart minecart = (AbstractMinecart) (Object) this;
-        double maxSpeed = modernminecarts$legacyAirLateralSpeed;
         Vec3 motion = minecart.getDeltaMovement();
+        double maxSpeed = modernminecarts$legacyAirLateralSpeed;
 
         int x = Mth.floor(minecart.getX());
         int y = Mth.floor(minecart.getY());
@@ -160,5 +176,39 @@ abstract class AbstractMinecartMixin {
         }
 
         cir.cancel();
+    }
+
+    @Unique
+    private static float modernminecarts$getFrontAdjustedRailSpeed(AbstractMinecart minecart, ServerLevel level, BlockPos railPos, float railMaxSpeed) {
+        if (railMaxSpeed <= ModernMinecartsConfig.max_ascending_speed) {
+            return railMaxSpeed;
+        }
+
+        Vec3 motion = minecart.getDeltaMovement();
+        BlockPos frontPos;
+        if (motion.x > 0.0D) {
+            frontPos = railPos.east();
+        } else if (motion.x < 0.0D) {
+            frontPos = railPos.west();
+        } else if (motion.z > 0.0D) {
+            frontPos = railPos.south();
+        } else {
+            frontPos = railPos.north();
+        }
+
+        BlockState frontState = level.getBlockState(frontPos);
+        if (!(frontState.getBlock() instanceof BaseRailBlock frontRail)) {
+            return railMaxSpeed;
+        }
+
+        RailShape frontShape = frontRail.getRailDirection(frontState, level, frontPos, minecart);
+        if (frontShape == RailShape.ASCENDING_EAST
+                || frontShape == RailShape.ASCENDING_WEST
+                || frontShape == RailShape.ASCENDING_NORTH
+                || frontShape == RailShape.ASCENDING_SOUTH) {
+            return frontRail.getRailMaxSpeed(frontState, level, frontPos, minecart);
+        }
+
+        return railMaxSpeed;
     }
 }

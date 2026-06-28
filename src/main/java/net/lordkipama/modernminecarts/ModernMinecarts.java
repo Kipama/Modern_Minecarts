@@ -5,7 +5,6 @@ import net.lordkipama.modernminecarts.Item.ModItems;
 import net.lordkipama.modernminecarts.Proxy.ModernMinecartsPacketHandler;
 import net.lordkipama.modernminecarts.attachment.MinecartAttachmentTypes;
 import net.lordkipama.modernminecarts.block.ModBlocks;
-import net.lordkipama.modernminecarts.entity.ModEntities;
 import net.lordkipama.modernminecarts.inventory.FurnaceMinecartScreen;
 import net.lordkipama.modernminecarts.inventory.ModMenus;
 import net.minecraft.world.item.CreativeModeTabs;
@@ -28,7 +27,6 @@ public class ModernMinecarts {
     public ModernMinecarts(IEventBus modEventBus, ModContainer modContainer) {
         ModItems.register(modEventBus);
         ModBlocks.register(modEventBus);
-        ModEntities.register(modEventBus);
         MinecartAttachmentTypes.register(modEventBus);
         ModMenus.register(modEventBus);
 

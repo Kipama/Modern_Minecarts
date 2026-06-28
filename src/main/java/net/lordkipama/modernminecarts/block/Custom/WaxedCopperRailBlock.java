@@ -41,19 +41,12 @@ public class WaxedCopperRailBlock extends PoweredRailBlock {
 
     @Override
     public float getRailMaxSpeed(BlockState state, Level level, BlockPos pos, AbstractMinecart cart) {
-        String version = String.valueOf(waxedWeatherState);
-
-        float finalSpeed = 0.4f;
-
-        if (version == "WAXED_UNAFFECTED") {
-            finalSpeed = ModernMinecartsConfig.copper_speed;
-        } else if (version == "WAXED_EXPOSED") {
-            finalSpeed = ModernMinecartsConfig.exposed_copper_speed;
-        } else if (version == "WAXED_WEATHERED") {
-            finalSpeed = ModernMinecartsConfig.weathered_copper_speed;
-        } else if (version == "WAXED_OXIDIZED") {
-            finalSpeed = ModernMinecartsConfig.oxidized_copper_speed;
-        }
+        float finalSpeed = switch (waxedWeatherState) {
+            case WAXED_UNAFFECTED -> ModernMinecartsConfig.copper_speed;
+            case WAXED_EXPOSED -> ModernMinecartsConfig.exposed_copper_speed;
+            case WAXED_WEATHERED -> ModernMinecartsConfig.weathered_copper_speed;
+            case WAXED_OXIDIZED -> ModernMinecartsConfig.oxidized_copper_speed;
+        };
 
         if (RailShapeHelper.isAscending(getRailDirection(state, level, pos, null)) && finalSpeed >= ModernMinecartsConfig.max_ascending_speed) {
             return ModernMinecartsConfig.max_ascending_speed;
@@ -91,7 +84,7 @@ public class WaxedCopperRailBlock extends PoweredRailBlock {
         player.swing(interactionHand);
         level.playSound(player, pos, SoundEvents.AXE_WAX_OFF, SoundSource.BLOCKS, 1.0F, 1.0F);
         level.levelEvent(player, 3004, pos, 0);
-        return level.isClientSide() ? InteractionResult.SUCCESS : InteractionResult.SUCCESS_SERVER;
+        return InteractionResult.SUCCESS;
     }
 
     public enum WaxedWeatherState {
