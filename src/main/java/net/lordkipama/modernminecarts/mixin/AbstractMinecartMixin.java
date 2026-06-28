@@ -19,7 +19,6 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.RailShape;
 import net.minecraft.world.phys.Vec3;
 import org.spongepowered.asm.mixin.Mixin;
-import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
@@ -28,9 +27,6 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 @Mixin(AbstractMinecart.class)
 abstract class AbstractMinecartMixin {
-    @Shadow
-    protected abstract double getMaxSpeed(ServerLevel level);
-
     @Unique
     private static final float modernminecarts$legacyAirLateralSpeed = 0.8F;
     @Unique
@@ -129,13 +125,7 @@ abstract class AbstractMinecartMixin {
     private void modernminecarts$jumpOffSlopedRail(ServerLevel level, CallbackInfo cir) {
         AbstractMinecart minecart = (AbstractMinecart) (Object) this;
         double maxSpeed = modernminecarts$legacyAirLateralSpeed;
-        double maxRailSpeed = this.getMaxSpeed(level);
-        Vec3 rawMotion = minecart.getDeltaMovement();
-        Vec3 motion = new Vec3(
-                Mth.clamp(rawMotion.x, -maxRailSpeed, maxRailSpeed),
-                rawMotion.y,
-                Mth.clamp(rawMotion.z, -maxRailSpeed, maxRailSpeed)
-        );
+        Vec3 motion = minecart.getDeltaMovement();
 
         int x = Mth.floor(minecart.getX());
         int y = Mth.floor(minecart.getY());
