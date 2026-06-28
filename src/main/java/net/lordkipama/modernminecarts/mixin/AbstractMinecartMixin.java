@@ -121,6 +121,17 @@ abstract class AbstractMinecartMixin {
         }
     }
 
+    @Inject(method = "moveMinecartOnRail", at = @At("HEAD"))
+    private void modernminecarts$syncAppliedRailSpeed(BlockPos pos, CallbackInfo ci) {
+        AbstractMinecart minecart = (AbstractMinecart) (Object) this;
+        double maxRailSpeed = minecart.getMaxSpeedWithRail();
+        Vec3 motion = minecart.getDeltaMovement();
+
+        // Keep deltaMovement aligned with the clamped rail speed so slope jumps
+        // use the actual motion applied on the rail instead of the uncapped accumulator.
+        minecart.setDeltaMovement(Mth.clamp(motion.x, -maxRailSpeed, maxRailSpeed), 0.0D, Mth.clamp(motion.z, -maxRailSpeed, maxRailSpeed));
+    }
+
     @Inject(method = "comeOffTrack", at = @At("HEAD"), cancellable = true)
     private void modernminecarts$jumpOffSlopedRail(ServerLevel level, CallbackInfo cir) {
         AbstractMinecart minecart = (AbstractMinecart) (Object) this;
