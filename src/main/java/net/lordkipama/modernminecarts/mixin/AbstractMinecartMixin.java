@@ -5,6 +5,7 @@ import net.lordkipama.modernminecarts.ModernMinecartsConfig;
 import net.lordkipama.modernminecarts.block.ModBlocks;
 import net.lordkipama.modernminecarts.util.FurnaceMinecartHelper;
 import net.lordkipama.modernminecarts.util.MinecartLinkHelper;
+import net.lordkipama.modernminecarts.util.PoweredDetectorRailHelper;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.server.level.ServerLevel;
@@ -14,7 +15,6 @@ import net.minecraft.world.entity.vehicle.minecart.AbstractMinecart;
 import net.minecraft.world.entity.vehicle.minecart.MinecartFurnace;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.BaseRailBlock;
-import net.minecraft.world.level.block.PoweredRailBlock;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.RailShape;
 import net.minecraft.world.phys.Vec3;
@@ -67,58 +67,7 @@ abstract class AbstractMinecartMixin {
 
     @Inject(method = "moveAlongTrack", at = @At("HEAD"))
     private void modernminecarts$applyPoweredDetectorRailMotion(ServerLevel level, CallbackInfo ci) {
-        AbstractMinecart minecart = (AbstractMinecart) (Object) this;
-        BlockPos pos = minecart.getCurrentBlockPosOrRailBelow();
-        BlockState state = level.getBlockState(pos);
-
-        if (!(state.getBlock() instanceof BaseRailBlock railBlock) || !(railBlock instanceof net.lordkipama.modernminecarts.block.Custom.PoweredDetectorRailBlock detectorRail)) {
-            return;
-        }
-
-        if (MinecartLinkHelper.getLinkedParent(minecart) != null) {
-            return;
-        }
-
-        boolean powered = state.getValue(PoweredRailBlock.POWERED);
-        Vec3 motion = minecart.getDeltaMovement();
-        RailShape shape = detectorRail.getRailShape(state);
-        boolean northSouth = shape == RailShape.NORTH_SOUTH || shape == RailShape.ASCENDING_NORTH || shape == RailShape.ASCENDING_SOUTH;
-
-        if (detectorRail.getDirInverted(state)) {
-            if (northSouth) {
-                if (motion.z < -0.2D) {
-                    minecart.setDeltaMovement(motion.x, motion.y, motion.z / 8.0D + 0.1D);
-                } else if (powered) {
-                    minecart.setDeltaMovement(motion.x, motion.y, motion.z + 0.02D);
-                } else {
-                    minecart.setDeltaMovement(motion.x, motion.y, motion.z / 7.0D);
-                }
-            } else {
-                if (motion.x > 0.2D) {
-                    minecart.setDeltaMovement(motion.x / 8.0D - 0.1D, motion.y, motion.z);
-                } else if (powered) {
-                    minecart.setDeltaMovement(motion.x - 0.02D, motion.y, motion.z);
-                } else {
-                    minecart.setDeltaMovement(motion.x / 7.0D, motion.y, motion.z);
-                }
-            }
-        } else if (northSouth) {
-            if (motion.z > 0.2D) {
-                minecart.setDeltaMovement(motion.x, motion.y, motion.z / 8.0D - 0.1D);
-            } else if (powered) {
-                minecart.setDeltaMovement(motion.x, motion.y, motion.z - 0.02D);
-            } else {
-                minecart.setDeltaMovement(motion.x, motion.y, motion.z / 7.0D);
-            }
-        } else {
-            if (motion.x < -0.2D) {
-                minecart.setDeltaMovement(motion.x / 8.0D + 0.1D, motion.y, motion.z);
-            } else if (powered) {
-                minecart.setDeltaMovement(motion.x + 0.02D, motion.y, motion.z);
-            } else {
-                minecart.setDeltaMovement(motion.x / 7.0D, motion.y, motion.z);
-            }
-        }
+        PoweredDetectorRailHelper.applyMotion((AbstractMinecart) (Object) this, level);
     }
 
     @Inject(method = "comeOffTrack", at = @At("HEAD"), cancellable = true)
