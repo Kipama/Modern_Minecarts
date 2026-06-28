@@ -42,7 +42,6 @@ public class FurnaceMinecartScreen extends AbstractContainerScreen<FurnaceMineca
 
         int k = this.menu.getSpeed();
         pGuiGraphics.blit(RenderType::guiTextured, this.texture, i + 97, j + 62 - k, 176.0F, (float) (49 - k), 14, k + 1, 256, 256);
-
     }
 
     public boolean mouseClicked(double pMouseX, double pMouseY, int pButton) {

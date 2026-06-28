@@ -62,7 +62,7 @@ public class CopperRailBlock extends PoweredRailBlock implements WeatheringRailB
 
             level.levelEvent(player, 3003, pos, 0);
             player.swing(interactionHand);
-            return level.isClientSide() ? InteractionResult.SUCCESS : InteractionResult.SUCCESS_SERVER;
+            return InteractionResult.SUCCESS;
         }
 
         if (!itemStack.is(ItemTags.AXES)) {
@@ -89,7 +89,7 @@ public class CopperRailBlock extends PoweredRailBlock implements WeatheringRailB
         player.swing(interactionHand);
         level.playSound(player, pos, SoundEvents.AXE_SCRAPE, SoundSource.BLOCKS, 1.0F, 1.0F);
         level.levelEvent(player, 3005, pos, 0);
-        return level.isClientSide() ? InteractionResult.SUCCESS : InteractionResult.SUCCESS_SERVER;
+        return InteractionResult.SUCCESS;
     }
 
     @Override
@@ -99,19 +99,12 @@ public class CopperRailBlock extends PoweredRailBlock implements WeatheringRailB
 
     @Override
     public float getRailMaxSpeed(BlockState state, Level level, BlockPos pos, AbstractMinecart cart) {
-        String currentAge = String.valueOf(getAge());
-
-        float finalSpeed = 0.4f;
-
-        if (currentAge == "UNAFFECTED") {
-            finalSpeed = ModernMinecartsConfig.copper_speed;
-        } else if (currentAge == "EXPOSED") {
-            finalSpeed = ModernMinecartsConfig.exposed_copper_speed;
-        } else if (currentAge == "WEATHERED") {
-            finalSpeed = ModernMinecartsConfig.weathered_copper_speed;
-        } else if (currentAge == "OXIDIZED") {
-            finalSpeed = ModernMinecartsConfig.oxidized_copper_speed;
-        }
+        float finalSpeed = switch (getAge()) {
+            case UNAFFECTED -> ModernMinecartsConfig.copper_speed;
+            case EXPOSED -> ModernMinecartsConfig.exposed_copper_speed;
+            case WEATHERED -> ModernMinecartsConfig.weathered_copper_speed;
+            case OXIDIZED -> ModernMinecartsConfig.oxidized_copper_speed;
+        };
 
         if (RailShapeHelper.isAscending(getRailDirection(state, level, pos, null)) && finalSpeed >= ModernMinecartsConfig.max_ascending_speed) {
             return ModernMinecartsConfig.max_ascending_speed;

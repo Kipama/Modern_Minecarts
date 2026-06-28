@@ -71,7 +71,7 @@ public final class ModEvents {
             if (!event.getLevel().isClientSide()) {
                 player.openMenu(FurnaceMinecartHelper.createMenuProvider(furnaceCart));
             }
-            event.setCancellationResult(event.getLevel().isClientSide() ? InteractionResult.SUCCESS : InteractionResult.SUCCESS_SERVER);
+            event.setCancellationResult(InteractionResult.SUCCESS);
             event.setCanceled(true);
             return;
         }

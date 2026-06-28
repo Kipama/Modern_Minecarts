@@ -3,10 +3,13 @@
   "package": "net.lordkipama.modernminecarts.mixin",
   "compatibilityLevel": "JAVA_21",
   "mixins": [
+    "AbstractMinecartAccessor",
     "AbstractMinecartContainerMixin",
     "AbstractMinecartMixin",
+    "MinecartBehaviorAccessor",
     "MinecartChestMixin",
-    "MinecartHopperMixin"
+    "MinecartHopperMixin",
+    "OldMinecartBehaviorMixin"
   ],
   "injectors": {
     "defaultRequire": 1

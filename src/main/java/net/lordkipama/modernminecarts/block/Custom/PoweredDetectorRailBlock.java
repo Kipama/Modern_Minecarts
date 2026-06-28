@@ -115,13 +115,13 @@ public class PoweredDetectorRailBlock extends BaseRailBlock {
             level.playSound(player, pos, SoundEvents.COMPARATOR_CLICK, SoundSource.BLOCKS, 0.3F, state.getValue(WEIGHT_INVERTED) ? 0.55F : 0.5F);
         }
 
-        return level.isClientSide() ? InteractionResult.SUCCESS : InteractionResult.SUCCESS_SERVER;
+        return InteractionResult.SUCCESS;
     }
 
     @Override
     protected BlockState updateState(BlockState state, Level level, BlockPos pos, boolean movedByPiston) {
         state = this.updateDir(level, pos, state, true);
-        level.neighborChanged(state, pos, this, null, movedByPiston);
+        level.neighborChanged(state, pos, this, (Orientation) null, movedByPiston);
         return state;
     }
 

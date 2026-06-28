@@ -2,15 +2,9 @@
   "type": "minecraft:crafting_shaped",
   "category": "misc",
   "key": {
-    "#": {
-      "item": "minecraft:stick"
-    },
-    "R": {
-      "item": "minecraft:redstone"
-    },
-    "X": {
-      "item": "minecraft:copper_ingot"
-    }
+    "#": "minecraft:stick",
+    "R": "minecraft:redstone",
+    "X": "minecraft:copper_ingot"
   },
   "pattern": [
     "X X",

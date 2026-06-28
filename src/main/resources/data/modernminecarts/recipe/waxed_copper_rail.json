@@ -2,12 +2,8 @@
   "type": "minecraft:crafting_shapeless",
   "category": "misc",
   "ingredients": [
-    {
-      "item": "modernminecarts:copper_rail"
-    },
-    {
-      "item": "minecraft:honeycomb"
-    }
+    "modernminecarts:copper_rail",
+    "minecraft:honeycomb"
   ],
   "result": {
     "id": "modernminecarts:waxed_copper_rail"
