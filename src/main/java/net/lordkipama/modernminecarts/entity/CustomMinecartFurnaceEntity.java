@@ -161,7 +161,7 @@ public class CustomMinecartFurnaceEntity extends CustomAbstractMinecartContainer
 
 
 
-            if(fuel > 0 && ModernMinecartsConfig.allowFurnaceMinecartChunkloading) {
+            if(fuel > 0 && ModernMinecartsConfig.enableFurnaceMinecartChunkloading()) {
                 ChunkPos chunkpos = new ChunkPos(BlockPos.containing(this.getX(), this.getY(), this.getZ()));
                 server.getChunkSource().addRegionTicket(TicketType.PORTAL, chunkpos, 3, blockPosition());
             }
