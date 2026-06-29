@@ -188,6 +188,7 @@ public class PoweredDetectorRailBlock extends BaseRailBlock {
      * @deprecated call via {@link net.minecraft.world.level.block.state.BlockBehaviour.BlockStateBase#getDirectSignal}
      * whenever possible. Implementing/overriding is fine.
      */
+    @Deprecated
     public int getDirectSignal(BlockState pBlockState, BlockGetter pBlockAccess, BlockPos pPos, Direction pSide) {
         if (!pBlockState.getValue(POWERED)) {
             return 0;
