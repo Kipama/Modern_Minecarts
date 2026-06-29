@@ -40,20 +40,20 @@ public class WaxedCopperRailBlock extends PoweredRailBlock{
         float finalSpeed = 0.4f;
 
         if(version=="WAXED_UNAFFECTED"){
-            finalSpeed = ModernMinecartsConfig.copper_speed;
+            finalSpeed = ModernMinecartsConfig.copperSpeed();
         }
         else if(version=="WAXED_EXPOSED"){
-            finalSpeed = ModernMinecartsConfig.exposed_copper_speed;
+            finalSpeed = ModernMinecartsConfig.exposedCopperSpeed();
         }
         else if(version=="WAXED_WEATHERED"){
-            finalSpeed = ModernMinecartsConfig.weathered_copper_speed;
+            finalSpeed = ModernMinecartsConfig.weatheredCopperSpeed();
         }
         else if(version=="WAXED_OXIDIZED"){
-            finalSpeed = ModernMinecartsConfig.oxidized_copper_speed;
+            finalSpeed = ModernMinecartsConfig.oxidizedCopperSpeed();
         }
 
-        if(getRailDirection(state, level, pos, null).isAscending() && finalSpeed>= ModernMinecartsConfig.max_ascending_speed){
-            return ModernMinecartsConfig.max_ascending_speed;
+        if(getRailDirection(state, level, pos, null).isAscending() && finalSpeed>= ModernMinecartsConfig.maxAscendingSpeed()){
+            return ModernMinecartsConfig.maxAscendingSpeed();
         }
 
         return finalSpeed;
