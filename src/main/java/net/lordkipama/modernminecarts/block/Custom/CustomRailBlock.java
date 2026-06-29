@@ -40,6 +40,10 @@ public class CustomRailBlock extends RailBlock {
             return InteractionResult.PASS;
         }
 
+        if (!ModernMinecartsConfig.enableRailJump()) {
+            return InteractionResult.PASS;
+        }
+
         BlockState replacementState = getReplacementState(state, level, pos);
         if (replacementState == null) {
             return InteractionResult.PASS;

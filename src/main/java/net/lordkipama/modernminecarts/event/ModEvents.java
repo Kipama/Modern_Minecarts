@@ -1,6 +1,7 @@
 package net.lordkipama.modernminecarts.event;
 
 import net.lordkipama.modernminecarts.ModernMinecarts;
+import net.lordkipama.modernminecarts.ModernMinecartsConfig;
 import net.lordkipama.modernminecarts.block.ModBlocks;
 import net.lordkipama.modernminecarts.entity.ChainMinecartInterface;
 import net.lordkipama.modernminecarts.entity.CustomAbstractMinecartEntity;
@@ -157,6 +158,10 @@ public class ModEvents {
             else {
                 //SERVERSIDE CHAIN LOGIC
                 if (entity instanceof CustomAbstractMinecartEntity cart) {
+                    if (!ModernMinecartsConfig.enableMinecartChaining() && stack.getItem() == Items.CHAIN) {
+                        return;
+                    }
+
                     if (stack.getItem() == Items.CHAIN && player.isCrouching()) {
                         if (event.getLevel() instanceof ServerLevel server) {
                             CompoundTag nbt = stack.getOrCreateTag();
