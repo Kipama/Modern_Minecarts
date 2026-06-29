@@ -8,6 +8,7 @@ import net.lordkipama.modernminecarts.block.ModBlocks;
 import net.lordkipama.modernminecarts.block.VanillaBlocks;
 import net.lordkipama.modernminecarts.entity.*;
 import net.lordkipama.modernminecarts.inventory.FurnaceMinecartScreen;
+import net.lordkipama.modernminecarts.inventory.ModernMinecartsConfigScreen;
 import net.lordkipama.modernminecarts.inventory.ModMenus;
 import net.lordkipama.modernminecarts.renderer.CustomMinecartRenderer;
 import net.minecraft.client.gui.screens.MenuScreens;
@@ -19,6 +20,7 @@ import net.minecraft.world.item.CreativeModeTabs;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.CreativeModeTabEvent;
+import net.minecraftforge.client.ConfigScreenHandler;
 import net.minecraftforge.eventbus.api.IEventBus;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.DistExecutor;
@@ -38,6 +40,8 @@ public class ModernMinecarts {
     public ModernMinecarts() {
         IEventBus modEventBus = FMLJavaModLoadingContext.get().getModEventBus();
         ModLoadingContext.get().registerConfig(ModConfig.Type.COMMON, ModernMinecartsConfig.SPEC);
+        ModLoadingContext.get().registerExtensionPoint(ConfigScreenHandler.ConfigScreenFactory.class,
+                () -> new ConfigScreenHandler.ConfigScreenFactory((minecraft, parent) -> new ModernMinecartsConfigScreen(parent)));
 
         ModItems.register(modEventBus);
         ModBlocks.register(modEventBus);

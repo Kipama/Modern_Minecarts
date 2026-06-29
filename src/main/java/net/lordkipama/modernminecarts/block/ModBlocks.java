@@ -2,7 +2,9 @@ package net.lordkipama.modernminecarts.block;
 
 
 import net.lordkipama.modernminecarts.Item.ModItems;
+import net.lordkipama.modernminecarts.Item.FeatureToggleBlockItem;
 import net.lordkipama.modernminecarts.ModernMinecarts;
+import net.lordkipama.modernminecarts.ModernMinecartsConfig;
 import net.lordkipama.modernminecarts.block.Custom.*;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.Item;
@@ -67,6 +69,16 @@ public class ModBlocks {
     }
 
     private static<T extends Block> RegistryObject<Item> registerBlockItem(String name, RegistryObject<T> block) {
+        if ("rail_crossing".equals(name)) {
+            return ModItems.ITEMS.register(name, () -> new FeatureToggleBlockItem(block.get(), new Item.Properties(), ModernMinecartsConfig::enableRailCrossing));
+        }
+        if ("sloped_rail".equals(name)) {
+            return ModItems.ITEMS.register(name, () -> new FeatureToggleBlockItem(block.get(), new Item.Properties(), ModernMinecartsConfig::enableRailJump));
+        }
+        if ("powered_detector_rail".equals(name)) {
+            return ModItems.ITEMS.register(name, () -> new FeatureToggleBlockItem(block.get(), new Item.Properties(), ModernMinecartsConfig::enablePoweredDetectorRail));
+        }
+
         return ModItems.ITEMS.register(name, () -> new BlockItem(block.get(), new Item.Properties()));
     }
 
