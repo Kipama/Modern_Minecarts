@@ -8,13 +8,12 @@ import net.lordkipama.modernminecarts.block.ModBlocks;
 import net.lordkipama.modernminecarts.inventory.FurnaceMinecartScreen;
 import net.lordkipama.modernminecarts.inventory.ModMenus;
 import net.minecraft.world.item.CreativeModeTabs;
-import net.neoforged.api.distmarker.Dist;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.ModContainer;
-import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.fml.common.Mod;
 import net.neoforged.fml.event.lifecycle.FMLCommonSetupEvent;
+import net.neoforged.fml.loading.FMLEnvironment;
 import net.neoforged.neoforge.client.event.RegisterMenuScreensEvent;
 import net.neoforged.neoforge.event.BuildCreativeModeTabContentsEvent;
 import org.slf4j.Logger;
@@ -33,6 +32,10 @@ public class ModernMinecarts {
         modEventBus.addListener(this::commonSetup);
         modEventBus.addListener(this::addCreative);
         modEventBus.addListener(ModernMinecartsPacketHandler::register);
+
+        if (FMLEnvironment.dist.isClient()) {
+            modEventBus.addListener(ClientModEvents::registerMenuScreens);
+        }
     }
 
     private void commonSetup(final FMLCommonSetupEvent event) {
@@ -70,7 +73,6 @@ public class ModernMinecarts {
         }
     }
 
-    @EventBusSubscriber(modid = MOD_ID, bus = EventBusSubscriber.Bus.MOD, value = Dist.CLIENT)
     public static class ClientModEvents {
         @SubscribeEvent
         public static void registerMenuScreens(RegisterMenuScreensEvent event) {
