@@ -21,10 +21,10 @@ import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.BuildCreativeModeTabContentsEvent;
 import net.minecraftforge.eventbus.api.IEventBus;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
-import net.minecraftforge.fml.DistExecutor;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.event.lifecycle.FMLClientSetupEvent;
 import net.minecraftforge.fml.event.lifecycle.FMLCommonSetupEvent;
+import net.minecraftforge.fml.loading.FMLEnvironment;
 import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
 import net.lordkipama.modernminecarts.Proxy.ClientProxy;
 import net.lordkipama.modernminecarts.Proxy.ServerProxy;
@@ -32,7 +32,7 @@ import net.lordkipama.modernminecarts.Proxy.ServerProxy;
 @Mod(net.lordkipama.modernminecarts.ModernMinecarts.MOD_ID)
 public class ModernMinecarts {
     public static final String MOD_ID = "modernminecarts";
-    public static IProxy PROXY = DistExecutor.runForDist(() -> ClientProxy::new, () -> ServerProxy::new);
+    public static IProxy PROXY = FMLEnvironment.dist == Dist.CLIENT ? new ClientProxy() : new ServerProxy();
     public ModernMinecarts() {
         IEventBus modEventBus = FMLJavaModLoadingContext.get().getModEventBus();
 
