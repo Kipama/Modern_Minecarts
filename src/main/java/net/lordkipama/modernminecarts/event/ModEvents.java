@@ -1,6 +1,7 @@
 package net.lordkipama.modernminecarts.event;
 
 import net.lordkipama.modernminecarts.ModernMinecarts;
+import net.lordkipama.modernminecarts.block.ModBlocks;
 import net.lordkipama.modernminecarts.util.FurnaceMinecartHelper;
 import net.lordkipama.modernminecarts.util.MinecartLinkHelper;
 import net.minecraft.core.BlockPos;
@@ -21,6 +22,10 @@ import net.minecraft.world.item.Items;
 import net.minecraft.world.item.component.CustomData;
 import net.minecraft.world.level.ClipContext;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.block.state.properties.BlockStateProperties;
+import net.minecraft.world.level.block.state.properties.RailShape;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.EntityHitResult;
 import net.minecraft.world.phys.HitResult;
@@ -36,6 +41,40 @@ public final class ModEvents {
     private static final String PARENT_ENTITY_TAG = "ParentEntity";
 
     private ModEvents() {
+    }
+
+    @SubscribeEvent
+    public static void onRightClickBlock(PlayerInteractEvent.RightClickBlock event) {
+        Level level = event.getLevel();
+        Player player = event.getEntity();
+        ItemStack stack = player.getItemInHand(event.getHand());
+
+        if (!stack.is(Items.STICK)) {
+            return;
+        }
+
+        BlockPos pos = event.getPos();
+        BlockState state = level.getBlockState(pos);
+        if (!state.is(Blocks.RAIL)) {
+            return;
+        }
+
+        BlockState replacementState = getSlopedRailReplacementState(state, level, pos);
+        if (replacementState == null) {
+            return;
+        }
+
+        if (!level.isClientSide()) {
+            level.setBlock(pos, replacementState, 3);
+            if (!player.isCreative() && !player.isSpectator()) {
+                stack.shrink(1);
+            }
+        }
+
+        player.swing(event.getHand());
+        level.playSound(player, pos, SoundEvents.WOOD_PLACE, SoundSource.BLOCKS, 1F, 1F);
+        event.setCancellationResult(level.isClientSide() ? InteractionResult.SUCCESS : InteractionResult.CONSUME);
+        event.setCanceled(true);
     }
 
     @SubscribeEvent
@@ -209,5 +248,47 @@ public final class ModEvents {
         } else {
             stack.set(DataComponents.CUSTOM_DATA, CustomData.of(tag));
         }
+    }
+
+    private static BlockState getSlopedRailReplacementState(BlockState state, Level level, BlockPos pos) {
+        RailShape shape = state.getValue(BlockStateProperties.RAIL_SHAPE);
+        if (shape == RailShape.ASCENDING_NORTH || shape == RailShape.ASCENDING_SOUTH || shape == RailShape.ASCENDING_EAST || shape == RailShape.ASCENDING_WEST) {
+            return ModBlocks.SLOPED_RAIL.get().withPropertiesOf(state);
+        }
+
+        if (shape == RailShape.NORTH_SOUTH) {
+            BlockState north = level.getBlockState(pos.north());
+            BlockState northBelow = level.getBlockState(pos.north().below());
+            BlockState south = level.getBlockState(pos.south());
+            BlockState southBelow = level.getBlockState(pos.south().below());
+
+            if ((south.is(net.minecraft.tags.BlockTags.RAILS) || southBelow.is(net.minecraft.tags.BlockTags.RAILS))
+                    && !(north.is(net.minecraft.tags.BlockTags.RAILS) || northBelow.is(net.minecraft.tags.BlockTags.RAILS))) {
+                return ModBlocks.SLOPED_RAIL.get().withPropertiesOf(state.setValue(BlockStateProperties.RAIL_SHAPE, RailShape.ASCENDING_NORTH));
+            }
+            if (!(south.is(net.minecraft.tags.BlockTags.RAILS) || southBelow.is(net.minecraft.tags.BlockTags.RAILS))
+                    && (north.is(net.minecraft.tags.BlockTags.RAILS) || northBelow.is(net.minecraft.tags.BlockTags.RAILS))) {
+                return ModBlocks.SLOPED_RAIL.get().withPropertiesOf(state.setValue(BlockStateProperties.RAIL_SHAPE, RailShape.ASCENDING_SOUTH));
+            }
+            return null;
+        }
+
+        if (shape == RailShape.EAST_WEST) {
+            BlockState west = level.getBlockState(pos.west());
+            BlockState westBelow = level.getBlockState(pos.west().below());
+            BlockState east = level.getBlockState(pos.east());
+            BlockState eastBelow = level.getBlockState(pos.east().below());
+
+            if ((east.is(net.minecraft.tags.BlockTags.RAILS) || eastBelow.is(net.minecraft.tags.BlockTags.RAILS))
+                    && !(west.is(net.minecraft.tags.BlockTags.RAILS) || westBelow.is(net.minecraft.tags.BlockTags.RAILS))) {
+                return ModBlocks.SLOPED_RAIL.get().withPropertiesOf(state.setValue(BlockStateProperties.RAIL_SHAPE, RailShape.ASCENDING_WEST));
+            }
+            if (!(east.is(net.minecraft.tags.BlockTags.RAILS) || eastBelow.is(net.minecraft.tags.BlockTags.RAILS))
+                    && (west.is(net.minecraft.tags.BlockTags.RAILS) || westBelow.is(net.minecraft.tags.BlockTags.RAILS))) {
+                return ModBlocks.SLOPED_RAIL.get().withPropertiesOf(state.setValue(BlockStateProperties.RAIL_SHAPE, RailShape.ASCENDING_EAST));
+            }
+        }
+
+        return null;
     }
 }
