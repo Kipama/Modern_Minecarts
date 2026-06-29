@@ -211,7 +211,7 @@ public abstract class CustomAbstractMinecartEntity extends AbstractMinecart impl
             railMaxSpeed = railMaxSpeed/2;
         }
 
-        if(railMaxSpeed > ModernMinecartsConfig.max_ascending_speed) {
+        if(railMaxSpeed > ModernMinecartsConfig.maxAscendingSpeed()) {
             Vec3 vec3 = getDeltaMovement();
             BlockState frontBlockState;
             BlockPos blockpos;

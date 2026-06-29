@@ -29,9 +29,9 @@ public class CustomRailBlock extends RailBlock {
     @Override
     public float getRailMaxSpeed(BlockState state, Level level, BlockPos pos, AbstractMinecart cart) {
         if (getRailDirection(state, level, pos, null).isAscending()) {
-            return ModernMinecartsConfig.max_ascending_speed;
+            return ModernMinecartsConfig.maxAscendingSpeed();
         } else {
-            return ModernMinecartsConfig.copper_speed;
+            return ModernMinecartsConfig.copperSpeed();
         }
     }
 

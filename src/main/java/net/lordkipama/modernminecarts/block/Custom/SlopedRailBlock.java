@@ -136,10 +136,10 @@ public class SlopedRailBlock extends BaseRailBlock {
         }
 
         if(airInFront){
-            return ModernMinecartsConfig.copper_speed;
+            return ModernMinecartsConfig.copperSpeed();
         }
         else {
-            return ModernMinecartsConfig.max_ascending_speed;
+            return ModernMinecartsConfig.maxAscendingSpeed();
         }
     }
 
