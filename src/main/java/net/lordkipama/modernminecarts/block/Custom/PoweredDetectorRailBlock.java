@@ -1,6 +1,7 @@
 package net.lordkipama.modernminecarts.block.Custom;
 
 import net.lordkipama.modernminecarts.Item.AbstractMinecartItem;
+import net.lordkipama.modernminecarts.ModernMinecartsConfig;
 import net.lordkipama.modernminecarts.block.ModBlocks;
 import net.lordkipama.modernminecarts.entity.CustomAbstractMinecartContainerEntity;
 import net.lordkipama.modernminecarts.entity.CustomAbstractMinecartEntity;
@@ -73,6 +74,10 @@ public class PoweredDetectorRailBlock extends BaseRailBlock {
     }
 
     public void entityInside(BlockState pState, Level pLevel, BlockPos pPos, Entity pEntity) {
+        if (!ModernMinecartsConfig.enablePoweredDetectorRail()) {
+            return;
+        }
+
         if (!pLevel.isClientSide) {
             if (!pState.getValue(POWERED)) {
                 this.checkPressed(pLevel, pPos, pState);
@@ -82,6 +87,10 @@ public class PoweredDetectorRailBlock extends BaseRailBlock {
 
     @Override
     public InteractionResult use(BlockState state, Level level, BlockPos pos, Player player, InteractionHand interactionHand, BlockHitResult blockHitResult) {
+        if (!ModernMinecartsConfig.enablePoweredDetectorRail()) {
+            return InteractionResult.PASS;
+        }
+
         ItemStack itemstack = player.getItemInHand(interactionHand);
         if (itemstack.getItem() instanceof AbstractMinecartItem || itemstack.is(Items.HOPPER) || itemstack.is(Items.CHEST) || itemstack.is(Items.BARREL)) {
             return super.use(state, level, pos, player, interactionHand, blockHitResult);
@@ -158,6 +167,10 @@ public class PoweredDetectorRailBlock extends BaseRailBlock {
     }
 
     public void onPlace(BlockState pState, Level pLevel, BlockPos pPos, BlockState pOldState, boolean pIsMoving) {
+        if (!ModernMinecartsConfig.enablePoweredDetectorRail()) {
+            return;
+        }
+
         if (!pOldState.is(pState.getBlock())) {
             BlockState blockstate = this.updateState(pState, pLevel, pPos, pIsMoving);
             this.checkPressed(pLevel, pPos, blockstate);
@@ -175,6 +188,10 @@ public class PoweredDetectorRailBlock extends BaseRailBlock {
     }
 
     public void tick(BlockState pState, ServerLevel pLevel, BlockPos pPos, RandomSource pRandom) {
+        if (!ModernMinecartsConfig.enablePoweredDetectorRail()) {
+            return;
+        }
+
         //if (pState.getValue(POWERED)) {
             this.checkPressed(pLevel, pPos, pState);
         //}
