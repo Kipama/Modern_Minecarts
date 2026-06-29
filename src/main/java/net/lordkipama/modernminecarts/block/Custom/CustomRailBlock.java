@@ -39,6 +39,10 @@ public class CustomRailBlock extends RailBlock {
 
     @Override
     public InteractionResult use(BlockState state, Level level, BlockPos pos, Player player, InteractionHand interactionHand, BlockHitResult blockHitResult) {
+        if (!ModernMinecartsConfig.enableRailJump()) {
+            return InteractionResult.PASS;
+        }
+
         if (level instanceof ServerLevel) {
             ItemStack itemstack = player.getItemInHand(interactionHand);
             boolean gotReplaced = false;

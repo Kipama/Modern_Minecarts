@@ -36,6 +36,22 @@ public class ModernMinecartsConfig {
             .comment("If true, burning furnace minecarts keep nearby chunks loaded.")
             .define("enable_furnace_minecart_chunkloading", true);
 
+    private static final ForgeConfigSpec.BooleanValue ENABLE_MINECART_CHAINING = BUILDER
+            .comment("If true, minecarts can be linked together using chains.")
+            .define("enable_minecart_chaining", true);
+
+    private static final ForgeConfigSpec.BooleanValue ENABLE_RAIL_CROSSING = BUILDER
+            .comment("If true, rail crossings can be placed and used.")
+            .define("enable_rail_crossing", true);
+
+    private static final ForgeConfigSpec.BooleanValue ENABLE_POWERED_DETECTOR_RAIL = BUILDER
+            .comment("If true, powered detector rails can be placed and used.")
+            .define("enable_powered_detector_rail", true);
+
+    private static final ForgeConfigSpec.BooleanValue ENABLE_RAIL_JUMP = BUILDER
+            .comment("If true, rail jumps can be placed and created from rails using sticks.")
+            .define("enable_rail_jump", true);
+
     public static final ForgeConfigSpec SPEC = BUILDER.build();
 
     public static float copperSpeed() {
@@ -60,5 +76,65 @@ public class ModernMinecartsConfig {
 
     public static boolean enableFurnaceMinecartChunkloading() {
         return ENABLE_FURNACE_MINECART_CHUNKLOADING.get();
+    }
+
+    public static void setCopperSpeed(double value) {
+        COPPER_SPEED.set(value);
+    }
+
+    public static void setExposedCopperSpeed(double value) {
+        EXPOSED_COPPER_SPEED.set(value);
+    }
+
+    public static void setWeatheredCopperSpeed(double value) {
+        WEATHERED_COPPER_SPEED.set(value);
+    }
+
+    public static void setOxidizedCopperSpeed(double value) {
+        OXIDIZED_COPPER_SPEED.set(value);
+    }
+
+    public static void setMaxAscendingSpeed(double value) {
+        MAX_ASCENDING_SPEED.set(value);
+    }
+
+    public static void setEnableFurnaceMinecartChunkloading(boolean value) {
+        ENABLE_FURNACE_MINECART_CHUNKLOADING.set(value);
+    }
+
+    public static boolean enableMinecartChaining() {
+        return ENABLE_MINECART_CHAINING.get();
+    }
+
+    public static void setEnableMinecartChaining(boolean value) {
+        ENABLE_MINECART_CHAINING.set(value);
+    }
+
+    public static boolean enableRailCrossing() {
+        return ENABLE_RAIL_CROSSING.get();
+    }
+
+    public static void setEnableRailCrossing(boolean value) {
+        ENABLE_RAIL_CROSSING.set(value);
+    }
+
+    public static boolean enablePoweredDetectorRail() {
+        return ENABLE_POWERED_DETECTOR_RAIL.get();
+    }
+
+    public static void setEnablePoweredDetectorRail(boolean value) {
+        ENABLE_POWERED_DETECTOR_RAIL.set(value);
+    }
+
+    public static boolean enableRailJump() {
+        return ENABLE_RAIL_JUMP.get();
+    }
+
+    public static void setEnableRailJump(boolean value) {
+        ENABLE_RAIL_JUMP.set(value);
+    }
+
+    public static void save() {
+        SPEC.save();
     }
 }
