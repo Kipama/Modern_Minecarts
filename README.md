@@ -1,41 +1,98 @@
 # ModernMinecarts
 
+## Description
+
 ModernMinecarts is all about rekindling your love for Minecarts.
 
 It once again makes them a viable method of transport for players and items, while keeping a vanilla style.
 
-Features
----
-### Copper Rails: 
+### Copper Rails
 
-These rails are twice as fast as powered rails. 
+These rails are twice as fast as powered rails.
 
-However, oxidation causes them to become slower over time. 
+However, oxidation causes them to become slower over time, down to half the speed of powered rails.
 
-They are crafted using a copper smithing template discovered in mineshafts and villages.
-
----
-### Chaining Minecarts:
-
-Link minecarts together using chains to transport multiple entities or large quantities of items simultaneously. 
-
-Connected hopper minecarts and chest minecarts join their inventories making loading and unloading trains easier. 
-
-Furnace minecarts can pull chained minecarts, and draw fuel directly from attached minecarts' inventories.
-They also have a new UI and can burn any kind of fuel.
+They are crafted like regular powered rails, using copper instead of gold. 
+Wax them with honeycomb to keep them from oxidizing.
 
 ---
-### Other Rail blocks:
 
-Rail Jump: This new rail block lets minecarts leap over gaps, as the name suggests.
-Crafted with a rail and a stick, or by using a stick on a placed rail.
+### Chaining Minecarts
 
-Rail Crossing: Not much to say here, it is an intersection, acting like a straight rail from all directions.
+Link minecarts together using chains to transport multiple entities or large quantities of items simultaneously.
 
-Powered Detector Rail: Merges the functionalities of powered and detector rails. Stop empty carts (or trains) and release them once full, or invert it to unload full minecarts.
+Connected hopper minecarts and chest minecarts join their inventories, allowing loading and unloading from a single hopper minecart.
 
 ---
-### Smaller Changes:
-- Doubled results of the powered rail crafting recipe from 6 to 12 rails.
-- Reduced air drag on minecarts to allow for further jumps
 
+### Furnace Minecarts
+
+Furnace Minecarts have gotten an upgrade, now travelling at twice the speed.
+They have a new UI screen with a speedometer and a fuel slot that accepts all fuel types.
+
+They also refuel themselves from attached chest and hopper minecarts,
+but slow down under heavy load.
+Chain multiple Furnace Minecarts together when pulling large trains to avoid this.
+
+---
+
+### New Rail Types
+
+Rail Jump: This ramp lets minecarts leap over gaps, even when not using experimental features.
+It is crafted with a rail and a stick, or by using a stick on an already placed rail.
+
+Rail Crossing: A simple rail intersection that acts like a straight rail from all directions.
+
+Powered Detector Rail: It merges the functionalities of powered and detector rails. 
+Stop empty carts or trains until fully loaded, or invert it to unload full minecarts and send them off once empty.
+
+---
+
+### Smaller Changes
+
+- Doubled the powered rail crafting result from 6 to 12 rails.
+- Reduced minecart air drag to allow for further jumps.
+
+
+## v1.2.0 Changelog
+
+### Feature Changes
+
+- Removed Copper smithing templates
+- Added Copper Rail crafting recipe (Powered Rail recipe using copper)
+- All modded crafting recipes now appear in the recipe book.
+- Shift-right-clicking in the air with a chain now removes its linking nbt-data
+- Added Fabric and Neoforge as supported ModLaunchers
+
+### Bug Fixes
+
+- Furnace minecarts now work independently from chained minecarts again
+- Furnace minecarts no longer consume fuel on powered rails.
+- Removed warnings and debug statements to prevent log spam.
+- Fixed bug that prevented villagers from becoming toolsmiths
+- Improved architecture on Fabric and Neoforge, which should lead to more mod compatibility on these versions.
+- Readded regular rail to creative menu on 1.19.2
+
+### Curretly supported versions
+
+#### Forge
+
+- 1.19.2
+- 1.19.3
+- 1.19.4
+- 1.20.1
+- 1.20.2
+
+#### NeoForge
+
+- 1.20.1
+- 1.21.1
+- 1.21.3-1.21.4
+- 1.21.11
+- 26.1
+
+#### Fabric
+
+- 1.20.1
+- 1.21.1
+- 1.21.11
