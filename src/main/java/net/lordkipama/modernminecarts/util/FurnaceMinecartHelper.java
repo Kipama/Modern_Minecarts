@@ -3,6 +3,7 @@ package net.lordkipama.modernminecarts.util;
 import net.lordkipama.modernminecarts.ModernMinecartsConfig;
 import net.lordkipama.modernminecarts.attachment.FurnaceMinecartData;
 import net.lordkipama.modernminecarts.attachment.MinecartAttachmentTypes;
+import net.lordkipama.modernminecarts.block.Custom.ModernMinecartRailSpeed;
 import net.lordkipama.modernminecarts.block.Custom.PoweredDetectorRailBlock;
 import net.lordkipama.modernminecarts.inventory.FurnaceMinecartContainer;
 import net.lordkipama.modernminecarts.inventory.FurnaceMinecartDataAccess;
@@ -15,8 +16,8 @@ import net.minecraft.tags.BlockTags;
 import net.minecraft.world.MenuProvider;
 import net.minecraft.world.entity.MoverType;
 import net.minecraft.world.entity.player.Inventory;
-import net.minecraft.world.entity.vehicle.minecart.AbstractMinecart;
 import net.minecraft.world.entity.vehicle.ContainerEntity;
+import net.minecraft.world.entity.vehicle.minecart.AbstractMinecart;
 import net.minecraft.world.entity.vehicle.minecart.MinecartFurnace;
 import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.item.ItemStack;
@@ -35,7 +36,6 @@ import net.minecraft.world.phys.Vec3;
 import net.neoforged.fml.util.ObfuscationReflectionHelper;
 
 import java.lang.reflect.Field;
-import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -139,7 +139,7 @@ public final class FurnaceMinecartHelper {
         minecart.setCustomDisplayBlockState(Optional.of(Blocks.FURNACE.defaultBlockState().setValue(FurnaceBlock.FACING, Direction.NORTH).setValue(FurnaceBlock.LIT, fuel > 0)));
 
         if (fuel > 0 && minecart.level() instanceof ServerLevel server && ModernMinecartsConfig.allowFurnaceMinecartChunkloading) {
-            ChunkPos chunkPos = new ChunkPos(BlockPos.containing(minecart.getX(), minecart.getY(), minecart.getZ()));
+            ChunkPos chunkPos = ChunkPos.containing(BlockPos.containing(minecart.getX(), minecart.getY(), minecart.getZ()));
             server.getChunkSource().addTicketWithRadius(TicketType.PORTAL, chunkPos, 3);
         }
     }
@@ -251,21 +251,12 @@ public final class FurnaceMinecartHelper {
         BlockPos railPos = minecart.getOnPos();
         BlockState railState = minecart.level().getBlockState(railPos);
         if (railState.getBlock() instanceof BaseRailBlock railBlock) {
-            if (usesDefaultFurnaceRailSpeed(railBlock)) {
-                return minecart.isInWater() ? 0.2D : 0.4D;
+            if (railBlock instanceof ModernMinecartRailSpeed speedRail) {
+                return speedRail.getModernMinecartRailSpeed(railState, minecart.level(), railPos, minecart);
             }
-            return railBlock.getRailMaxSpeed(railState, minecart.level(), railPos, minecart);
+            return minecart.isInWater() ? 0.2D : 0.4D;
         }
         return 0.4D;
-    }
-
-    private static boolean usesDefaultFurnaceRailSpeed(BaseRailBlock railBlock) {
-        try {
-            Method method = railBlock.getClass().getMethod("getRailMaxSpeed", BlockState.class, Level.class, BlockPos.class, AbstractMinecart.class);
-            return "net.neoforged.neoforge.common.extensions.IBaseRailBlockExtension".equals(method.getDeclaringClass().getName());
-        } catch (ReflectiveOperationException ignored) {
-            return false;
-        }
     }
 
     private static void applyTargetSpeed(MinecartFurnace minecart, double targetSpeed, boolean shouldMove) {

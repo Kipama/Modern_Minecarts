@@ -1,12 +1,12 @@
 package net.lordkipama.modernminecarts.inventory;
 
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
 import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
 import net.minecraft.world.entity.player.Inventory;
-import net.minecraft.world.inventory.ClickType;
+import net.minecraft.world.inventory.ContainerInput;
 import net.minecraft.world.inventory.Slot;
 
 public class FurnaceMinecartScreen extends AbstractContainerScreen<FurnaceMinecartMenu> {
@@ -22,13 +22,8 @@ public class FurnaceMinecartScreen extends AbstractContainerScreen<FurnaceMineca
         this.titleLabelX = (this.imageWidth - this.font.width(this.title)) / 2;
     }
 
-    public void render(GuiGraphics pGuiGraphics, int pMouseX, int pMouseY, float pPartialTick) {
-        this.renderBackground(pGuiGraphics, pMouseX, pMouseY, pPartialTick);
-        super.render(pGuiGraphics, pMouseX, pMouseY, pPartialTick);
-        this.renderTooltip(pGuiGraphics, pMouseX, pMouseY);
-    }
-
-    protected void renderBg(GuiGraphics pGuiGraphics, float pPartialTick, int pMouseX, int pMouseY) {
+    public void extractBackground(GuiGraphicsExtractor pGuiGraphics, int pMouseX, int pMouseY, float pPartialTick) {
+        super.extractBackground(pGuiGraphics, pMouseX, pMouseY, pPartialTick);
         int i = this.leftPos;
         int j = this.topPos;
         pGuiGraphics.blit(RenderPipelines.GUI_TEXTURED, this.texture, i, j, 0.0F, 0.0F, this.imageWidth, this.imageHeight, 256, 256);
@@ -44,11 +39,11 @@ public class FurnaceMinecartScreen extends AbstractContainerScreen<FurnaceMineca
     /**
      * Called when the mouse is clicked over a slot or outside the gui.
      */
-    protected void slotClicked(Slot pSlot, int pSlotId, int pMouseButton, ClickType pType) {
+    protected void slotClicked(Slot pSlot, int pSlotId, int pMouseButton, ContainerInput pType) {
         super.slotClicked(pSlot, pSlotId, pMouseButton, pType);
     }
 
-    protected boolean hasClickedOutside(double pMouseX, double pMouseY, int pGuiLeft, int pGuiTop, int pMouseButton) {
+    protected boolean hasClickedOutside(double pMouseX, double pMouseY, int pGuiLeft, int pGuiTop) {
         return pMouseX < (double)pGuiLeft || pMouseY < (double)pGuiTop || pMouseX >= (double)(pGuiLeft + this.imageWidth) || pMouseY >= (double)(pGuiTop + this.imageHeight);
     }
 }

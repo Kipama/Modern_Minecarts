@@ -1,0 +1,12 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "misc",
+  "ingredients": [
+    "minecraft:rail",
+    "minecraft:stick"
+  ],
+  "result": {
+    "id": "modernminecarts:sloped_rail"
+  },
+  "show_notification": true
+}

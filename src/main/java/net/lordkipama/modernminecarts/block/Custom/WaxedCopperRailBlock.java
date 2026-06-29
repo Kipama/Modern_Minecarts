@@ -21,7 +21,7 @@ import net.minecraft.world.level.block.PoweredRailBlock;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.BlockHitResult;
 
-public class WaxedCopperRailBlock extends PoweredRailBlock {
+public class WaxedCopperRailBlock extends PoweredRailBlock implements ModernMinecartRailSpeed {
     private final WaxedCopperRailBlock.WaxedWeatherState waxedWeatherState;
 
     public WaxedCopperRailBlock(Properties copy, WaxedWeatherState waxedWeatherState) {
@@ -39,8 +39,7 @@ public class WaxedCopperRailBlock extends PoweredRailBlock {
         return true;
     }
 
-    @Override
-    public float getRailMaxSpeed(BlockState state, Level level, BlockPos pos, AbstractMinecart cart) {
+    public float getModernMinecartRailSpeed(BlockState state, Level level, BlockPos pos, AbstractMinecart cart) {
         float finalSpeed = switch (waxedWeatherState) {
             case WAXED_UNAFFECTED -> ModernMinecartsConfig.copper_speed;
             case WAXED_EXPOSED -> ModernMinecartsConfig.exposed_copper_speed;

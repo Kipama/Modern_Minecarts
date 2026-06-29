@@ -1,0 +1,21 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "/": {
+      "item": "minecraft:stick"
+    },
+    "i": {
+      "item": "minecraft:iron_ingot"
+    }
+  },
+  "pattern": [
+    "i/i",
+    "///",
+    "i/i"
+  ],
+  "result": {
+    "count": 2,
+    "item": "modernminecarts:rail_crossing"
+  }
+}

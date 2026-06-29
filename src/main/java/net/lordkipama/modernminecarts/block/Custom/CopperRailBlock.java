@@ -24,7 +24,7 @@ import net.minecraft.world.level.block.PoweredRailBlock;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.BlockHitResult;
 
-public class CopperRailBlock extends PoweredRailBlock implements WeatheringRailBlock {
+public class CopperRailBlock extends PoweredRailBlock implements WeatheringRailBlock, ModernMinecartRailSpeed {
     private final WeatheringRailBlock.WeatherState weatherState;
 
     public CopperRailBlock(Properties copy, WeatheringRailBlock.WeatherState weatherState) {
@@ -97,8 +97,7 @@ public class CopperRailBlock extends PoweredRailBlock implements WeatheringRailB
         return true;
     }
 
-    @Override
-    public float getRailMaxSpeed(BlockState state, Level level, BlockPos pos, AbstractMinecart cart) {
+    public float getModernMinecartRailSpeed(BlockState state, Level level, BlockPos pos, AbstractMinecart cart) {
         float finalSpeed = switch (getAge()) {
             case UNAFFECTED -> ModernMinecartsConfig.copper_speed;
             case EXPOSED -> ModernMinecartsConfig.exposed_copper_speed;

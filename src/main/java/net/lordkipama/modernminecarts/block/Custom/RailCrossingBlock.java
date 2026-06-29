@@ -18,7 +18,7 @@ import net.minecraft.world.level.block.state.properties.RailShape;
 import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.NotNull;
 
-public class RailCrossingBlock extends BaseRailBlock {
+public class RailCrossingBlock extends BaseRailBlock implements ModernMinecartRailSpeed {
     public static final EnumProperty<RailShape> SHAPE = BlockStateProperties.RAIL_SHAPE_STRAIGHT;
 
     public RailCrossingBlock(BlockBehaviour.Properties properties) {
@@ -59,8 +59,7 @@ public class RailCrossingBlock extends BaseRailBlock {
         return RailShape.EAST_WEST;
     }
 
-    @Override
-    public float getRailMaxSpeed(BlockState state, Level level, BlockPos pos, AbstractMinecart cart) {
+    public float getModernMinecartRailSpeed(BlockState state, Level level, BlockPos pos, AbstractMinecart cart) {
         return ModernMinecartsConfig.copper_speed;
     }
 }

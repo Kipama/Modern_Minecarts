@@ -27,13 +27,13 @@ import org.joml.Matrix4f;
 @EventBusSubscriber(modid = ModernMinecarts.MOD_ID, value = Dist.CLIENT)
 public final class MinecartChainRenderer {
     private static final Identifier CHAIN_LOCATION = Identifier.fromNamespaceAndPath(ModernMinecarts.MOD_ID, "textures/entity/chain.png");
-    private static final RenderType CHAIN_TYPE = RenderTypes.entityCutoutNoCull(CHAIN_LOCATION);
+    private static final RenderType CHAIN_TYPE = RenderTypes.entityCutout(CHAIN_LOCATION);
 
     private MinecartChainRenderer() {
     }
 
     @SubscribeEvent
-    public static void onRenderLevelStage(RenderLevelStageEvent.AfterEntities event) {
+    public static void onRenderLevelStage(RenderLevelStageEvent.AfterOpaqueFeatures event) {
         Minecraft minecraft = Minecraft.getInstance();
         if (minecraft.level == null) {
             return;
@@ -70,7 +70,7 @@ public final class MinecartChainRenderer {
             hAngle += Math.ceil(-hAngle / 360.0D) * 360.0D;
             double vAngle = Math.asin(distanceY / distance);
 
-            int packedLight = LevelRenderer.getLightColor(minecraft.level, BlockPos.containing((startX + endX) * 0.5D, (startY + endY) * 0.5D, (startZ + endZ) * 0.5D));
+            int packedLight = LevelRenderer.getLightCoords(minecraft.level, BlockPos.containing((startX + endX) * 0.5D, (startY + endY) * 0.5D, (startZ + endZ) * 0.5D));
 
             poseStack.pushPose();
             poseStack.translate(endX - cameraPos.x, endY - cameraPos.y, endZ - cameraPos.z);
