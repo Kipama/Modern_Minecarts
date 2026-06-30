@@ -28,12 +28,10 @@ import net.minecraft.client.model.geom.ModelLayers;
 import net.minecraft.client.renderer.entity.EntityRenderer;
 import net.minecraft.client.renderer.entity.EntityRendererProvider;
 import net.minecraft.client.renderer.entity.EntityRenderers;
-import net.minecraft.world.item.CreativeModeTabs;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.client.ConfigScreenHandler;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.common.crafting.CraftingHelper;
-import net.minecraftforge.event.CreativeModeTabEvent;
 import net.minecraftforge.eventbus.api.IEventBus;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.DistExecutor;
@@ -43,7 +41,6 @@ import net.minecraftforge.fml.config.ModConfig;
 import net.minecraftforge.fml.event.lifecycle.FMLClientSetupEvent;
 import net.minecraftforge.fml.event.lifecycle.FMLCommonSetupEvent;
 import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
-import net.minecraftforge.registries.RegistryObject;
 
 @Mod(ModernMinecarts.MOD_ID)
 public class ModernMinecarts {
@@ -66,7 +63,6 @@ public class ModernMinecarts {
         ModMenus.register(modEventBus);
 
         modEventBus.addListener(this::commonSetup);
-        modEventBus.addListener(this::addItemsToTabs);
 
         MinecraftForge.EVENT_BUS.register(this);
 
@@ -75,37 +71,6 @@ public class ModernMinecarts {
 
     private void commonSetup(final FMLCommonSetupEvent event) {
         event.enqueueWork(() -> CraftingHelper.register(FeatureEnabledCondition.SERIALIZER));
-    }
-
-    private void addItemsToTabs(CreativeModeTabEvent.BuildContents event) {
-        if (event.getTab() == CreativeModeTabs.REDSTONE_BLOCKS) {
-            acceptCopperRailsIfEnabled(event);
-            acceptIfEnabled(event, ModBlocks.RAIL_CROSSING, ModernMinecartsConfig.enableRailCrossing());
-            acceptIfEnabled(event, ModBlocks.POWERED_DETECTOR_RAIL, ModernMinecartsConfig.enablePoweredDetectorRail());
-            acceptIfEnabled(event, ModBlocks.SLOPED_RAIL, ModernMinecartsConfig.enableRailJump());
-        } else if (event.getTab() == CreativeModeTabs.TOOLS_AND_UTILITIES) {
-            acceptCopperRailsIfEnabled(event);
-            acceptIfEnabled(event, ModBlocks.RAIL_CROSSING, ModernMinecartsConfig.enableRailCrossing());
-            acceptIfEnabled(event, ModBlocks.POWERED_DETECTOR_RAIL, ModernMinecartsConfig.enablePoweredDetectorRail());
-        }
-    }
-
-    private static void acceptCopperRailsIfEnabled(CreativeModeTabEvent.BuildContents event) {
-        boolean enabled = ModernMinecartsConfig.enableCopperRails();
-        acceptIfEnabled(event, ModBlocks.COPPER_RAIL, enabled);
-        acceptIfEnabled(event, ModBlocks.EXPOSED_COPPER_RAIL, enabled);
-        acceptIfEnabled(event, ModBlocks.WEATHERED_COPPER_RAIL, enabled);
-        acceptIfEnabled(event, ModBlocks.OXIDIZED_COPPER_RAIL, enabled);
-        acceptIfEnabled(event, ModBlocks.WAXED_COPPER_RAIL, enabled);
-        acceptIfEnabled(event, ModBlocks.WAXED_EXPOSED_COPPER_RAIL, enabled);
-        acceptIfEnabled(event, ModBlocks.WAXED_WEATHERED_COPPER_RAIL, enabled);
-        acceptIfEnabled(event, ModBlocks.WAXED_OXIDIZED_COPPER_RAIL, enabled);
-    }
-
-    private static void acceptIfEnabled(CreativeModeTabEvent.BuildContents event, RegistryObject<? extends net.minecraft.world.level.block.Block> block, boolean enabled) {
-        if (enabled) {
-            event.accept(block);
-        }
     }
 
     @Mod.EventBusSubscriber(modid = MOD_ID, bus = Mod.EventBusSubscriber.Bus.MOD, value = Dist.CLIENT)

@@ -21,7 +21,6 @@ public class ConfigurableShapedRecipeSerializer implements RecipeSerializer<Shap
         return new ShapedRecipe(
                 recipeId,
                 baseRecipe.getGroup(),
-                baseRecipe.category(),
                 baseRecipe.getWidth(),
                 baseRecipe.getHeight(),
                 baseRecipe.getIngredients(),

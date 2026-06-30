@@ -1,10 +1,13 @@
 package net.lordkipama.modernminecarts.Item;
 
 import net.minecraft.world.InteractionResult;
+import net.minecraft.world.item.CreativeModeTab;
 import net.minecraft.world.item.BlockItem;
+import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.item.context.UseOnContext;
 import net.minecraft.world.level.block.Block;
+import net.minecraft.core.NonNullList;
 
 import java.util.function.BooleanSupplier;
 
@@ -28,5 +31,12 @@ public class FeatureToggleBlockItem extends BlockItem {
     @Override
     protected boolean canPlace(BlockPlaceContext context, net.minecraft.world.level.block.state.BlockState state) {
         return enabledSupplier.getAsBoolean() && super.canPlace(context, state);
+    }
+
+    @Override
+    public void fillItemCategory(CreativeModeTab tab, NonNullList<ItemStack> items) {
+        if (enabledSupplier.getAsBoolean()) {
+            super.fillItemCategory(tab, items);
+        }
     }
 }

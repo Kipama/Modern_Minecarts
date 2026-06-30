@@ -79,8 +79,8 @@ public class ModernMinecartsConfigScreen extends Screen {
 
         int centerX = this.width / 2;
         int buttonY = footerTop + 5;
-        this.addRenderableWidget(Button.builder(CommonComponents.GUI_DONE, button -> saveAndClose()).bounds(centerX - 102, buttonY, 100, 20).build());
-        this.addRenderableWidget(Button.builder(CommonComponents.GUI_CANCEL, button -> this.minecraft.setScreen(this.parent)).bounds(centerX + 2, buttonY, 100, 20).build());
+        this.addRenderableWidget(new Button(centerX - 102, buttonY, 100, 20, CommonComponents.GUI_DONE, button -> saveAndClose()));
+        this.addRenderableWidget(new Button(centerX + 2, buttonY, 100, 20, CommonComponents.GUI_CANCEL, button -> this.minecraft.setScreen(this.parent)));
     }
 
     private void addConfigEntries() {
@@ -279,7 +279,7 @@ public class ModernMinecartsConfigScreen extends Screen {
 
         protected ConfigEntry(String name, Runnable resetAction) {
             this.name = Component.literal(name);
-            this.resetButton = Button.builder(Component.literal("Reset"), button -> resetAction.run()).bounds(0, 0, RESET_WIDTH, 20).build();
+            this.resetButton = new Button(0, 0, RESET_WIDTH, 20, Component.literal("Reset"), button -> resetAction.run());
         }
 
         @Override
@@ -301,7 +301,8 @@ public class ModernMinecartsConfigScreen extends Screen {
 
         protected void positionResetButton(int left, int top) {
             int resetX = left + LABEL_WIDTH + COLUMN_GAP + INPUT_WIDTH + COLUMN_GAP;
-            this.resetButton.setPosition(resetX, top + 2);
+            this.resetButton.x = resetX;
+            this.resetButton.y = top + 2;
         }
     }
 
@@ -334,7 +335,8 @@ public class ModernMinecartsConfigScreen extends Screen {
                 float partialTick
         ) {
             this.resetButton.active = !isDefaultNumberValue(this.field.getValue(), this.defaultValue);
-            this.field.setPosition(left + LABEL_WIDTH + COLUMN_GAP, top + 2);
+            this.field.x = left + LABEL_WIDTH + COLUMN_GAP;
+            this.field.y = top + 2;
             this.renderName(poseStack, left, top);
             this.field.render(poseStack, mouseX, mouseY, partialTick);
             this.positionResetButton(left, top);
@@ -381,7 +383,8 @@ public class ModernMinecartsConfigScreen extends Screen {
                 float partialTick
         ) {
             this.resetButton.active = !isDefaultIntegerValue(this.field.getValue(), this.defaultValue);
-            this.field.setPosition(left + LABEL_WIDTH + COLUMN_GAP, top + 2);
+            this.field.x = left + LABEL_WIDTH + COLUMN_GAP;
+            this.field.y = top + 2;
             this.renderName(poseStack, left, top);
             this.field.render(poseStack, mouseX, mouseY, partialTick);
             this.positionResetButton(left, top);
@@ -428,7 +431,8 @@ public class ModernMinecartsConfigScreen extends Screen {
                 float partialTick
         ) {
             this.resetButton.active = this.toggleButton.getValue() != this.defaultValue;
-            this.toggleButton.setPosition(left + LABEL_WIDTH + COLUMN_GAP, top + 2);
+            this.toggleButton.x = left + LABEL_WIDTH + COLUMN_GAP;
+            this.toggleButton.y = top + 2;
             this.renderName(poseStack, left, top);
             this.toggleButton.render(poseStack, mouseX, mouseY, partialTick);
             this.positionResetButton(left, top);
@@ -451,7 +455,7 @@ public class ModernMinecartsConfigScreen extends Screen {
         private Consumer<Boolean> onToggle;
 
         ToggleButton(int x, int y, int width, int height, boolean value, Consumer<Boolean> onToggle) {
-            super(x, y, width, height, toggleMessage(value), button -> {}, DEFAULT_NARRATION);
+            super(x, y, width, height, toggleMessage(value), button -> {});
             this.value = value;
             this.onToggle = onToggle;
         }
