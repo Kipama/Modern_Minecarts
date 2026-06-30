@@ -21,13 +21,10 @@ import net.minecraft.core.component.DataComponents;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.resources.ResourceKey;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerLevel;
-import net.minecraft.server.packs.resources.ResourceManager;
-import net.minecraft.server.packs.resources.SimplePreparableReloadListener;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
-import net.minecraft.util.profiling.ProfilerFiller;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.item.ItemEntity;
@@ -56,9 +53,9 @@ import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.fml.util.ObfuscationReflectionHelper;
 import net.neoforged.neoforge.common.conditions.ICondition;
-import net.neoforged.neoforge.event.AddReloadListenerEvent;
 import net.neoforged.neoforge.event.entity.EntityLeaveLevelEvent;
 import net.neoforged.neoforge.event.entity.player.PlayerInteractEvent;
+import net.neoforged.neoforge.event.server.ServerStartingEvent;
 import net.neoforged.neoforge.event.tick.EntityTickEvent;
 
 @EventBusSubscriber(modid = ModernMinecarts.MOD_ID)
@@ -240,24 +237,14 @@ public final class ModEvents {
     }
 
     @SubscribeEvent
-    public static void onAddReloadListener(AddReloadListenerEvent event) {
-        event.addListener(new SimplePreparableReloadListener<Void>() {
-            @Override
-            protected Void prepare(ResourceManager resourceManager, ProfilerFiller profiler) {
-                return null;
-            }
-
-            @Override
-            protected void apply(Void object, ResourceManager resourceManager, ProfilerFiller profiler) {
-                RecipeManager recipeManager = event.getServerResources().getRecipeManager();
-                HolderLookup.Provider registries = event.getServerResources().getRegistryLookup();
-                replaceRecipe(recipeManager, registries, ResourceLocation.fromNamespaceAndPath(ModernMinecarts.MOD_ID, "powered_rail"), "/data/modernminecarts/recipe/powered_rail.json", ModernMinecartsConfig.poweredRailRecipeYield());
-                replaceRecipe(recipeManager, registries, ResourceLocation.fromNamespaceAndPath(ModernMinecarts.MOD_ID, "copper_rail"), "/data/modernminecarts/recipe/copper_rail.json", ModernMinecartsConfig.copperRailRecipeYield());
-            }
-        });
+    public static void onServerStarting(ServerStartingEvent event) {
+        RecipeManager recipeManager = event.getServer().getRecipeManager();
+        HolderLookup.Provider registries = event.getServer().registryAccess();
+        replaceRecipe(recipeManager, registries, Identifier.fromNamespaceAndPath("minecraft", "powered_rail"), "/data/minecraft/recipe/powered_rail.json", ModernMinecartsConfig.poweredRailRecipeYield());
+        replaceRecipe(recipeManager, registries, Identifier.fromNamespaceAndPath(ModernMinecarts.MOD_ID, "copper_rail"), "/data/modernminecarts/recipe/copper_rail.json", ModernMinecartsConfig.copperRailRecipeYield());
     }
 
-    private static void replaceRecipe(RecipeManager recipeManager, HolderLookup.Provider registries, ResourceLocation recipeId, String resourcePath, int resultCount) {
+    private static void replaceRecipe(RecipeManager recipeManager, HolderLookup.Provider registries, Identifier recipeId, String resourcePath, int resultCount) {
         RecipeHolder<?> replacement = loadRecipe(recipeId, resourcePath, registries, resultCount);
         if (replacement == null) {
             return;
@@ -267,7 +254,7 @@ public final class ModEvents {
         List<RecipeHolder<?>> updatedRecipes = new ArrayList<>(existingRecipes.size());
         boolean replaced = false;
         for (RecipeHolder<?> recipeHolder : existingRecipes) {
-            if (recipeHolder.id().location().equals(recipeId)) {
+            if (recipeHolder.id().identifier().equals(recipeId)) {
                 updatedRecipes.add(replacement);
                 replaced = true;
             } else {
@@ -285,7 +272,7 @@ public final class ModEvents {
         }
     }
 
-    private static RecipeHolder<?> loadRecipe(ResourceLocation recipeId, String resourcePath, HolderLookup.Provider registries, int resultCount) {
+    private static RecipeHolder<?> loadRecipe(Identifier recipeId, String resourcePath, HolderLookup.Provider registries, int resultCount) {
         try (InputStream inputStream = ModEvents.class.getResourceAsStream(resourcePath)) {
             if (inputStream == null) {
                 return null;

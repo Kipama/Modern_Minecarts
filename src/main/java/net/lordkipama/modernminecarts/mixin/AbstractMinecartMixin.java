@@ -2,6 +2,7 @@ package net.lordkipama.modernminecarts.mixin;
 
 import net.lordkipama.modernminecarts.ModernMinecarts;
 import net.lordkipama.modernminecarts.ModernMinecartsConfig;
+import net.lordkipama.modernminecarts.block.Custom.ModernMinecartRailSpeed;
 import net.lordkipama.modernminecarts.block.ModBlocks;
 import net.lordkipama.modernminecarts.util.FurnaceMinecartHelper;
 import net.lordkipama.modernminecarts.util.MinecartLinkHelper;
@@ -44,8 +45,9 @@ abstract class AbstractMinecartMixin {
         BlockState railState = level.getBlockState(railPos);
 
         if (railState.getBlock() instanceof BaseRailBlock railBlock
+                && railBlock instanceof ModernMinecartRailSpeed speedRail
                 && ModernMinecarts.MOD_ID.equals(BuiltInRegistries.BLOCK.getKey(railState.getBlock()).getNamespace())) {
-            float railMaxSpeed = railBlock.getRailMaxSpeed(railState, level, railPos, minecart);
+            float railMaxSpeed = speedRail.getModernMinecartRailSpeed(railState, level, railPos, minecart);
             if (MinecartLinkHelper.getLinkedParent(minecart) != null) {
                 railMaxSpeed = modernminecarts$legacyAirLateralSpeed;
             } else if (minecart.isInWater()) {
@@ -146,7 +148,7 @@ abstract class AbstractMinecartMixin {
         }
 
         BlockState frontState = level.getBlockState(frontPos);
-        if (!(frontState.getBlock() instanceof BaseRailBlock frontRail)) {
+        if (!(frontState.getBlock() instanceof BaseRailBlock frontRail) || !(frontRail instanceof ModernMinecartRailSpeed speedRail)) {
             return railMaxSpeed;
         }
 
@@ -155,7 +157,7 @@ abstract class AbstractMinecartMixin {
                 || frontShape == RailShape.ASCENDING_WEST
                 || frontShape == RailShape.ASCENDING_NORTH
                 || frontShape == RailShape.ASCENDING_SOUTH) {
-            return frontRail.getRailMaxSpeed(frontState, level, frontPos, minecart);
+            return speedRail.getModernMinecartRailSpeed(frontState, level, frontPos, minecart);
         }
 
         return railMaxSpeed;

@@ -25,7 +25,7 @@ import net.minecraft.world.level.block.state.properties.RailShape;
 import net.minecraft.world.level.material.FluidState;
 import net.minecraft.world.level.material.Fluids;
 
-public class SlopedRailBlock extends BaseRailBlock {
+public class SlopedRailBlock extends BaseRailBlock implements ModernMinecartRailSpeed {
     public static final EnumProperty<RailShape> SHAPE = BlockStateProperties.RAIL_SHAPE;
     public static final EnumProperty<RailShape> CONST_SHAPE = EnumProperty.create(
             "const_shape",
@@ -95,7 +95,7 @@ public class SlopedRailBlock extends BaseRailBlock {
 
     @Override
     protected void neighborChanged(BlockState state, Level level, BlockPos pos, Block block, Orientation orientation, boolean isMoving) {
-        if (!level.isClientSide && level.getBlockState(pos).is(this)) {
+        if (!level.isClientSide() && level.getBlockState(pos).is(this)) {
             if (!canSupportRigidBlock(level, pos.below())) {
                 dropResources(state, level, pos);
                 level.removeBlock(pos, isMoving);
@@ -109,8 +109,7 @@ public class SlopedRailBlock extends BaseRailBlock {
         }
     }
 
-    @Override
-    public float getRailMaxSpeed(BlockState state, Level level, BlockPos pos, AbstractMinecart cart) {
+    public float getModernMinecartRailSpeed(BlockState state, Level level, BlockPos pos, AbstractMinecart cart) {
         boolean airInFront = false;
 
         if (state.getValue(SHAPE) == RailShape.ASCENDING_NORTH) {
@@ -134,7 +133,6 @@ public class SlopedRailBlock extends BaseRailBlock {
         return state.getValue(CONST_SHAPE);
     }
 
-    @Override
     public ItemStack getCloneItemStack(LevelReader level, BlockPos pos, BlockState state) {
         return new ItemStack(ModBlocks.SLOPED_RAIL.get());
     }

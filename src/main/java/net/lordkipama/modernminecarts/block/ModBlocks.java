@@ -12,7 +12,7 @@ import net.lordkipama.modernminecarts.block.Custom.WaxedCopperRailBlock;
 import net.lordkipama.modernminecarts.block.Custom.WeatheringRailBlock;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.ResourceKey;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
@@ -92,7 +92,7 @@ public class ModBlocks {
 
     private static <T extends Block> void registerBlockItem(String name, DeferredBlock<T> block) {
         Item.Properties properties = new Item.Properties()
-                .setId(ResourceKey.create(Registries.ITEM, ResourceLocation.fromNamespaceAndPath(ModernMinecarts.MOD_ID, name)))
+                .setId(ResourceKey.create(Registries.ITEM, Identifier.fromNamespaceAndPath(ModernMinecarts.MOD_ID, name)))
                 .useBlockDescriptionPrefix();
 
         if (name.contains("copper_rail")) {

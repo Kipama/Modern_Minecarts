@@ -7,9 +7,11 @@ import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.ContainerObjectSelectionList;
 import net.minecraft.client.gui.components.EditBox;
+import net.minecraft.client.gui.components.StringWidget;
 import net.minecraft.client.gui.components.events.GuiEventListener;
 import net.minecraft.client.gui.narration.NarratableEntry;
 import net.minecraft.client.gui.screens.Screen;
+import net.minecraft.client.input.InputWithModifiers;
 import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
 
@@ -199,7 +201,6 @@ public class ModernMinecartsConfigScreen extends Screen {
 
     @Override
     public void render(GuiGraphics guiGraphics, int mouseX, int mouseY, float partialTick) {
-        this.renderBackground(guiGraphics, mouseX, mouseY, partialTick);
         int footerTop = this.height - FOOTER_HEIGHT;
         guiGraphics.fill(0, footerTop, this.width, this.height, 0xAA000000);
         super.render(guiGraphics, mouseX, mouseY, partialTick);
@@ -230,18 +231,16 @@ public class ModernMinecartsConfigScreen extends Screen {
             return TABLE_WIDTH;
         }
 
-        @Override
-        protected int getScrollbarPosition() {
-            return this.width / 2 + TABLE_WIDTH / 2 + 4;
-        }
     }
 
     private abstract class ConfigEntry extends ContainerObjectSelectionList.Entry<ConfigEntry> {
         protected final Component name;
+        protected final StringWidget nameWidget;
         protected final Button resetButton;
 
         protected ConfigEntry(String name, Runnable resetAction) {
             this.name = Component.literal(name);
+            this.nameWidget = new StringWidget(Component.literal(name), ModernMinecartsConfigScreen.this.font).setMaxWidth(LABEL_WIDTH);
             this.resetButton = Button.builder(Component.literal("Reset"), button -> resetAction.run()).bounds(0, 0, RESET_WIDTH, 20).build();
         }
 
@@ -257,15 +256,6 @@ public class ModernMinecartsConfigScreen extends Screen {
 
         protected abstract List<? extends GuiEventListener> widgets();
         protected abstract List<? extends NarratableEntry> narratableWidgets();
-
-        protected void renderName(GuiGraphics guiGraphics, int left, int top) {
-            guiGraphics.drawString(ModernMinecartsConfigScreen.this.font, this.name, left, top + 6, 0xFFFFFF);
-        }
-
-        protected void positionResetButton(int left, int top) {
-            int resetX = left + LABEL_WIDTH + COLUMN_GAP + INPUT_WIDTH + COLUMN_GAP;
-            this.resetButton.setPosition(resetX, top + 2);
-        }
     }
 
     private class NumberEntry extends ConfigEntry {
@@ -284,23 +274,30 @@ public class ModernMinecartsConfigScreen extends Screen {
         }
 
         @Override
-        public void render(GuiGraphics guiGraphics, int index, int top, int left, int width, int height, int mouseX, int mouseY, boolean hovering, float partialTick) {
+        public void renderContent(GuiGraphics guiGraphics, int mouseX, int mouseY, boolean hovering, float partialTick) {
+            int left = this.getContentX();
+            int top = this.getContentY();
+            int fieldX = left + LABEL_WIDTH + COLUMN_GAP;
+            int resetX = fieldX + INPUT_WIDTH + COLUMN_GAP;
+
             this.resetButton.active = !isDefaultNumberValue(this.field.getValue(), this.defaultValue);
-            this.field.setPosition(left + LABEL_WIDTH + COLUMN_GAP, top + 2);
-            this.renderName(guiGraphics, left, top);
+            this.nameWidget.setPosition(left, this.getContentYMiddle() - this.nameWidget.getHeight() / 2);
+            this.field.setPosition(fieldX, top);
+            this.resetButton.setPosition(resetX, top);
+
+            this.nameWidget.render(guiGraphics, mouseX, mouseY, partialTick);
             this.field.render(guiGraphics, mouseX, mouseY, partialTick);
-            this.positionResetButton(left, top);
             this.resetButton.render(guiGraphics, mouseX, mouseY, partialTick);
         }
 
         @Override
         protected List<? extends GuiEventListener> widgets() {
-            return List.of(this.field, this.resetButton);
+            return List.of(this.nameWidget, this.field, this.resetButton);
         }
 
         @Override
         protected List<? extends NarratableEntry> narratableWidgets() {
-            return List.of(this.field, this.resetButton);
+            return List.of(this.nameWidget, this.field, this.resetButton);
         }
     }
 
@@ -320,23 +317,30 @@ public class ModernMinecartsConfigScreen extends Screen {
         }
 
         @Override
-        public void render(GuiGraphics guiGraphics, int index, int top, int left, int width, int height, int mouseX, int mouseY, boolean hovering, float partialTick) {
+        public void renderContent(GuiGraphics guiGraphics, int mouseX, int mouseY, boolean hovering, float partialTick) {
+            int left = this.getContentX();
+            int top = this.getContentY();
+            int fieldX = left + LABEL_WIDTH + COLUMN_GAP;
+            int resetX = fieldX + INPUT_WIDTH + COLUMN_GAP;
+
             this.resetButton.active = !isDefaultIntegerValue(this.field.getValue(), this.defaultValue);
-            this.field.setPosition(left + LABEL_WIDTH + COLUMN_GAP, top + 2);
-            this.renderName(guiGraphics, left, top);
+            this.nameWidget.setPosition(left, this.getContentYMiddle() - this.nameWidget.getHeight() / 2);
+            this.field.setPosition(fieldX, top);
+            this.resetButton.setPosition(resetX, top);
+
+            this.nameWidget.render(guiGraphics, mouseX, mouseY, partialTick);
             this.field.render(guiGraphics, mouseX, mouseY, partialTick);
-            this.positionResetButton(left, top);
             this.resetButton.render(guiGraphics, mouseX, mouseY, partialTick);
         }
 
         @Override
         protected List<? extends GuiEventListener> widgets() {
-            return List.of(this.field, this.resetButton);
+            return List.of(this.nameWidget, this.field, this.resetButton);
         }
 
         @Override
         protected List<? extends NarratableEntry> narratableWidgets() {
-            return List.of(this.field, this.resetButton);
+            return List.of(this.nameWidget, this.field, this.resetButton);
         }
     }
 
@@ -356,23 +360,30 @@ public class ModernMinecartsConfigScreen extends Screen {
         }
 
         @Override
-        public void render(GuiGraphics guiGraphics, int index, int top, int left, int width, int height, int mouseX, int mouseY, boolean hovering, float partialTick) {
+        public void renderContent(GuiGraphics guiGraphics, int mouseX, int mouseY, boolean hovering, float partialTick) {
+            int left = this.getContentX();
+            int top = this.getContentY();
+            int fieldX = left + LABEL_WIDTH + COLUMN_GAP;
+            int resetX = fieldX + INPUT_WIDTH + COLUMN_GAP;
+
             this.resetButton.active = this.toggleButton.getValue() != this.defaultValue;
-            this.toggleButton.setPosition(left + LABEL_WIDTH + COLUMN_GAP, top + 2);
-            this.renderName(guiGraphics, left, top);
+            this.nameWidget.setPosition(left, this.getContentYMiddle() - this.nameWidget.getHeight() / 2);
+            this.toggleButton.setPosition(fieldX, top);
+            this.resetButton.setPosition(resetX, top);
+
+            this.nameWidget.render(guiGraphics, mouseX, mouseY, partialTick);
             this.toggleButton.render(guiGraphics, mouseX, mouseY, partialTick);
-            this.positionResetButton(left, top);
             this.resetButton.render(guiGraphics, mouseX, mouseY, partialTick);
         }
 
         @Override
         protected List<? extends GuiEventListener> widgets() {
-            return List.of(this.toggleButton, this.resetButton);
+            return List.of(this.nameWidget, this.toggleButton, this.resetButton);
         }
 
         @Override
         protected List<? extends NarratableEntry> narratableWidgets() {
-            return List.of(this.toggleButton, this.resetButton);
+            return List.of(this.nameWidget, this.toggleButton, this.resetButton);
         }
     }
 
@@ -387,9 +398,15 @@ public class ModernMinecartsConfigScreen extends Screen {
         }
 
         @Override
-        public void onPress() {
+        public void onPress(InputWithModifiers input) {
             this.setValue(!this.value);
             this.onToggle.accept(this.value);
+        }
+
+        @Override
+        protected void renderContents(GuiGraphics guiGraphics, int mouseX, int mouseY, float partialTick) {
+            this.renderDefaultSprite(guiGraphics);
+            this.renderDefaultLabel(guiGraphics.textRendererForWidget(this, GuiGraphics.HoveredTextEffects.NONE));
         }
 
         public boolean getValue() {
@@ -412,20 +429,19 @@ public class ModernMinecartsConfigScreen extends Screen {
         }
 
         @Override
-        public void render(GuiGraphics guiGraphics, int index, int top, int left, int width, int height, int mouseX, int mouseY, boolean hovering, float partialTick) {
-            int centeredX = left + TABLE_WIDTH / 2 - ModernMinecartsConfigScreen.this.font.width(this.name) / 2;
-            int textY = top + (ROW_HEIGHT - ModernMinecartsConfigScreen.this.font.lineHeight) / 2;
-            guiGraphics.drawString(ModernMinecartsConfigScreen.this.font, this.name, centeredX, textY, 0xFFFFFF);
+        public void renderContent(GuiGraphics guiGraphics, int mouseX, int mouseY, boolean hovering, float partialTick) {
+            this.nameWidget.setPosition(this.getContentXMiddle() - this.nameWidget.getWidth() / 2, this.getContentYMiddle() - this.nameWidget.getHeight() / 2);
+            this.nameWidget.render(guiGraphics, mouseX, mouseY, partialTick);
         }
 
         @Override
         protected List<? extends GuiEventListener> widgets() {
-            return List.of();
+            return List.of(this.nameWidget);
         }
 
         @Override
         protected List<? extends NarratableEntry> narratableWidgets() {
-            return List.of();
+            return List.of(this.nameWidget);
         }
     }
 }

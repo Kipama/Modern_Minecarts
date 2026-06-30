@@ -16,7 +16,6 @@ import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.ModContainer;
 import net.neoforged.fml.common.Mod;
 import net.neoforged.fml.config.ModConfig;
-import net.neoforged.fml.loading.FMLEnvironment;
 import net.neoforged.neoforge.client.event.RegisterMenuScreensEvent;
 import net.neoforged.neoforge.client.gui.IConfigScreenFactory;
 import net.neoforged.neoforge.event.BuildCreativeModeTabContentsEvent;
@@ -43,9 +42,7 @@ public class ModernMinecarts {
 
         LOGGER.info("Modern Minecarts is running on the NeoForge 1.21 architecture without legacy vanilla namespace minecart overrides.");
 
-        if (FMLEnvironment.dist.isClient()) {
-            modEventBus.addListener(ClientModEvents::registerMenuScreens);
-        }
+        modEventBus.addListener(ClientModEvents::registerMenuScreens);
     }
 
     private void addCreative(BuildCreativeModeTabContentsEvent event) {
