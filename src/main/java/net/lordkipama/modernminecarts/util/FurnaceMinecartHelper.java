@@ -138,7 +138,7 @@ public final class FurnaceMinecartHelper {
 
         minecart.setCustomDisplayBlockState(Optional.of(Blocks.FURNACE.defaultBlockState().setValue(FurnaceBlock.FACING, Direction.NORTH).setValue(FurnaceBlock.LIT, fuel > 0)));
 
-        if (fuel > 0 && minecart.level() instanceof ServerLevel server && ModernMinecartsConfig.allowFurnaceMinecartChunkloading) {
+        if (fuel > 0 && minecart.level() instanceof ServerLevel server && ModernMinecartsConfig.enableFurnaceMinecartChunkloading()) {
             ChunkPos chunkPos = ChunkPos.containing(BlockPos.containing(minecart.getX(), minecart.getY(), minecart.getZ()));
             server.getChunkSource().addTicketWithRadius(TicketType.PORTAL, chunkPos, 3);
         }

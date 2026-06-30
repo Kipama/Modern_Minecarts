@@ -99,14 +99,14 @@ public class CopperRailBlock extends PoweredRailBlock implements WeatheringRailB
 
     public float getModernMinecartRailSpeed(BlockState state, Level level, BlockPos pos, AbstractMinecart cart) {
         float finalSpeed = switch (getAge()) {
-            case UNAFFECTED -> ModernMinecartsConfig.copper_speed;
-            case EXPOSED -> ModernMinecartsConfig.exposed_copper_speed;
-            case WEATHERED -> ModernMinecartsConfig.weathered_copper_speed;
-            case OXIDIZED -> ModernMinecartsConfig.oxidized_copper_speed;
+            case UNAFFECTED -> ModernMinecartsConfig.copperSpeed();
+            case EXPOSED -> ModernMinecartsConfig.exposedCopperSpeed();
+            case WEATHERED -> ModernMinecartsConfig.weatheredCopperSpeed();
+            case OXIDIZED -> ModernMinecartsConfig.oxidizedCopperSpeed();
         };
 
-        if (RailShapeHelper.isAscending(getRailDirection(state, level, pos, null)) && finalSpeed >= ModernMinecartsConfig.max_ascending_speed) {
-            return ModernMinecartsConfig.max_ascending_speed;
+        if (RailShapeHelper.isAscending(getRailDirection(state, level, pos, null)) && finalSpeed >= ModernMinecartsConfig.maxAscendingSpeed()) {
+            return ModernMinecartsConfig.maxAscendingSpeed();
         }
 
         return finalSpeed;

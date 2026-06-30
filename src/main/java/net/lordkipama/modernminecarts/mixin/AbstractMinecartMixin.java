@@ -131,7 +131,7 @@ abstract class AbstractMinecartMixin {
 
     @Unique
     private static float modernminecarts$getFrontAdjustedRailSpeed(AbstractMinecart minecart, ServerLevel level, BlockPos railPos, float railMaxSpeed) {
-        if (railMaxSpeed <= ModernMinecartsConfig.max_ascending_speed) {
+        if (railMaxSpeed <= ModernMinecartsConfig.maxAscendingSpeed()) {
             return railMaxSpeed;
         }
 

@@ -1,4 +1,10 @@
 {
+  "neoforge:conditions": [
+    {
+      "type": "modernminecarts:feature_enabled",
+      "feature": "copper_rails"
+    }
+  ],
   "type": "minecraft:crafting_shapeless",
   "category": "misc",
   "ingredients": [

@@ -1,4 +1,10 @@
 {
+  "neoforge:conditions": [
+    {
+      "type": "modernminecarts:feature_enabled",
+      "feature": "powered_detector_rail"
+    }
+  ],
   "type": "minecraft:crafting_shaped",
   "category": "misc",
   "key": {

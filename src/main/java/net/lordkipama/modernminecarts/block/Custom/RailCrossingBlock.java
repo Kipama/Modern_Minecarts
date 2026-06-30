@@ -60,6 +60,6 @@ public class RailCrossingBlock extends BaseRailBlock implements ModernMinecartRa
     }
 
     public float getModernMinecartRailSpeed(BlockState state, Level level, BlockPos pos, AbstractMinecart cart) {
-        return ModernMinecartsConfig.copper_speed;
+        return ModernMinecartsConfig.copperSpeed();
     }
 }
