@@ -98,10 +98,10 @@ abstract class AbstractMinecartMixin {
         }
 
         BlockPos belowBlock = new BlockPos(x, y - 1, z);
-        if (!modernminecarts$jumpedOffSlope && hindBlockState.is(ModBlocks.SLOPED_RAIL.get()) && minecart.level().getBlockState(belowBlock).is(Blocks.AIR)) {
+        if (ModernMinecartsConfig.enableRailJump() && !modernminecarts$jumpedOffSlope && hindBlockState.is(ModBlocks.SLOPED_RAIL.get()) && minecart.level().getBlockState(belowBlock).is(Blocks.AIR)) {
             motion = rampBoost;
             modernminecarts$jumpedOffSlope = true;
-        } else if (!hindBlockState.is(ModBlocks.SLOPED_RAIL.get())) {
+        } else if (!ModernMinecartsConfig.enableRailJump() || !hindBlockState.is(ModBlocks.SLOPED_RAIL.get())) {
             modernminecarts$jumpedOffSlope = false;
         }
 
@@ -129,7 +129,7 @@ abstract class AbstractMinecartMixin {
 
     @Unique
     private static float modernminecarts$getFrontAdjustedRailSpeed(AbstractMinecart minecart, ServerLevel level, BlockPos railPos, float railMaxSpeed) {
-        if (railMaxSpeed <= ModernMinecartsConfig.max_ascending_speed) {
+        if (railMaxSpeed <= ModernMinecartsConfig.maxAscendingSpeed()) {
             return railMaxSpeed;
         }
 

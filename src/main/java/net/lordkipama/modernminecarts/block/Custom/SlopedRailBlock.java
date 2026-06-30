@@ -3,7 +3,6 @@ package net.lordkipama.modernminecarts.block.Custom;
 import com.mojang.serialization.MapCodec;
 import net.lordkipama.modernminecarts.ModernMinecartsConfig;
 import net.lordkipama.modernminecarts.block.ModBlocks;
-import net.lordkipama.modernminecarts.util.RailShapeHelper;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.world.entity.vehicle.minecart.AbstractMinecart;
@@ -11,7 +10,6 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
-import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.LevelReader;
 import net.minecraft.world.level.block.BaseRailBlock;
 import net.minecraft.world.level.block.Block;
@@ -28,13 +26,22 @@ import net.minecraft.world.level.material.FluidState;
 import net.minecraft.world.level.material.Fluids;
 
 public class SlopedRailBlock extends BaseRailBlock {
-    public static final EnumProperty<Direction> FACING = BlockStateProperties.HORIZONTAL_FACING;
     public static final EnumProperty<RailShape> SHAPE = BlockStateProperties.RAIL_SHAPE;
-    public static final EnumProperty<RailShape> CONST_SHAPE = EnumProperty.create("const_shape", RailShape.class);
+    public static final EnumProperty<RailShape> CONST_SHAPE = EnumProperty.create(
+            "const_shape",
+            RailShape.class,
+            RailShape.ASCENDING_EAST,
+            RailShape.ASCENDING_WEST,
+            RailShape.ASCENDING_NORTH,
+            RailShape.ASCENDING_SOUTH
+    );
 
     public SlopedRailBlock(BlockBehaviour.Properties properties) {
         super(true, properties);
-        this.registerDefaultState(this.stateDefinition.any().setValue(SHAPE, RailShape.NORTH_WEST).setValue(WATERLOGGED, Boolean.FALSE));
+        this.registerDefaultState(this.stateDefinition.any()
+                .setValue(SHAPE, RailShape.ASCENDING_NORTH)
+                .setValue(CONST_SHAPE, RailShape.ASCENDING_NORTH)
+                .setValue(WATERLOGGED, Boolean.FALSE));
     }
 
     @Override
@@ -50,14 +57,22 @@ public class SlopedRailBlock extends BaseRailBlock {
         Direction direction = context.getHorizontalDirection();
 
         switch (direction) {
-            case EAST -> blockState = blockState.setValue(this.getShapeProperty(), RailShape.ASCENDING_EAST).setValue(WATERLOGGED, flag);
-            case WEST -> blockState = blockState.setValue(this.getShapeProperty(), RailShape.ASCENDING_WEST).setValue(WATERLOGGED, flag);
-            case NORTH -> blockState = blockState.setValue(this.getShapeProperty(), RailShape.ASCENDING_NORTH).setValue(WATERLOGGED, flag);
-            case SOUTH -> blockState = blockState.setValue(this.getShapeProperty(), RailShape.ASCENDING_SOUTH).setValue(WATERLOGGED, flag);
-        }
-
-        if (!RailShapeHelper.isAscending(blockState.getValue(CONST_SHAPE))) {
-            blockState = blockState.setValue(CONST_SHAPE, blockState.getValue(SHAPE));
+            case EAST -> blockState = blockState
+                    .setValue(this.getShapeProperty(), RailShape.ASCENDING_EAST)
+                    .setValue(CONST_SHAPE, RailShape.ASCENDING_EAST)
+                    .setValue(WATERLOGGED, flag);
+            case WEST -> blockState = blockState
+                    .setValue(this.getShapeProperty(), RailShape.ASCENDING_WEST)
+                    .setValue(CONST_SHAPE, RailShape.ASCENDING_WEST)
+                    .setValue(WATERLOGGED, flag);
+            case NORTH -> blockState = blockState
+                    .setValue(this.getShapeProperty(), RailShape.ASCENDING_NORTH)
+                    .setValue(CONST_SHAPE, RailShape.ASCENDING_NORTH)
+                    .setValue(WATERLOGGED, flag);
+            case SOUTH -> blockState = blockState
+                    .setValue(this.getShapeProperty(), RailShape.ASCENDING_SOUTH)
+                    .setValue(CONST_SHAPE, RailShape.ASCENDING_SOUTH)
+                    .setValue(WATERLOGGED, flag);
         }
 
         return blockState;
@@ -75,27 +90,21 @@ public class SlopedRailBlock extends BaseRailBlock {
 
     @Override
     protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) {
-        builder.add(FACING, SHAPE, WATERLOGGED, CONST_SHAPE);
+        builder.add(SHAPE, CONST_SHAPE, WATERLOGGED);
     }
 
     @Override
     protected void neighborChanged(BlockState state, Level level, BlockPos pos, Block block, Orientation orientation, boolean isMoving) {
-        if (!level.isClientSide() && level.getBlockState(pos).is(this)) {
+        if (!level.isClientSide && level.getBlockState(pos).is(this)) {
             if (!canSupportRigidBlock(level, pos.below())) {
                 dropResources(state, level, pos);
                 level.removeBlock(pos, isMoving);
             } else {
-                if (!RailShapeHelper.isAscending(state.getValue(CONST_SHAPE))) {
-                    state = state.setValue(CONST_SHAPE, state.getValue(SHAPE));
-                } else {
-                    state = state.setValue(SHAPE, state.getValue(CONST_SHAPE));
+                RailShape constantShape = state.getValue(CONST_SHAPE);
+                if (state.getValue(SHAPE) != constantShape) {
+                    state = state.setValue(SHAPE, constantShape);
                 }
-
-                if (state.getValue(SHAPE) == RailShape.EAST_WEST || state.getValue(SHAPE) == RailShape.NORTH_SOUTH) {
-                    level.setBlock(pos, state, 0);
-                }
-
-                level.setBlock(pos, state, 0);
+                level.setBlock(pos, state, Block.UPDATE_ALL);
             }
         }
     }
@@ -115,16 +124,17 @@ public class SlopedRailBlock extends BaseRailBlock {
         }
 
         if (airInFront) {
-            return ModernMinecartsConfig.copper_speed;
+            return ModernMinecartsConfig.copperSpeed();
         }
-        return ModernMinecartsConfig.max_ascending_speed;
+        return ModernMinecartsConfig.maxAscendingSpeed();
     }
 
     @Override
     public RailShape getRailDirection(BlockState state, BlockGetter world, BlockPos pos, @org.jetbrains.annotations.Nullable AbstractMinecart cart) {
-        return state.getValue(SHAPE);
+        return state.getValue(CONST_SHAPE);
     }
 
+    @Override
     public ItemStack getCloneItemStack(LevelReader level, BlockPos pos, BlockState state) {
         return new ItemStack(ModBlocks.SLOPED_RAIL.get());
     }

@@ -1,5 +1,6 @@
 package net.lordkipama.modernminecarts.util;
 
+import net.lordkipama.modernminecarts.ModernMinecartsConfig;
 import net.lordkipama.modernminecarts.block.Custom.PoweredDetectorRailBlock;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
@@ -15,6 +16,10 @@ public final class PoweredDetectorRailHelper {
     }
 
     public static void applyMotion(AbstractMinecart minecart, ServerLevel level) {
+        if (!ModernMinecartsConfig.enablePoweredDetectorRail()) {
+            return;
+        }
+
         BlockPos pos = minecart.getCurrentBlockPosOrRailBelow();
         BlockState state = level.getBlockState(pos);
 

@@ -1,13 +1,19 @@
 package net.lordkipama.modernminecarts.block;
 
+import net.lordkipama.modernminecarts.Item.FeatureToggleBlockItem;
 import net.lordkipama.modernminecarts.Item.ModItems;
 import net.lordkipama.modernminecarts.ModernMinecarts;
+import net.lordkipama.modernminecarts.ModernMinecartsConfig;
 import net.lordkipama.modernminecarts.block.Custom.CopperRailBlock;
 import net.lordkipama.modernminecarts.block.Custom.PoweredDetectorRailBlock;
 import net.lordkipama.modernminecarts.block.Custom.RailCrossingBlock;
 import net.lordkipama.modernminecarts.block.Custom.SlopedRailBlock;
 import net.lordkipama.modernminecarts.block.Custom.WaxedCopperRailBlock;
 import net.lordkipama.modernminecarts.block.Custom.WeatheringRailBlock;
+import net.minecraft.core.registries.Registries;
+import net.minecraft.resources.ResourceKey;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.item.Item;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockBehaviour;
@@ -28,7 +34,6 @@ public class ModBlocks {
             properties -> new WaxedCopperRailBlock(properties, WaxedCopperRailBlock.WaxedWeatherState.WAXED_UNAFFECTED),
             BlockBehaviour.Properties.ofFullCopy(Blocks.POWERED_RAIL)
     );
-
     public static final DeferredBlock<CopperRailBlock> EXPOSED_COPPER_RAIL = registerBlock(
             "exposed_copper_rail",
             properties -> new CopperRailBlock(properties, WeatheringRailBlock.WeatherState.EXPOSED),
@@ -39,7 +44,6 @@ public class ModBlocks {
             properties -> new WaxedCopperRailBlock(properties, WaxedCopperRailBlock.WaxedWeatherState.WAXED_EXPOSED),
             BlockBehaviour.Properties.ofFullCopy(Blocks.POWERED_RAIL)
     );
-
     public static final DeferredBlock<CopperRailBlock> WEATHERED_COPPER_RAIL = registerBlock(
             "weathered_copper_rail",
             properties -> new CopperRailBlock(properties, WeatheringRailBlock.WeatherState.WEATHERED),
@@ -50,7 +54,6 @@ public class ModBlocks {
             properties -> new WaxedCopperRailBlock(properties, WaxedCopperRailBlock.WaxedWeatherState.WAXED_WEATHERED),
             BlockBehaviour.Properties.ofFullCopy(Blocks.POWERED_RAIL)
     );
-
     public static final DeferredBlock<CopperRailBlock> OXIDIZED_COPPER_RAIL = registerBlock(
             "oxidized_copper_rail",
             properties -> new CopperRailBlock(properties, WeatheringRailBlock.WeatherState.OXIDIZED),
@@ -61,7 +64,6 @@ public class ModBlocks {
             properties -> new WaxedCopperRailBlock(properties, WaxedCopperRailBlock.WaxedWeatherState.WAXED_OXIDIZED),
             BlockBehaviour.Properties.ofFullCopy(Blocks.POWERED_RAIL)
     );
-
     public static final DeferredBlock<RailCrossingBlock> RAIL_CROSSING = registerBlock(
             "rail_crossing",
             RailCrossingBlock::new,
@@ -84,8 +86,32 @@ public class ModBlocks {
             BlockBehaviour.Properties properties
     ) {
         DeferredBlock<T> registered = BLOCKS.registerBlock(name, factory, properties);
-        ModItems.ITEMS.registerSimpleBlockItem(registered);
+        registerBlockItem(name, registered);
         return registered;
+    }
+
+    private static <T extends Block> void registerBlockItem(String name, DeferredBlock<T> block) {
+        Item.Properties properties = new Item.Properties()
+                .setId(ResourceKey.create(Registries.ITEM, ResourceLocation.fromNamespaceAndPath(ModernMinecarts.MOD_ID, name)))
+                .useBlockDescriptionPrefix();
+
+        if (name.contains("copper_rail")) {
+            ModItems.ITEMS.register(name, () -> new FeatureToggleBlockItem(block.get(), properties, ModernMinecartsConfig::enableCopperRails));
+            return;
+        }
+        if ("rail_crossing".equals(name)) {
+            ModItems.ITEMS.register(name, () -> new FeatureToggleBlockItem(block.get(), properties, ModernMinecartsConfig::enableRailCrossing));
+            return;
+        }
+        if ("sloped_rail".equals(name)) {
+            ModItems.ITEMS.register(name, () -> new FeatureToggleBlockItem(block.get(), properties, ModernMinecartsConfig::enableRailJump));
+            return;
+        }
+        if ("powered_detector_rail".equals(name)) {
+            ModItems.ITEMS.register(name, () -> new FeatureToggleBlockItem(block.get(), properties, ModernMinecartsConfig::enablePoweredDetectorRail));
+            return;
+        }
+        ModItems.ITEMS.registerSimpleBlockItem(block);
     }
 
     public static void register(IEventBus eventBus) {
