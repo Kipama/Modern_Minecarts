@@ -1,6 +1,13 @@
 {
-  "type": "minecraft:crafting_shaped",
+  "conditions": [
+    {
+      "type": "modernminecarts:feature_enabled",
+      "feature": "copper_rails"
+    }
+  ],
+  "type": "modernminecarts:configurable_shaped_recipe",
   "category": "misc",
+  "yield_config": "copper_rail_recipe_yield",
   "key": {
     "#": {
       "item": "minecraft:stick"

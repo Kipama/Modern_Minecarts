@@ -40,6 +40,10 @@ public class ModernMinecartsConfig {
             .comment("If true, minecarts can be linked together using chains.")
             .define("enable_minecart_chaining", true);
 
+    private static final ForgeConfigSpec.BooleanValue ENABLE_COPPER_RAILS = BUILDER
+            .comment("If true, copper rails can be crafted, placed, and shown in creative tabs.")
+            .define("enable_copper_rails", true);
+
     private static final ForgeConfigSpec.BooleanValue ENABLE_RAIL_CROSSING = BUILDER
             .comment("If true, rail crossings can be placed and used.")
             .define("enable_rail_crossing", true);
@@ -51,6 +55,14 @@ public class ModernMinecartsConfig {
     private static final ForgeConfigSpec.BooleanValue ENABLE_RAIL_JUMP = BUILDER
             .comment("If true, rail jumps can be placed and created from rails using sticks.")
             .define("enable_rail_jump", true);
+
+    private static final ForgeConfigSpec.IntValue COPPER_RAIL_RECIPE_YIELD = BUILDER
+            .comment("How many copper rails the recipe crafts.")
+            .defineInRange("copper_rail_recipe_yield", 6, 1, 64);
+
+    private static final ForgeConfigSpec.IntValue POWERED_RAIL_RECIPE_YIELD = BUILDER
+            .comment("How many powered rails the recipe crafts.")
+            .defineInRange("powered_rail_recipe_yield", 12, 1, 64);
 
     public static final ForgeConfigSpec SPEC = BUILDER.build();
 
@@ -110,6 +122,14 @@ public class ModernMinecartsConfig {
         ENABLE_MINECART_CHAINING.set(value);
     }
 
+    public static boolean enableCopperRails() {
+        return ENABLE_COPPER_RAILS.get();
+    }
+
+    public static void setEnableCopperRails(boolean value) {
+        ENABLE_COPPER_RAILS.set(value);
+    }
+
     public static boolean enableRailCrossing() {
         return ENABLE_RAIL_CROSSING.get();
     }
@@ -132,6 +152,22 @@ public class ModernMinecartsConfig {
 
     public static void setEnableRailJump(boolean value) {
         ENABLE_RAIL_JUMP.set(value);
+    }
+
+    public static int copperRailRecipeYield() {
+        return COPPER_RAIL_RECIPE_YIELD.get();
+    }
+
+    public static void setCopperRailRecipeYield(int value) {
+        COPPER_RAIL_RECIPE_YIELD.set(value);
+    }
+
+    public static int poweredRailRecipeYield() {
+        return POWERED_RAIL_RECIPE_YIELD.get();
+    }
+
+    public static void setPoweredRailRecipeYield(int value) {
+        POWERED_RAIL_RECIPE_YIELD.set(value);
     }
 
     public static void save() {
