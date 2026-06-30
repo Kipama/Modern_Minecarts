@@ -2,7 +2,6 @@ package net.lordkipama.modernminecarts.recipe;
 
 import com.google.gson.JsonObject;
 import net.lordkipama.modernminecarts.ModernMinecartsConfig;
-import net.minecraft.core.RegistryAccess;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.GsonHelper;
@@ -17,7 +16,7 @@ public class ConfigurableShapedRecipeSerializer implements RecipeSerializer<Shap
     public ShapedRecipe fromJson(ResourceLocation recipeId, JsonObject json) {
         ShapedRecipe baseRecipe = VANILLA.fromJson(recipeId, json);
         String yieldConfig = GsonHelper.getAsString(json, "yield_config");
-        ItemStack result = baseRecipe.getResultItem(RegistryAccess.EMPTY).copy();
+        ItemStack result = baseRecipe.getResultItem().copy();
         result.setCount(getConfiguredYield(yieldConfig));
         return new ShapedRecipe(
                 recipeId,
@@ -26,8 +25,7 @@ public class ConfigurableShapedRecipeSerializer implements RecipeSerializer<Shap
                 baseRecipe.getWidth(),
                 baseRecipe.getHeight(),
                 baseRecipe.getIngredients(),
-                result,
-                baseRecipe.showNotification()
+                result
         );
     }
 
