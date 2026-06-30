@@ -2,8 +2,8 @@ package net.lordkipama.modernminecarts.inventory;
 
 import java.util.List;
 import java.util.function.Consumer;
+import com.mojang.blaze3d.vertex.PoseStack;
 import net.lordkipama.modernminecarts.ModernMinecartsConfig;
-import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.ContainerObjectSelectionList;
 import net.minecraft.client.gui.components.EditBox;
@@ -235,16 +235,16 @@ public class ModernMinecartsConfigScreen extends Screen {
     }
 
     @Override
-    public void render(GuiGraphics guiGraphics, int mouseX, int mouseY, float partialTick) {
-        this.renderBackground(guiGraphics);
+    public void render(PoseStack poseStack, int mouseX, int mouseY, float partialTick) {
+        this.renderBackground(poseStack);
         int footerTop = this.height - FOOTER_HEIGHT;
-        guiGraphics.fill(0, footerTop, this.width, this.height, 0xAA000000);
-        super.render(guiGraphics, mouseX, mouseY, partialTick);
+        fill(poseStack, 0, footerTop, this.width, this.height, 0xAA000000);
+        super.render(poseStack, mouseX, mouseY, partialTick);
 
         int titleY = (TITLE_HEIGHT - this.font.lineHeight) / 2;
-        guiGraphics.drawCenteredString(this.font, this.title, this.width / 2, titleY, 0xFFFFFF);
+        drawCenteredString(poseStack, this.font, this.title, this.width / 2, titleY, 0xFFFFFF);
         if (this.statusMessage != null) {
-            guiGraphics.drawCenteredString(this.font, this.statusMessage, this.width / 2, footerTop + 8, 0xFF5555);
+            drawCenteredString(poseStack, this.font, this.statusMessage, this.width / 2, footerTop + 8, 0xFF5555);
         }
     }
 
@@ -295,8 +295,8 @@ public class ModernMinecartsConfigScreen extends Screen {
         protected abstract List<? extends GuiEventListener> widgets();
         protected abstract List<? extends NarratableEntry> narratableWidgets();
 
-        protected void renderName(GuiGraphics guiGraphics, int left, int top) {
-            guiGraphics.drawString(ModernMinecartsConfigScreen.this.font, this.name, left, top + 6, 0xFFFFFF);
+        protected void renderName(PoseStack poseStack, int left, int top) {
+            ModernMinecartsConfigScreen.this.font.draw(poseStack, this.name, left, top + 6, 0xFFFFFF);
         }
 
         protected void positionResetButton(int left, int top) {
@@ -322,7 +322,7 @@ public class ModernMinecartsConfigScreen extends Screen {
 
         @Override
         public void render(
-                GuiGraphics guiGraphics,
+                PoseStack poseStack,
                 int index,
                 int top,
                 int left,
@@ -335,10 +335,10 @@ public class ModernMinecartsConfigScreen extends Screen {
         ) {
             this.resetButton.active = !isDefaultNumberValue(this.field.getValue(), this.defaultValue);
             this.field.setPosition(left + LABEL_WIDTH + COLUMN_GAP, top + 2);
-            this.renderName(guiGraphics, left, top);
-            this.field.render(guiGraphics, mouseX, mouseY, partialTick);
+            this.renderName(poseStack, left, top);
+            this.field.render(poseStack, mouseX, mouseY, partialTick);
             this.positionResetButton(left, top);
-            this.resetButton.render(guiGraphics, mouseX, mouseY, partialTick);
+            this.resetButton.render(poseStack, mouseX, mouseY, partialTick);
         }
 
         @Override
@@ -369,7 +369,7 @@ public class ModernMinecartsConfigScreen extends Screen {
 
         @Override
         public void render(
-                GuiGraphics guiGraphics,
+                PoseStack poseStack,
                 int index,
                 int top,
                 int left,
@@ -382,10 +382,10 @@ public class ModernMinecartsConfigScreen extends Screen {
         ) {
             this.resetButton.active = !isDefaultIntegerValue(this.field.getValue(), this.defaultValue);
             this.field.setPosition(left + LABEL_WIDTH + COLUMN_GAP, top + 2);
-            this.renderName(guiGraphics, left, top);
-            this.field.render(guiGraphics, mouseX, mouseY, partialTick);
+            this.renderName(poseStack, left, top);
+            this.field.render(poseStack, mouseX, mouseY, partialTick);
             this.positionResetButton(left, top);
-            this.resetButton.render(guiGraphics, mouseX, mouseY, partialTick);
+            this.resetButton.render(poseStack, mouseX, mouseY, partialTick);
         }
 
         @Override
@@ -416,7 +416,7 @@ public class ModernMinecartsConfigScreen extends Screen {
 
         @Override
         public void render(
-                GuiGraphics guiGraphics,
+                PoseStack poseStack,
                 int index,
                 int top,
                 int left,
@@ -429,10 +429,10 @@ public class ModernMinecartsConfigScreen extends Screen {
         ) {
             this.resetButton.active = this.toggleButton.getValue() != this.defaultValue;
             this.toggleButton.setPosition(left + LABEL_WIDTH + COLUMN_GAP, top + 2);
-            this.renderName(guiGraphics, left, top);
-            this.toggleButton.render(guiGraphics, mouseX, mouseY, partialTick);
+            this.renderName(poseStack, left, top);
+            this.toggleButton.render(poseStack, mouseX, mouseY, partialTick);
             this.positionResetButton(left, top);
-            this.resetButton.render(guiGraphics, mouseX, mouseY, partialTick);
+            this.resetButton.render(poseStack, mouseX, mouseY, partialTick);
         }
 
         @Override
@@ -483,7 +483,7 @@ public class ModernMinecartsConfigScreen extends Screen {
 
         @Override
         public void render(
-                GuiGraphics guiGraphics,
+                PoseStack poseStack,
                 int index,
                 int top,
                 int left,
@@ -496,7 +496,7 @@ public class ModernMinecartsConfigScreen extends Screen {
         ) {
             int centeredX = left + TABLE_WIDTH / 2 - ModernMinecartsConfigScreen.this.font.width(this.name) / 2;
             int textY = top + (ROW_HEIGHT - ModernMinecartsConfigScreen.this.font.lineHeight) / 2;
-            guiGraphics.drawString(ModernMinecartsConfigScreen.this.font, this.name, centeredX, textY, 0xFFFFFF);
+            ModernMinecartsConfigScreen.this.font.draw(poseStack, this.name, centeredX, textY, 0xFFFFFF);
         }
 
         @Override
