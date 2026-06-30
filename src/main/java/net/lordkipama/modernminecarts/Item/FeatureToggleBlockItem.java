@@ -2,6 +2,7 @@ package net.lordkipama.modernminecarts.Item;
 
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.item.BlockItem;
+import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.item.context.UseOnContext;
 import net.minecraft.world.level.block.Block;
 
@@ -22,5 +23,10 @@ public class FeatureToggleBlockItem extends BlockItem {
         }
 
         return super.useOn(context);
+    }
+
+    @Override
+    protected boolean canPlace(BlockPlaceContext context, net.minecraft.world.level.block.state.BlockState state) {
+        return enabledSupplier.getAsBoolean() && super.canPlace(context, state);
     }
 }

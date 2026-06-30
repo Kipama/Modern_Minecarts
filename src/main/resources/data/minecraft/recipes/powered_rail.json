@@ -1,6 +1,7 @@
 {
-  "type": "minecraft:crafting_shaped",
+  "type": "modernminecarts:configurable_shaped_recipe",
   "category": "misc",
+  "yield_config": "powered_rail_recipe_yield",
   "key": {
     "#": {
       "item": "minecraft:stick"

@@ -63,6 +63,9 @@ public class ModBlocks {
     }
 
     private static <T extends Block> RegistryObject<Item> registerBlockItem(String name, RegistryObject<T> block) {
+        if (name.contains("copper_rail")) {
+            return ModItems.ITEMS.register(name, () -> new FeatureToggleBlockItem(block.get(), new Item.Properties(), ModernMinecartsConfig::enableCopperRails));
+        }
         if ("rail_crossing".equals(name)) {
             return ModItems.ITEMS.register(name, () -> new FeatureToggleBlockItem(block.get(), new Item.Properties(), ModernMinecartsConfig::enableRailCrossing));
         }
