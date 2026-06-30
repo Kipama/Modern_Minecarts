@@ -42,14 +42,14 @@ public class WaxedCopperRailBlock extends PoweredRailBlock {
     @Override
     public float getRailMaxSpeed(BlockState state, Level level, BlockPos pos, AbstractMinecart cart) {
         float finalSpeed = switch (waxedWeatherState) {
-            case WAXED_UNAFFECTED -> ModernMinecartsConfig.copper_speed;
-            case WAXED_EXPOSED -> ModernMinecartsConfig.exposed_copper_speed;
-            case WAXED_WEATHERED -> ModernMinecartsConfig.weathered_copper_speed;
-            case WAXED_OXIDIZED -> ModernMinecartsConfig.oxidized_copper_speed;
+            case WAXED_UNAFFECTED -> ModernMinecartsConfig.copperSpeed();
+            case WAXED_EXPOSED -> ModernMinecartsConfig.exposedCopperSpeed();
+            case WAXED_WEATHERED -> ModernMinecartsConfig.weatheredCopperSpeed();
+            case WAXED_OXIDIZED -> ModernMinecartsConfig.oxidizedCopperSpeed();
         };
 
-        if (RailShapeHelper.isAscending(getRailDirection(state, level, pos, null)) && finalSpeed >= ModernMinecartsConfig.max_ascending_speed) {
-            return ModernMinecartsConfig.max_ascending_speed;
+        if (RailShapeHelper.isAscending(getRailDirection(state, level, pos, null)) && finalSpeed >= ModernMinecartsConfig.maxAscendingSpeed()) {
+            return ModernMinecartsConfig.maxAscendingSpeed();
         }
 
         return finalSpeed;

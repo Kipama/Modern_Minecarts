@@ -1,15 +1,26 @@
 package net.lordkipama.modernminecarts.event;
 
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
+import com.mojang.serialization.JsonOps;
 import net.lordkipama.modernminecarts.ModernMinecarts;
+import net.lordkipama.modernminecarts.ModernMinecartsConfig;
 import net.lordkipama.modernminecarts.block.ModBlocks;
 import net.lordkipama.modernminecarts.util.FurnaceMinecartHelper;
 import net.lordkipama.modernminecarts.util.MinecartLinkHelper;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.HolderLookup;
+import net.minecraft.core.registries.Registries;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.resources.ResourceKey;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.packs.resources.ResourceManager;
+import net.minecraft.server.packs.resources.SimplePreparableReloadListener;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
+import net.minecraft.util.profiling.ProfilerFiller;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.item.ItemEntity;
@@ -19,6 +30,10 @@ import net.minecraft.world.entity.vehicle.AbstractMinecart;
 import net.minecraft.world.entity.vehicle.MinecartFurnace;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
+import net.minecraft.world.item.crafting.Recipe;
+import net.minecraft.world.item.crafting.RecipeHolder;
+import net.minecraft.world.item.crafting.RecipeMap;
+import net.minecraft.world.item.crafting.RecipeManager;
 import net.minecraft.world.item.component.CustomData;
 import net.minecraft.world.level.ClipContext;
 import net.minecraft.world.level.Level;
@@ -32,13 +47,24 @@ import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
+import net.neoforged.fml.util.ObfuscationReflectionHelper;
+import net.neoforged.neoforge.common.conditions.ICondition;
+import net.neoforged.neoforge.event.AddReloadListenerEvent;
 import net.neoforged.neoforge.event.entity.EntityLeaveLevelEvent;
 import net.neoforged.neoforge.event.entity.player.PlayerInteractEvent;
 import net.neoforged.neoforge.event.tick.EntityTickEvent;
 
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.lang.reflect.Field;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+
 @EventBusSubscriber(modid = ModernMinecarts.MOD_ID)
 public final class ModEvents {
     private static final String PARENT_ENTITY_TAG = "ParentEntity";
+    private static final Field RECIPES_FIELD = ObfuscationReflectionHelper.findField(RecipeManager.class, "recipes");
 
     private ModEvents() {
     }
@@ -48,6 +74,10 @@ public final class ModEvents {
         Level level = event.getLevel();
         Player player = event.getEntity();
         ItemStack stack = player.getItemInHand(event.getHand());
+
+        if (!ModernMinecartsConfig.enableRailJump()) {
+            return;
+        }
 
         if (!stack.is(Items.STICK)) {
             return;
@@ -112,6 +142,10 @@ public final class ModEvents {
             }
             event.setCancellationResult(InteractionResult.SUCCESS);
             event.setCanceled(true);
+            return;
+        }
+
+        if (!ModernMinecartsConfig.enableMinecartChaining() && stack.getItem() == Items.CHAIN) {
             return;
         }
 
@@ -201,6 +235,75 @@ public final class ModEvents {
         if (child != null) {
             MinecartLinkHelper.dropChainItem(minecart);
             MinecartLinkHelper.unsetParentChild(minecart, child);
+        }
+    }
+
+    @SubscribeEvent
+    public static void onAddReloadListener(AddReloadListenerEvent event) {
+        event.addListener(new SimplePreparableReloadListener<Void>() {
+            @Override
+            protected Void prepare(ResourceManager resourceManager, ProfilerFiller profiler) {
+                return null;
+            }
+
+            @Override
+            protected void apply(Void object, ResourceManager resourceManager, ProfilerFiller profiler) {
+                RecipeManager recipeManager = event.getServerResources().getRecipeManager();
+                HolderLookup.Provider registries = event.getServerResources().getRegistryLookup();
+                replaceRecipe(recipeManager, registries, ResourceLocation.withDefaultNamespace("powered_rail"), "/data/minecraft/recipe/powered_rail.json", ModernMinecartsConfig.poweredRailRecipeYield());
+                replaceRecipe(recipeManager, registries, ResourceLocation.fromNamespaceAndPath(ModernMinecarts.MOD_ID, "copper_rail"), "/data/modernminecarts/recipe/copper_rail.json", ModernMinecartsConfig.copperRailRecipeYield());
+            }
+        });
+    }
+
+    private static void replaceRecipe(RecipeManager recipeManager, HolderLookup.Provider registries, ResourceLocation recipeId, String resourcePath, int resultCount) {
+        RecipeHolder<?> replacement = loadRecipe(recipeId, resourcePath, registries, resultCount);
+        if (replacement == null) {
+            return;
+        }
+
+        Collection<RecipeHolder<?>> existingRecipes = recipeManager.getRecipes();
+        List<RecipeHolder<?>> updatedRecipes = new ArrayList<>(existingRecipes.size());
+        boolean replaced = false;
+        for (RecipeHolder<?> recipeHolder : existingRecipes) {
+            if (recipeHolder.id().location().equals(recipeId)) {
+                updatedRecipes.add(replacement);
+                replaced = true;
+            } else {
+                updatedRecipes.add(recipeHolder);
+            }
+        }
+
+        if (!replaced) {
+            updatedRecipes.add(replacement);
+        }
+
+        try {
+            RECIPES_FIELD.set(recipeManager, RecipeMap.create(updatedRecipes));
+        } catch (IllegalAccessException ignored) {
+        }
+    }
+
+    private static RecipeHolder<?> loadRecipe(ResourceLocation recipeId, String resourcePath, HolderLookup.Provider registries, int resultCount) {
+        try (InputStream inputStream = ModEvents.class.getResourceAsStream(resourcePath)) {
+            if (inputStream == null) {
+                return null;
+            }
+
+            try (InputStreamReader reader = new InputStreamReader(inputStream)) {
+                JsonObject json = JsonParser.parseReader(reader).getAsJsonObject();
+                JsonObject result = json.getAsJsonObject("result");
+                if (result != null) {
+                    result.addProperty("count", resultCount);
+                }
+
+                ResourceKey<Recipe<?>> recipeKey = ResourceKey.create(Registries.RECIPE, recipeId);
+                return ICondition.getConditionally(Recipe.CODEC, registries.createSerializationContext(JsonOps.INSTANCE), json)
+                        .map(recipe -> new RecipeHolder<>(recipeKey, recipe))
+                        .orElse(null);
+            }
+        } catch (Exception ignored) {
+            return null;
         }
     }
 
