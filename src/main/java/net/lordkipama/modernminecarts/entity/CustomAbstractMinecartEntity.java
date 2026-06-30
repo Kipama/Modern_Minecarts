@@ -132,13 +132,13 @@ public abstract class CustomAbstractMinecartEntity extends AbstractMinecart impl
         }
 
         BlockPos belowBlock = new BlockPos(x, y-1,z);
-        if(!jumpedOffSlope && hindBlockState.is(ModBlocks.SLOPED_RAIL.get()) && this.level().getBlockState(belowBlock).is(Blocks.AIR)){
+        if(ModernMinecartsConfig.enableRailJump() && !jumpedOffSlope && hindBlockState.is(ModBlocks.SLOPED_RAIL.get()) && this.level().getBlockState(belowBlock).is(Blocks.AIR)){
             //modify vec3 if rail is ramp
             vec3 = newVec3;
 
             jumpedOffSlope = true;
         }
-        else if(!hindBlockState.is(ModBlocks.SLOPED_RAIL.get())){
+        else if(!ModernMinecartsConfig.enableRailJump() || !hindBlockState.is(ModBlocks.SLOPED_RAIL.get())){
             jumpedOffSlope = false;
         }
 
@@ -211,7 +211,7 @@ public abstract class CustomAbstractMinecartEntity extends AbstractMinecart impl
             railMaxSpeed = railMaxSpeed/2;
         }
 
-        if(railMaxSpeed > ModernMinecartsConfig.max_ascending_speed) {
+        if(railMaxSpeed > ModernMinecartsConfig.maxAscendingSpeed()) {
             Vec3 vec3 = getDeltaMovement();
             BlockState frontBlockState;
             BlockPos blockpos;
@@ -546,7 +546,7 @@ public abstract class CustomAbstractMinecartEntity extends AbstractMinecart impl
             flag = pState.getValue(PoweredRailBlock.POWERED);
             flag1 = !flag;
         }
-        else if(baserailblock instanceof PoweredDetectorRailBlock weightedState) {
+        else if(ModernMinecartsConfig.enablePoweredDetectorRail() && baserailblock instanceof PoweredDetectorRailBlock weightedState) {
             flag = pState.getValue(PoweredRailBlock.POWERED);
             flag1 = !flag;
             //Add "start boost"

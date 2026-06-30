@@ -122,7 +122,7 @@ public class CustomMinecartFurnaceEntity extends CustomAbstractMinecartContainer
             boolean isMoving = movement.horizontalDistanceSqr() > 0.001D;
             boolean hasChild = this.getLinkedChild() != null;
             boolean isPoweredRail = block instanceof PoweredRailBlock && !((PoweredRailBlock) block).isActivatorRail();
-            boolean isDetectorRail = block instanceof PoweredDetectorRailBlock;
+            boolean isDetectorRail = ModernMinecartsConfig.enablePoweredDetectorRail() && block instanceof PoweredDetectorRailBlock;
             boolean isRailPowered = (isPoweredRail || isDetectorRail) && railState.getValue(PoweredRailBlock.POWERED);
             boolean consumeFuel = railState.is(BlockTags.RAILS)
                     && this.getLinkedParent() == null
@@ -161,7 +161,7 @@ public class CustomMinecartFurnaceEntity extends CustomAbstractMinecartContainer
 
 
 
-            if(fuel > 0 && ModernMinecartsConfig.allowFurnaceMinecartChunkloading) {
+            if(fuel > 0 && ModernMinecartsConfig.enableFurnaceMinecartChunkloading()) {
                 ChunkPos chunkpos = new ChunkPos(BlockPos.containing(this.getX(), this.getY(), this.getZ()));
                 server.getChunkSource().addRegionTicket(TicketType.PORTAL, chunkpos, 3, blockPosition());
             }
@@ -306,7 +306,7 @@ public class CustomMinecartFurnaceEntity extends CustomAbstractMinecartContainer
 
     protected void moveAlongTrack(BlockPos pPos, BlockState pState) {
         BaseRailBlock baserailblock = (BaseRailBlock) pState.getBlock();
-        if((baserailblock instanceof PoweredRailBlock && !((PoweredRailBlock) baserailblock).isActivatorRail()) || baserailblock instanceof PoweredDetectorRailBlock){
+        if((baserailblock instanceof PoweredRailBlock && !((PoweredRailBlock) baserailblock).isActivatorRail()) || (ModernMinecartsConfig.enablePoweredDetectorRail() && baserailblock instanceof PoweredDetectorRailBlock)){
             if(!pState.getValue(PoweredRailBlock.POWERED)){
                 this.xPush = 0;
                 this.zPush = 0;
