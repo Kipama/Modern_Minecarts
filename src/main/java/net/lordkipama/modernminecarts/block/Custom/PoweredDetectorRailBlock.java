@@ -1,6 +1,7 @@
 package net.lordkipama.modernminecarts.block.Custom;
 
 import com.mojang.serialization.MapCodec;
+import net.lordkipama.modernminecarts.ModernMinecartsConfig;
 import net.lordkipama.modernminecarts.block.ModBlocks;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -88,6 +89,10 @@ public class PoweredDetectorRailBlock extends BaseRailBlock {
 
     @Override
     public void entityInside(BlockState state, Level level, BlockPos pos, Entity entity) {
+        if (!ModernMinecartsConfig.enablePoweredDetectorRail()) {
+            return;
+        }
+
         if (!level.isClientSide && !state.getValue(POWERED)) {
             this.checkPressed(level, pos, state);
         }
@@ -95,6 +100,10 @@ public class PoweredDetectorRailBlock extends BaseRailBlock {
 
     @Override
     protected ItemInteractionResult useItemOn(ItemStack itemStack, BlockState state, Level level, BlockPos pos, Player player, InteractionHand interactionHand, BlockHitResult blockHitResult) {
+        if (!ModernMinecartsConfig.enablePoweredDetectorRail()) {
+            return ItemInteractionResult.PASS_TO_DEFAULT_BLOCK_INTERACTION;
+        }
+
         if (itemStack.getItem() instanceof MinecartItem || itemStack.is(Items.HOPPER) || itemStack.is(Items.CHEST) || itemStack.is(Items.BARREL)) {
             return ItemInteractionResult.PASS_TO_DEFAULT_BLOCK_INTERACTION;
         }
@@ -166,6 +175,10 @@ public class PoweredDetectorRailBlock extends BaseRailBlock {
 
     @Override
     public void onPlace(BlockState state, Level level, BlockPos pos, BlockState oldState, boolean isMoving) {
+        if (!ModernMinecartsConfig.enablePoweredDetectorRail()) {
+            return;
+        }
+
         if (!oldState.is(state.getBlock())) {
             BlockState blockState = this.updateState(state, level, pos, isMoving);
             this.checkPressed(level, pos, blockState);
@@ -183,6 +196,10 @@ public class PoweredDetectorRailBlock extends BaseRailBlock {
 
     @Override
     public void tick(BlockState state, ServerLevel level, BlockPos pos, RandomSource random) {
+        if (!ModernMinecartsConfig.enablePoweredDetectorRail()) {
+            return;
+        }
+
         this.checkPressed(level, pos, state);
     }
 

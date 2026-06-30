@@ -2,7 +2,7 @@
   "multipart": [
     {
       "when": {
-        "shape": "ascending_east"
+        "const_shape": "ascending_east"
       },
       "apply": {
         "model": "modernminecarts:block/sloped_rail_raised_ne",
@@ -11,7 +11,7 @@
     },
     {
       "when": {
-        "shape": "ascending_north"
+        "const_shape": "ascending_north"
       },
       "apply": {
         "model": "modernminecarts:block/sloped_rail_raised_ne"
@@ -19,7 +19,7 @@
     },
     {
       "when": {
-        "shape": "ascending_south"
+        "const_shape": "ascending_south"
       },
       "apply": {
         "model": "modernminecarts:block/sloped_rail_raised_sw"
@@ -27,28 +27,11 @@
     },
     {
       "when": {
-        "shape": "ascending_west"
+        "const_shape": "ascending_west"
       },
       "apply": {
         "model": "modernminecarts:block/sloped_rail_raised_sw",
         "y": 90
-      }
-    },
-    {
-      "when": {
-        "shape": "east_west"
-      },
-      "apply": {
-        "model": "modernminecarts:block/sloped_rail",
-        "y": 90
-      }
-    },
-    {
-      "when": {
-        "shape": "north_south"
-      },
-      "apply": {
-        "model": "modernminecarts:block/sloped_rail"
       }
     }
   ]

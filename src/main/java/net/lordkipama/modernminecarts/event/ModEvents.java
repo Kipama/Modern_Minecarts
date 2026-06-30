@@ -41,15 +41,16 @@ import net.neoforged.neoforge.event.tick.EntityTickEvent;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import com.mojang.serialization.JsonOps;
-
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import net.lordkipama.modernminecarts.ModernMinecartsConfig;
 import net.minecraft.server.packs.resources.ResourceManager;
 import net.minecraft.server.packs.resources.SimplePreparableReloadListener;
 import net.minecraft.util.profiling.ProfilerFiller;
+import net.neoforged.neoforge.common.conditions.ICondition;
 
 @EventBusSubscriber(modid = ModernMinecarts.MOD_ID)
 public final class ModEvents {
@@ -93,6 +94,10 @@ public final class ModEvents {
             }
             event.setCancellationResult(InteractionResult.sidedSuccess(event.getLevel().isClientSide()));
             event.setCanceled(true);
+            return;
+        }
+
+        if (!ModernMinecartsConfig.enableMinecartChaining() && stack.getItem() == Items.CHAIN) {
             return;
         }
 
@@ -195,14 +200,16 @@ public final class ModEvents {
 
             @Override
             protected void apply(Void object, ResourceManager resourceManager, ProfilerFiller profiler) {
-                replacePoweredRailRecipe(event.getServerResources().getRecipeManager(), event.getServerResources().getRegistryLookup());
+                RecipeManager recipeManager = event.getServerResources().getRecipeManager();
+                HolderLookup.Provider registries = event.getServerResources().getRegistryLookup();
+                replaceRecipe(recipeManager, registries, ResourceLocation.withDefaultNamespace("powered_rail"), "/data/minecraft/recipe/powered_rail.json", ModernMinecartsConfig.poweredRailRecipeYield());
+                replaceRecipe(recipeManager, registries, ResourceLocation.fromNamespaceAndPath(ModernMinecarts.MOD_ID, "copper_rail"), "/data/modernminecarts/recipe/copper_rail.json", ModernMinecartsConfig.copperRailRecipeYield());
             }
         });
     }
 
-    private static void replacePoweredRailRecipe(RecipeManager recipeManager, HolderLookup.Provider registries) {
-        ResourceLocation recipeId = ResourceLocation.withDefaultNamespace("powered_rail");
-        RecipeHolder<?> replacement = loadRecipe(recipeId, registries);
+    private static void replaceRecipe(RecipeManager recipeManager, HolderLookup.Provider registries, ResourceLocation recipeId, String resourcePath, int resultCount) {
+        RecipeHolder<?> replacement = loadRecipe(recipeId, resourcePath, registries, resultCount);
         if (replacement == null) {
             return;
         }
@@ -226,16 +233,22 @@ public final class ModEvents {
         recipeManager.replaceRecipes(updatedRecipes);
     }
 
-    private static RecipeHolder<?> loadRecipe(ResourceLocation recipeId, HolderLookup.Provider registries) {
-        try (InputStream inputStream = ModEvents.class.getResourceAsStream("/data/minecraft/recipe/powered_rail.json")) {
+    private static RecipeHolder<?> loadRecipe(ResourceLocation recipeId, String resourcePath, HolderLookup.Provider registries, int resultCount) {
+        try (InputStream inputStream = ModEvents.class.getResourceAsStream(resourcePath)) {
             if (inputStream == null) {
                 return null;
             }
 
             try (InputStreamReader reader = new InputStreamReader(inputStream)) {
                 JsonObject json = JsonParser.parseReader(reader).getAsJsonObject();
-                Recipe<?> recipe = Recipe.CODEC.parse(registries.createSerializationContext(JsonOps.INSTANCE), json).getOrThrow();
-                return new RecipeHolder<>(recipeId, recipe);
+                JsonObject result = json.getAsJsonObject("result");
+                if (result != null) {
+                    result.addProperty("count", resultCount);
+                }
+
+                return ICondition.getConditionally(Recipe.CODEC, registries.createSerializationContext(JsonOps.INSTANCE), json)
+                        .map(recipe -> new RecipeHolder<>(recipeId, recipe))
+                        .orElse(null);
             }
         } catch (Exception ignored) {
             return null;

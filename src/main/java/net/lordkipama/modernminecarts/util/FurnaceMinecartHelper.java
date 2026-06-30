@@ -102,7 +102,7 @@ public final class FurnaceMinecartHelper {
         boolean isMoving = movement.horizontalDistanceSqr() > 0.001D;
         boolean hasChild = MinecartLinkHelper.getLinkedChild(minecart) != null;
         boolean isPoweredRail = block instanceof PoweredRailBlock poweredRail && !poweredRail.isActivatorRail();
-        boolean isDetectorRail = block instanceof PoweredDetectorRailBlock;
+        boolean isDetectorRail = ModernMinecartsConfig.enablePoweredDetectorRail() && block instanceof PoweredDetectorRailBlock;
         boolean isRailPowered = (isPoweredRail || isDetectorRail) && railState.getValue(PoweredRailBlock.POWERED);
         boolean consumeFuel = railState.is(BlockTags.RAILS)
                 && MinecartLinkHelper.getLinkedParent(minecart) == null
@@ -140,7 +140,7 @@ public final class FurnaceMinecartHelper {
 
         minecart.setDisplayBlockState(Blocks.FURNACE.defaultBlockState().setValue(FurnaceBlock.FACING, Direction.NORTH).setValue(FurnaceBlock.LIT, fuel > 0));
 
-        if (fuel > 0 && minecart.level() instanceof ServerLevel server && ModernMinecartsConfig.allowFurnaceMinecartChunkloading) {
+        if (fuel > 0 && minecart.level() instanceof ServerLevel server && ModernMinecartsConfig.enableFurnaceMinecartChunkloading()) {
             ChunkPos chunkPos = new ChunkPos(BlockPos.containing(minecart.getX(), minecart.getY(), minecart.getZ()));
             server.getChunkSource().addRegionTicket(TicketType.PORTAL, chunkPos, 3, minecart.blockPosition());
         }

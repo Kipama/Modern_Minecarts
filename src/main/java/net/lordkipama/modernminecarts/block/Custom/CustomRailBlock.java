@@ -33,13 +33,17 @@ public class CustomRailBlock extends RailBlock {
     @Override
     public float getRailMaxSpeed(BlockState state, Level level, BlockPos pos, AbstractMinecart cart) {
         if (getRailDirection(state, level, pos, null).isAscending()) {
-            return ModernMinecartsConfig.max_ascending_speed;
+            return ModernMinecartsConfig.maxAscendingSpeed();
         }
-        return ModernMinecartsConfig.copper_speed;
+        return ModernMinecartsConfig.copperSpeed();
     }
 
     @Override
     protected ItemInteractionResult useItemOn(ItemStack itemStack, BlockState state, Level level, BlockPos pos, Player player, InteractionHand interactionHand, BlockHitResult blockHitResult) {
+        if (!ModernMinecartsConfig.enableRailJump()) {
+            return ItemInteractionResult.PASS_TO_DEFAULT_BLOCK_INTERACTION;
+        }
+
         if (!itemStack.is(Items.STICK)) {
             return ItemInteractionResult.PASS_TO_DEFAULT_BLOCK_INTERACTION;
         }

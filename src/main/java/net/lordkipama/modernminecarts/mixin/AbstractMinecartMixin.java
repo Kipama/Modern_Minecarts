@@ -1,5 +1,6 @@
 package net.lordkipama.modernminecarts.mixin;
 
+import net.lordkipama.modernminecarts.ModernMinecartsConfig;
 import net.lordkipama.modernminecarts.block.ModBlocks;
 import net.lordkipama.modernminecarts.util.FurnaceMinecartHelper;
 import net.lordkipama.modernminecarts.util.MinecartLinkHelper;
@@ -63,7 +64,7 @@ abstract class AbstractMinecartMixin {
 
     @Inject(method = "moveAlongTrack", at = @At("HEAD"))
     private void modernminecarts$applyPoweredDetectorRailMotion(BlockPos pos, BlockState state, CallbackInfo ci) {
-        if (!(state.getBlock() instanceof BaseRailBlock railBlock) || !(railBlock instanceof net.lordkipama.modernminecarts.block.Custom.PoweredDetectorRailBlock detectorRail)) {
+        if (!ModernMinecartsConfig.enablePoweredDetectorRail() || !(state.getBlock() instanceof BaseRailBlock railBlock) || !(railBlock instanceof net.lordkipama.modernminecarts.block.Custom.PoweredDetectorRailBlock detectorRail)) {
             return;
         }
 
@@ -153,10 +154,10 @@ abstract class AbstractMinecartMixin {
         }
 
         BlockPos belowBlock = new BlockPos(x, y - 1, z);
-        if (!modernminecarts$jumpedOffSlope && hindBlockState.is(ModBlocks.SLOPED_RAIL.get()) && minecart.level().getBlockState(belowBlock).is(Blocks.AIR)) {
+        if (ModernMinecartsConfig.enableRailJump() && !modernminecarts$jumpedOffSlope && hindBlockState.is(ModBlocks.SLOPED_RAIL.get()) && minecart.level().getBlockState(belowBlock).is(Blocks.AIR)) {
             motion = rampBoost;
             modernminecarts$jumpedOffSlope = true;
-        } else if (!hindBlockState.is(ModBlocks.SLOPED_RAIL.get())) {
+        } else if (!ModernMinecartsConfig.enableRailJump() || !hindBlockState.is(ModBlocks.SLOPED_RAIL.get())) {
             modernminecarts$jumpedOffSlope = false;
         }
 
