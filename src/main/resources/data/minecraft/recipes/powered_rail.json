@@ -1,5 +1,5 @@
 {
-  "type": "minecraft:crafting_shaped",
+  "type": "modernminecarts:configurable_shaped_recipe",
   "category": "misc",
   "key": {
     "#": {
@@ -21,5 +21,6 @@
     "count": 12,
     "item": "minecraft:powered_rail"
   },
+  "yield_config": "powered_rail_recipe_yield",
   "show_notification": true
 }

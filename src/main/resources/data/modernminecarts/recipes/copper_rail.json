@@ -1,5 +1,11 @@
 {
-  "type": "minecraft:crafting_shaped",
+  "type": "modernminecarts:configurable_shaped_recipe",
+  "fabric:load_conditions": [
+    {
+      "condition": "modernminecarts:feature_enabled",
+      "feature": "copper_rails"
+    }
+  ],
   "category": "misc",
   "key": {
     "#": {
@@ -21,5 +27,6 @@
     "count": 6,
     "item": "modernminecarts:copper_rail"
   },
+  "yield_config": "copper_rail_recipe_yield",
   "show_notification": true
 }

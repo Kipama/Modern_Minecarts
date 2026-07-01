@@ -1,5 +1,11 @@
 {
   "type": "minecraft:crafting_shapeless",
+  "fabric:load_conditions": [
+    {
+      "condition": "modernminecarts:feature_enabled",
+      "feature": "rail_jump"
+    }
+  ],
   "category": "misc",
   "ingredients": [
     {
