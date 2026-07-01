@@ -3,7 +3,7 @@
   "fabric:load_conditions": [
     {
       "condition": "modernminecarts:feature_enabled",
-      "feature": "copper_rails"
+      "feature": "powered_detector_rail"
     }
   ],
   "criteria": {
@@ -11,9 +11,7 @@
       "conditions": {
         "items": [
           {
-            "items": [
-              "minecraft:rail"
-            ]
+            "items": "minecraft:rail"
           }
         ]
       },
@@ -21,7 +19,7 @@
     },
     "has_the_recipe": {
       "conditions": {
-        "recipe": "modernminecarts:waxed_weathered_copper_rail"
+        "recipe": "modernminecarts:powered_detector_rail"
       },
       "trigger": "minecraft:recipe_unlocked"
     }
@@ -34,7 +32,7 @@
   ],
   "rewards": {
     "recipes": [
-      "modernminecarts:waxed_weathered_copper_rail"
+      "modernminecarts:powered_detector_rail"
     ]
   }
 }

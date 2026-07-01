@@ -3,7 +3,7 @@
   "fabric:load_conditions": [
     {
       "condition": "modernminecarts:feature_enabled",
-      "feature": "rail_jump"
+      "feature": "copper_rails"
     }
   ],
   "criteria": {
@@ -11,9 +11,7 @@
       "conditions": {
         "items": [
           {
-            "items": [
-              "minecraft:rail"
-            ]
+            "items": "minecraft:rail"
           }
         ]
       },
@@ -21,7 +19,7 @@
     },
     "has_the_recipe": {
       "conditions": {
-        "recipe": "modernminecarts:rail_jump"
+        "recipe": "modernminecarts:copper_rail"
       },
       "trigger": "minecraft:recipe_unlocked"
     }
@@ -34,7 +32,7 @@
   ],
   "rewards": {
     "recipes": [
-      "modernminecarts:rail_jump"
+      "modernminecarts:copper_rail"
     ]
   }
 }

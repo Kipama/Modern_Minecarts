@@ -6,7 +6,7 @@ import net.minecraft.registry.Registries;
 import net.minecraft.registry.Registry;
 
 public final class ModRecipeSerializers {
-    public static final RecipeSerializer<net.minecraft.recipe.ShapedRecipe> CONFIGURABLE_SHAPED_RECIPE =
+    public static final RecipeSerializer<?> CONFIGURABLE_SHAPED_RECIPE =
             Registry.register(
                     Registries.RECIPE_SERIALIZER,
                     ModernMinecarts.id("configurable_shaped_recipe"),

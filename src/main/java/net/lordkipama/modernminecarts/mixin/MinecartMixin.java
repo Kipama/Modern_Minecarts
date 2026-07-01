@@ -708,15 +708,4 @@ public class MinecartMixin implements ChainMinecartInterface {
                 ? MinecartTuning.copperRailSpeed()
                 : MinecartTuning.ascendingCopperRailSpeed();
     }
-
-    @Inject(method = "damage", at = @At("HEAD"), cancellable = true)
-    private void injectHurt(CallbackInfoReturnable<Double> cir) {
-        AbstractMinecartEntity thisObject = (AbstractMinecartEntity) (Object) this;
-        if(!thisObject.getWorld().isClient()) {
-            if(this.getLinkedChild()!=null){
-                ChainMinecartInterface.unsetParentChild(this, (ChainMinecartInterface) this.getLinkedChild());
-                thisObject.dropStack(new ItemStack(Items.CHAIN));
-            }
-        }
-    }
 }
