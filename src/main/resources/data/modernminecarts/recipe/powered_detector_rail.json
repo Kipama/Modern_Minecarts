@@ -1,5 +1,11 @@
 {
   "type": "minecraft:crafting_shaped",
+  "fabric:load_conditions": [
+    {
+      "condition": "modernminecarts:feature_enabled",
+      "feature": "powered_detector_rail"
+    }
+  ],
   "category": "misc",
   "key": {
     "g": {

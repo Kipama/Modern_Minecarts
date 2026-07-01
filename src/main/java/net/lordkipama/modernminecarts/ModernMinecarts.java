@@ -7,6 +7,8 @@ import net.fabricmc.fabric.api.event.player.UseEntityCallback;
 import net.fabricmc.fabric.api.itemgroup.v1.ItemGroupEvents;
 import net.lordkipama.modernminecarts.block.ModBlocks;
 import net.lordkipama.modernminecarts.interfaces.ChainMinecartInterface;
+import net.lordkipama.modernminecarts.recipe.ModRecipeSerializers;
+import net.lordkipama.modernminecarts.resource.ModResourceConditions;
 import net.lordkipama.modernminecarts.screen.ModScreenHandlers;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
@@ -45,22 +47,33 @@ public class ModernMinecarts implements ModInitializer {
 	@Override
 	public void onInitialize() {
 		SyncChainedMinecartPacket.registerPayload();
+		ModernMinecartsConfig.load(LOGGER);
+		ModResourceConditions.register();
+		ModRecipeSerializers.register();
 		ModBlocks.registerModBlocks();
 		ModScreenHandlers.register();
 
-		ItemGroupEvents.modifyEntriesEvent(ItemGroups.REDSTONE).register(entries -> entries.add(ModBlocks.COPPER_RAIL));
-		ItemGroupEvents.modifyEntriesEvent(ItemGroups.REDSTONE).register(entries -> entries.add(ModBlocks.EXPOSED_COPPER_RAIL));
-		ItemGroupEvents.modifyEntriesEvent(ItemGroups.REDSTONE).register(entries -> entries.add(ModBlocks.WEATHERED_COPPER_RAIL));
-		ItemGroupEvents.modifyEntriesEvent(ItemGroups.REDSTONE).register(entries -> entries.add(ModBlocks.OXIDIZED_COPPER_RAIL));
-
-		ItemGroupEvents.modifyEntriesEvent(ItemGroups.REDSTONE).register(entries -> entries.add(ModBlocks.WAXED_COPPER_RAIL));
-		ItemGroupEvents.modifyEntriesEvent(ItemGroups.REDSTONE).register(entries -> entries.add(ModBlocks.WAXED_EXPOSED_COPPER_RAIL));
-		ItemGroupEvents.modifyEntriesEvent(ItemGroups.REDSTONE).register(entries -> entries.add(ModBlocks.WAXED_WEATHERED_COPPER_RAIL));
-		ItemGroupEvents.modifyEntriesEvent(ItemGroups.REDSTONE).register(entries -> entries.add(ModBlocks.WAXED_OXIDIZED_COPPER_RAIL));
-
-		ItemGroupEvents.modifyEntriesEvent(ItemGroups.REDSTONE).register(entries -> entries.add(ModBlocks.RAIL_CROSSING));
-		ItemGroupEvents.modifyEntriesEvent(ItemGroups.REDSTONE).register(entries -> entries.add(ModBlocks.RAIL_JUMP));
-		ItemGroupEvents.modifyEntriesEvent(ItemGroups.REDSTONE).register(entries -> entries.add(ModBlocks.POWERED_DETECTOR_RAIL));
+		ItemGroupEvents.modifyEntriesEvent(ItemGroups.REDSTONE).register(entries -> {
+			if (ModernMinecartsConfig.enableCopperRails()) {
+				entries.add(ModBlocks.COPPER_RAIL);
+				entries.add(ModBlocks.EXPOSED_COPPER_RAIL);
+				entries.add(ModBlocks.WEATHERED_COPPER_RAIL);
+				entries.add(ModBlocks.OXIDIZED_COPPER_RAIL);
+				entries.add(ModBlocks.WAXED_COPPER_RAIL);
+				entries.add(ModBlocks.WAXED_EXPOSED_COPPER_RAIL);
+				entries.add(ModBlocks.WAXED_WEATHERED_COPPER_RAIL);
+				entries.add(ModBlocks.WAXED_OXIDIZED_COPPER_RAIL);
+			}
+			if (ModernMinecartsConfig.enableRailCrossing()) {
+				entries.add(ModBlocks.RAIL_CROSSING);
+			}
+			if (ModernMinecartsConfig.enableRailJump()) {
+				entries.add(ModBlocks.RAIL_JUMP);
+			}
+			if (ModernMinecartsConfig.enablePoweredDetectorRail()) {
+				entries.add(ModBlocks.POWERED_DETECTOR_RAIL);
+			}
+		});
 
 		//Event handler stick
 		UseBlockCallback.EVENT.register((player, world, hand, hitResult) -> {
@@ -74,7 +87,7 @@ public class ModernMinecarts implements ModInitializer {
 
 					// Check if the player is holding a stick
 					ItemStack heldItem = player.getStackInHand(hand);
-					if (heldItem.getItem() == Items.STICK) {
+					if (heldItem.getItem() == Items.STICK && ModernMinecartsConfig.enableRailJump()) {
 						// Check if the right-clicked block is a rail
 						if (block.equals(Blocks.RAIL)) {
 							if (!world.isClient()) {
@@ -206,6 +219,9 @@ public class ModernMinecarts implements ModInitializer {
     *
     * */
 		UseEntityCallback.EVENT.register((player, world, hand, entity, hitResult) -> {
+			if (!ModernMinecartsConfig.enableMinecartChaining()) {
+				return ActionResult.PASS;
+			}
 			if(entity instanceof AbstractMinecartEntity cart) {
 				ItemStack stack = player.getStackInHand(hand);
 
