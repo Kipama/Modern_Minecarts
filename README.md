@@ -61,8 +61,9 @@ Stop empty carts or trains until fully loaded, or invert it to unload full minec
 - Removed Copper smithing templates
 - Added Copper Rail crafting recipe (Powered Rail recipe using copper)
 - All modded crafting recipes now appear in the recipe book.
-- Shift-right-clicking in the air with a chain now removes its linking nbt-data
-- Added Fabric and Neoforge as supported ModLaunchers
+- Shift-right-clicking in the air with a chain now removes its linking nbt-data.
+- Added Fabric and Neoforge as supported ModLaunchers.
+- Added configs for custom rail speeds, disabling specific features and changing crafting recipe yields.
 
 ### Bug Fixes
 
