@@ -8,18 +8,10 @@
   ],
   "category": "misc",
   "key": {
-    "g": {
-      "item": "minecraft:gold_ingot"
-    },
-    "_": {
-      "item": "minecraft:stone_pressure_plate"
-    },
-    "Q": {
-      "item": "minecraft:quartz"
-    },
-    "r": {
-      "item": "minecraft:redstone"
-    }
+    "g": "minecraft:gold_ingot",
+    "_": "minecraft:stone_pressure_plate",
+    "Q": "minecraft:quartz",
+    "r": "minecraft:redstone"
   },
   "pattern": [
     "gQg",

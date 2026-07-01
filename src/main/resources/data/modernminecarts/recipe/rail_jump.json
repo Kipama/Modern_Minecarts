@@ -8,12 +8,8 @@
   ],
   "category": "misc",
   "ingredients": [
-    {
-      "item": "minecraft:rail"
-    },
-    {
-      "item": "minecraft:stick"
-    }
+    "minecraft:rail",
+    "minecraft:stick"
   ],
   "result": {
     "id": "modernminecarts:rail_jump"

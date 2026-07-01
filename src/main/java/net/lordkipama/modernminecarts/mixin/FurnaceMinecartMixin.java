@@ -151,7 +151,7 @@ public abstract class FurnaceMinecartMixin implements Inventory, NamedScreenHand
                     && ModernMinecartsConfig.enableFurnaceMinecartChunkloading()
                     && cart.getEntityWorld() instanceof ServerWorld serverWorld) {
                 ChunkPos chunkPos = new ChunkPos(BlockPos.ofFloored(cart.getX(), cart.getY(), cart.getZ()));
-                serverWorld.getChunkManager().addTicket(ChunkTicketType.PORTAL, chunkPos, 3, cart.getBlockPos());
+                serverWorld.getChunkManager().addTicket(ChunkTicketType.PORTAL, chunkPos, 3);
             }
             if (!modernminecarts$railAllowsMovement(cart)) {
                 pushVec = Vec3d.ZERO;
