@@ -6,6 +6,7 @@ import com.mojang.datafixers.util.Pair;
 import net.fabricmc.fabric.api.networking.v1.PlayerLookup;
 import net.lordkipama.modernminecarts.interfaces.ChainMinecartInterface;
 import net.lordkipama.modernminecarts.interfaces.ContainerMinecartInteface;
+import net.lordkipama.modernminecarts.logic.MinecartTuning;
 import net.lordkipama.modernminecarts.logic.PoweredDetectorMotion;
 import net.lordkipama.modernminecarts.ModernMinecarts;
 import net.lordkipama.modernminecarts.block.Custom.CopperRailBlock;
@@ -238,6 +239,7 @@ public class MinecartMixin implements ChainMinecartInterface {
                 thisObject.setVelocity(aa, vec3d6.y, ab);
             }
         }
+
     }
 
     @Inject(method = "getMaxSpeed", at = @At("RETURN"), cancellable = true)
@@ -255,31 +257,32 @@ public class MinecartMixin implements ChainMinecartInterface {
             //If Rail is flat
             if(block.getBlock().getClass() == CopperRailBlock.class || block.getBlock().getClass() == WaxedCopperRailBlock.class) {
                 if(block.isOf(ModBlocks.COPPER_RAIL) || block.isOf(ModBlocks.WAXED_COPPER_RAIL)) {
-                    cir.setReturnValue(0.8d);
+                    cir.setReturnValue(MinecartTuning.copperRailSpeed());
                 }
                 else if(block.isOf(ModBlocks.EXPOSED_COPPER_RAIL) || block.isOf(ModBlocks.WAXED_EXPOSED_COPPER_RAIL)) {
-                    cir.setReturnValue(0.6d);
+                    cir.setReturnValue(MinecartTuning.exposedCopperRailSpeed());
                 }
                 else if(block.isOf(ModBlocks.WEATHERED_COPPER_RAIL) || block.isOf(ModBlocks.WAXED_WEATHERED_COPPER_RAIL)) {
-                    cir.setReturnValue(0.3d);
+                    cir.setReturnValue(MinecartTuning.weatheredCopperRailSpeed());
                 }
                 else if(block.isOf(ModBlocks.OXIDIZED_COPPER_RAIL) || block.isOf(ModBlocks.WAXED_OXIDIZED_COPPER_RAIL)) {
-                    cir.setReturnValue(0.2d);
+                    cir.setReturnValue(MinecartTuning.oxidizedCopperRailSpeed());
                 }
             }
             //If rail is sloped
-            else if(blockUnder.getBlock().getClass() == CopperRailBlock.class) {
+            else if(blockUnder.getBlock().getClass() == CopperRailBlock.class
+                    || blockUnder.getBlock().getClass() == WaxedCopperRailBlock.class) {
                 if(block.isOf(ModBlocks.COPPER_RAIL) || block.isOf(ModBlocks.WAXED_COPPER_RAIL)) {
-                    cir.setReturnValue(0.5d);
+                    cir.setReturnValue(MinecartTuning.ascendingCopperRailSpeed());
                 }
                 else if(block.isOf(ModBlocks.EXPOSED_COPPER_RAIL) || block.isOf(ModBlocks.WAXED_EXPOSED_COPPER_RAIL)) {
-                    cir.setReturnValue(0.5d);
+                    cir.setReturnValue(MinecartTuning.ascendingCopperRailSpeed());
                 }
                 else if(block.isOf(ModBlocks.WEATHERED_COPPER_RAIL) || block.isOf(ModBlocks.WAXED_WEATHERED_COPPER_RAIL)) {
-                    cir.setReturnValue(0.3d);
+                    cir.setReturnValue(MinecartTuning.weatheredCopperRailSpeed());
                 }
                 else if(block.isOf(ModBlocks.OXIDIZED_COPPER_RAIL) || block.isOf(ModBlocks.WAXED_OXIDIZED_COPPER_RAIL)) {
-                    cir.setReturnValue(0.2d);
+                    cir.setReturnValue(MinecartTuning.oxidizedCopperRailSpeed());
                 }
             }
             else if(blockUnder.isOf(ModBlocks.RAIL_JUMP)){
@@ -305,7 +308,7 @@ public class MinecartMixin implements ChainMinecartInterface {
                 }
             }
 
-            if(thisObject.getVelocity().length() > 0.5d) {
+            if(thisObject.getVelocity().length() > MinecartTuning.ascendingCopperRailSpeed()) {
                 Vec3d vec3 =thisObject.getVelocity();
                 BlockState frontBlockState;
                 BlockPos blockpos;
@@ -329,34 +332,40 @@ public class MinecartMixin implements ChainMinecartInterface {
                         final EnumProperty<RailShape> SHAPE = Properties.RAIL_SHAPE;
 
                         if (frontBlockState.get(SHAPE).isAscending()) {
-                            if(block.isOf(ModBlocks.COPPER_RAIL)) {
-                                cir.setReturnValue(0.5d);
+                            if (frontBlockState.isOf(ModBlocks.RAIL_JUMP)) {
+                                cir.setReturnValue(modernminecarts$getRailJumpApproachSpeed(thisObject, blockpos, frontBlockState));
+                            }
+                            else if(block.isOf(ModBlocks.COPPER_RAIL)) {
+                                cir.setReturnValue(MinecartTuning.ascendingCopperRailSpeed());
                             }
                             else if(block.isOf(ModBlocks.EXPOSED_COPPER_RAIL)) {
-                                cir.setReturnValue(0.5d);
+                                cir.setReturnValue(MinecartTuning.ascendingCopperRailSpeed());
                             }
                             else if(block.isOf(ModBlocks.WEATHERED_COPPER_RAIL)) {
-                                cir.setReturnValue(0.3d);
+                                cir.setReturnValue(MinecartTuning.weatheredCopperRailSpeed());
                             }
                             else if(block.isOf(ModBlocks.OXIDIZED_COPPER_RAIL)) {
-                                cir.setReturnValue(0.2d);
+                                cir.setReturnValue(MinecartTuning.oxidizedCopperRailSpeed());
                             }
                         }
                     } catch (Exception e) {
                         try {
                             final EnumProperty<RailShape> SHAPE = Properties.STRAIGHT_RAIL_SHAPE;
                             if (frontBlockState.get(SHAPE).isAscending()) {
-                                if(block.isOf(ModBlocks.COPPER_RAIL)) {
-                                    cir.setReturnValue(0.5d);
+                                if (frontBlockState.isOf(ModBlocks.RAIL_JUMP)) {
+                                    cir.setReturnValue(modernminecarts$getRailJumpApproachSpeed(thisObject, blockpos, frontBlockState));
+                                }
+                                else if(block.isOf(ModBlocks.COPPER_RAIL)) {
+                                    cir.setReturnValue(MinecartTuning.ascendingCopperRailSpeed());
                                 }
                                 else if(block.isOf(ModBlocks.EXPOSED_COPPER_RAIL)) {
-                                    cir.setReturnValue(0.5d);
+                                    cir.setReturnValue(MinecartTuning.ascendingCopperRailSpeed());
                                 }
                                 else if(block.isOf(ModBlocks.WEATHERED_COPPER_RAIL)) {
-                                    cir.setReturnValue(0.3d);
+                                    cir.setReturnValue(MinecartTuning.weatheredCopperRailSpeed());
                                 }
                                 else if(block.isOf(ModBlocks.OXIDIZED_COPPER_RAIL)) {
-                                    cir.setReturnValue(0.2d);
+                                    cir.setReturnValue(MinecartTuning.oxidizedCopperRailSpeed());
                                 }
                             }
                         } catch (Exception ignored) {
@@ -369,6 +378,7 @@ public class MinecartMixin implements ChainMinecartInterface {
         if (thisObject instanceof ContainerMinecartInteface furnaceMinecart) {
             cir.setReturnValue(furnaceMinecart.limitTrainSpeed(cir.getReturnValue()));
         }
+
     }
 
     @Unique
@@ -467,7 +477,9 @@ public class MinecartMixin implements ChainMinecartInterface {
     public void moveOffRail(ServerWorld world) {
         AbstractMinecartEntity thisObject = (AbstractMinecartEntity) (Object) this;
 
-        double d0 = thisObject.isOnGround() ? ((MinecartInvoker) thisObject).invokeGetMaxSpeed(world) : 0.8;
+        double d0 = thisObject.isOnGround()
+                ? ((MinecartInvoker) thisObject).invokeGetMaxSpeed(world)
+                : MinecartTuning.copperRailSpeed();
         Vec3d vec3 = thisObject.getVelocity();
 
         //Get hindblock
@@ -483,25 +495,25 @@ public class MinecartMixin implements ChainMinecartInterface {
             BlockPos blockpos = new BlockPos(x-1, y-1, z);
             lateralMomentum = Math.abs(vec3.x);
             hindBlockState = thisObject.getEntityWorld().getBlockState(blockpos);
-            newVec3 = new Vec3d(Math.min(vec3.x+0.1, maxSpeed),Math.min(lateralMomentum, maxSpeed),0);
+            newVec3 = new Vec3d(Math.min(vec3.x + 0.1D, maxSpeed), Math.min(lateralMomentum, maxSpeed), 0);
         }
         else if(vec3.x<0){
             BlockPos blockpos = new BlockPos(x+1, y-1, z);
             lateralMomentum = Math.abs(vec3.x);
             hindBlockState = thisObject.getEntityWorld().getBlockState(blockpos);
-            newVec3 = new Vec3d(Math.max(vec3.x-0.1, -maxSpeed),Math.min(lateralMomentum, maxSpeed),0);
+            newVec3 = new Vec3d(Math.max(vec3.x - 0.1D, -maxSpeed), Math.min(lateralMomentum, maxSpeed), 0);
         }
         else if(vec3.z>0){
             BlockPos blockpos = new BlockPos(x, y-1, z-1);
             lateralMomentum = Math.abs(vec3.z);
             hindBlockState = thisObject.getEntityWorld().getBlockState(blockpos);
-            newVec3 = new Vec3d(0,Math.min(lateralMomentum, maxSpeed),Math.min(vec3.z+0.1, maxSpeed));
+            newVec3 = new Vec3d(0, Math.min(lateralMomentum, maxSpeed), Math.min(vec3.z + 0.1D, maxSpeed));
         }
         else {
             BlockPos blockpos = new BlockPos(x, y-1, z+1);
             lateralMomentum = Math.abs(vec3.z);
             hindBlockState = thisObject.getEntityWorld().getBlockState(blockpos);
-            newVec3 = new Vec3d(0,Math.min(lateralMomentum, maxSpeed),Math.max(vec3.z-0.1, -maxSpeed));
+            newVec3 = new Vec3d(0, Math.min(lateralMomentum, maxSpeed), Math.max(vec3.z - 0.1D, -maxSpeed));
         }
 
         //Check if cart should jump
@@ -509,7 +521,6 @@ public class MinecartMixin implements ChainMinecartInterface {
         if(!jumpedOffSlope && hindBlockState.isOf(ModBlocks.RAIL_JUMP) && thisObject.getEntityWorld().getBlockState(belowBlock).isOf(Blocks.AIR)){
             //modify vec3 if rail is ramp
             vec3 = newVec3;
-
             jumpedOffSlope = true;
         }
         else if(!hindBlockState.isOf(ModBlocks.RAIL_JUMP)){
@@ -661,4 +672,34 @@ public class MinecartMixin implements ChainMinecartInterface {
         return vec3d;
     }
 
+    @Unique
+    private static double modernminecarts$getRailJumpApproachSpeed(
+            AbstractMinecartEntity cart,
+            BlockPos rampPos,
+            BlockState rampState
+    ) {
+        RailShape shape = rampState.get(SlopedRailBlock.SHAPE);
+        BlockPos frontPos = switch (shape) {
+            case ASCENDING_NORTH -> rampPos.north();
+            case ASCENDING_SOUTH -> rampPos.south();
+            case ASCENDING_EAST -> rampPos.east();
+            case ASCENDING_WEST -> rampPos.west();
+            default -> rampPos;
+        };
+
+        return cart.getEntityWorld().getBlockState(frontPos).isAir()
+                ? MinecartTuning.copperRailSpeed()
+                : MinecartTuning.ascendingCopperRailSpeed();
+    }
+
+    @Inject(method = "damage", at = @At("HEAD"), cancellable = true)
+    private void injectHurt(CallbackInfoReturnable<Double> cir) {
+        AbstractMinecartEntity thisObject = (AbstractMinecartEntity) (Object) this;
+        if(!thisObject.getWorld().isClient()) {
+            if(this.getLinkedChild()!=null){
+                ChainMinecartInterface.unsetParentChild(this, (ChainMinecartInterface) this.getLinkedChild());
+                thisObject.dropStack(new ItemStack(Items.CHAIN));
+            }
+        }
+    }
 }

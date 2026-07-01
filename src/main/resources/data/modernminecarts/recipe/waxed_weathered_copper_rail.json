@@ -1,9 +1,19 @@
 {
   "type": "minecraft:crafting_shapeless",
+  "fabric:load_conditions": [
+    {
+      "condition": "modernminecarts:feature_enabled",
+      "feature": "copper_rails"
+    }
+  ],
   "category": "misc",
   "ingredients": [
-    "modernminecarts:weathered_copper_rail",
-    "minecraft:honeycomb"
+    {
+      "item": "modernminecarts:weathered_copper_rail"
+    },
+    {
+      "item": "minecraft:honeycomb"
+    }
   ],
   "result": {
     "id": "modernminecarts:waxed_weathered_copper_rail"

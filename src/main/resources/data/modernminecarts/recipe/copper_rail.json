@@ -1,10 +1,22 @@
 {
-  "type": "minecraft:crafting_shaped",
+  "type": "modernminecarts:configurable_shaped_recipe",
+  "fabric:load_conditions": [
+    {
+      "condition": "modernminecarts:feature_enabled",
+      "feature": "copper_rails"
+    }
+  ],
   "category": "misc",
   "key": {
-    "#": "minecraft:stick",
-    "R": "minecraft:redstone",
-    "X": "minecraft:copper_ingot"
+    "#": {
+      "item": "minecraft:stick"
+    },
+    "R": {
+      "item": "minecraft:redstone"
+    },
+    "X": {
+      "item": "minecraft:copper_ingot"
+    }
   },
   "pattern": [
     "X X",
@@ -15,5 +27,6 @@
     "count": 6,
     "id": "modernminecarts:copper_rail"
   },
+  "yield_config": "copper_rail_recipe_yield",
   "show_notification": true
 }

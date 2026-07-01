@@ -1,5 +1,6 @@
 package net.lordkipama.modernminecarts.mixin;
 
+import net.lordkipama.modernminecarts.ModernMinecartsConfig;
 import net.lordkipama.modernminecarts.interfaces.ChainMinecartInterface;
 import net.lordkipama.modernminecarts.interfaces.ContainerMinecartInteface;
 import net.lordkipama.modernminecarts.logic.MinecartTuning;
@@ -31,9 +32,12 @@ import net.minecraft.storage.WriteView;
 import net.minecraft.screen.NamedScreenHandlerFactory;
 import net.minecraft.screen.PropertyDelegate;
 import net.minecraft.screen.ScreenHandler;
+import net.minecraft.server.world.ChunkTicketType;
+import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.ActionResult;
 import net.minecraft.util.Hand;
 import net.minecraft.util.collection.DefaultedList;
+import net.minecraft.util.math.ChunkPos;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Vec3d;
 import org.jetbrains.annotations.Nullable;
@@ -143,6 +147,12 @@ public abstract class FurnaceMinecartMixin implements Inventory, NamedScreenHand
     private void modernminecarts$finishFuelTick(CallbackInfo ci) {
         FurnaceMinecartEntity cart = modernminecarts$self();
         if (!cart.getEntityWorld().isClient()) {
+            if (fuel > 0
+                    && ModernMinecartsConfig.enableFurnaceMinecartChunkloading()
+                    && cart.getEntityWorld() instanceof ServerWorld serverWorld) {
+                ChunkPos chunkPos = new ChunkPos(BlockPos.ofFloored(cart.getX(), cart.getY(), cart.getZ()));
+                serverWorld.getChunkManager().addTicket(ChunkTicketType.PORTAL, chunkPos, 3, cart.getBlockPos());
+            }
             if (!modernminecarts$railAllowsMovement(cart)) {
                 pushVec = Vec3d.ZERO;
                 cart.setVelocity(Vec3d.ZERO);
@@ -502,7 +512,7 @@ public abstract class FurnaceMinecartMixin implements Inventory, NamedScreenHand
         }
 
         double railSpeed = modernminecarts$getParent(cart) != null
-                ? MinecartTuning.COPPER_RAIL_SPEED
+                ? MinecartTuning.copperRailSpeed()
                 : modernminecarts$getSpeedForRail(cart, railPos, railState);
         if (cart.isTouchingWater() && !railState.isOf(Blocks.POWERED_RAIL)) {
             railSpeed /= 2.0D;
@@ -532,7 +542,7 @@ public abstract class FurnaceMinecartMixin implements Inventory, NamedScreenHand
             BlockState state
     ) {
         if (state.isOf(ModBlocks.RAIL_CROSSING)) {
-            return MinecartTuning.COPPER_RAIL_SPEED;
+            return MinecartTuning.copperRailSpeed();
         }
 
         if (state.isOf(ModBlocks.RAIL_JUMP)) {
@@ -545,8 +555,8 @@ public abstract class FurnaceMinecartMixin implements Inventory, NamedScreenHand
                 default -> pos;
             };
             return cart.getEntityWorld().getBlockState(launchPos).isAir()
-                    ? MinecartTuning.MAXIMUM_JUMP_SPEED
-                    : MinecartTuning.ASCENDING_COPPER_RAIL_SPEED;
+                    ? MinecartTuning.copperRailSpeed()
+                    : MinecartTuning.ascendingCopperRailSpeed();
         }
 
         if (state.getBlock() instanceof CopperRailBlock
@@ -557,22 +567,22 @@ public abstract class FurnaceMinecartMixin implements Inventory, NamedScreenHand
                         || state.isOf(ModBlocks.WAXED_COPPER_RAIL)
                         || state.isOf(ModBlocks.EXPOSED_COPPER_RAIL)
                         || state.isOf(ModBlocks.WAXED_EXPOSED_COPPER_RAIL)) {
-                    return MinecartTuning.ASCENDING_COPPER_RAIL_SPEED;
+                    return MinecartTuning.ascendingCopperRailSpeed();
                 }
             }
 
             if (state.isOf(ModBlocks.COPPER_RAIL) || state.isOf(ModBlocks.WAXED_COPPER_RAIL)) {
-                return MinecartTuning.COPPER_RAIL_SPEED;
+                return MinecartTuning.copperRailSpeed();
             }
             if (state.isOf(ModBlocks.EXPOSED_COPPER_RAIL)
                     || state.isOf(ModBlocks.WAXED_EXPOSED_COPPER_RAIL)) {
-                return MinecartTuning.EXPOSED_COPPER_RAIL_SPEED;
+                return MinecartTuning.exposedCopperRailSpeed();
             }
             if (state.isOf(ModBlocks.WEATHERED_COPPER_RAIL)
                     || state.isOf(ModBlocks.WAXED_WEATHERED_COPPER_RAIL)) {
-                return MinecartTuning.WEATHERED_COPPER_RAIL_SPEED;
+                return MinecartTuning.weatheredCopperRailSpeed();
             }
-            return MinecartTuning.OXIDIZED_COPPER_RAIL_SPEED;
+            return MinecartTuning.oxidizedCopperRailSpeed();
         }
 
         return MinecartTuning.VANILLA_RAIL_SPEED;

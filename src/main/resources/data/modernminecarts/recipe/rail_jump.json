@@ -1,9 +1,19 @@
 {
   "type": "minecraft:crafting_shapeless",
+  "fabric:load_conditions": [
+    {
+      "condition": "modernminecarts:feature_enabled",
+      "feature": "rail_jump"
+    }
+  ],
   "category": "misc",
   "ingredients": [
-    "minecraft:rail",
-    "minecraft:stick"
+    {
+      "item": "minecraft:rail"
+    },
+    {
+      "item": "minecraft:stick"
+    }
   ],
   "result": {
     "id": "modernminecarts:rail_jump"
