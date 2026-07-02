@@ -4,6 +4,7 @@ import net.fabricmc.api.ModInitializer;
 
 import net.fabricmc.fabric.api.event.player.UseBlockCallback;
 import net.fabricmc.fabric.api.event.player.UseEntityCallback;
+import net.fabricmc.fabric.api.event.player.UseItemCallback;
 import net.fabricmc.fabric.api.itemgroup.v1.ItemGroupEvents;
 import net.lordkipama.modernminecarts.block.ModBlocks;
 import net.lordkipama.modernminecarts.interfaces.ChainMinecartInterface;
@@ -14,6 +15,7 @@ import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
 import net.minecraft.block.enums.RailShape;
+import net.minecraft.entity.projectile.ProjectileUtil;
 import net.minecraft.entity.vehicle.AbstractMinecartEntity;
 import net.minecraft.item.ItemGroups;
 import net.minecraft.item.ItemStack;
@@ -28,9 +30,15 @@ import net.minecraft.state.property.Properties;
 import net.minecraft.util.ActionResult;
 import net.minecraft.util.Hand;
 import net.minecraft.util.Identifier;
+import net.minecraft.util.TypedActionResult;
 import net.minecraft.util.hit.BlockHitResult;
+import net.minecraft.util.hit.EntityHitResult;
 import net.minecraft.util.hit.HitResult;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.Box;
+import net.minecraft.util.math.Vec3d;
+import net.minecraft.world.RaycastContext;
+import net.minecraft.world.World;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -216,6 +224,30 @@ public class ModernMinecarts implements ModInitializer {
      4) The Software does not make up a substantial portion of your own projects.
     *
     * */
+		UseItemCallback.EVENT.register((player, world, hand) -> {
+			if (world.isClient() || player.isSpectator() || !player.isSneaking()) {
+				return TypedActionResult.pass(player.getStackInHand(hand));
+			}
+
+			ItemStack stack = player.getStackInHand(hand);
+			if (!stack.isOf(Items.CHAIN) || !modernminecarts$isRightClickingAir(player, world)) {
+				return TypedActionResult.pass(stack);
+			}
+
+			NbtCompound nbt = stack.getOrCreateNbt();
+			if (!nbt.contains("ParentEntity")) {
+				return TypedActionResult.pass(stack);
+			}
+
+			nbt.remove("ParentEntity");
+			if (nbt.isEmpty()) {
+				stack.setNbt(null);
+			}
+
+			world.playSound(null, player.getX(), player.getY(), player.getZ(), SoundEvents.BLOCK_CHAIN_BREAK, SoundCategory.NEUTRAL, 1F, 1F);
+			return TypedActionResult.success(stack);
+		});
+
 		UseEntityCallback.EVENT.register((player, world, hand, entity, hitResult) -> {
 			if (!ModernMinecartsConfig.enableMinecartChaining()) {
 				return ActionResult.PASS;
@@ -307,6 +339,35 @@ public class ModernMinecarts implements ModInitializer {
 
 			return ActionResult.PASS;
 		});
+	}
+
+	private static boolean modernminecarts$isRightClickingAir(net.minecraft.entity.player.PlayerEntity player, World world) {
+		double reachDistance = 5.0D;
+		Vec3d eyePosition = player.getEyePos();
+		Vec3d lookDirection = player.getRotationVec(1.0F);
+		Vec3d endPosition = eyePosition.add(lookDirection.multiply(reachDistance));
+
+		HitResult blockHit = world.raycast(new RaycastContext(
+				eyePosition,
+				endPosition,
+				RaycastContext.ShapeType.OUTLINE,
+				RaycastContext.FluidHandling.NONE,
+				player
+		));
+		if (blockHit.getType() != HitResult.Type.MISS) {
+			return false;
+		}
+
+		Box searchBox = player.getBoundingBox().stretch(lookDirection.multiply(reachDistance)).expand(1.0D);
+		EntityHitResult entityHit = ProjectileUtil.raycast(
+				player,
+				eyePosition,
+				endPosition,
+				searchBox,
+				entity -> !entity.isSpectator() && entity.canHit(),
+				reachDistance * reachDistance
+		);
+		return entityHit == null;
 	}
 
 
