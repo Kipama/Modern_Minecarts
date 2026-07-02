@@ -7,6 +7,7 @@ import net.fabricmc.api.ModInitializer;
 import net.fabricmc.fabric.api.creativetab.v1.CreativeModeTabEvents;
 import net.fabricmc.fabric.api.event.player.UseBlockCallback;
 import net.fabricmc.fabric.api.event.player.UseEntityCallback;
+import net.fabricmc.fabric.api.event.player.UseItemCallback;
 import net.lordkipama.modernminecarts.block.ModBlocks;
 import net.lordkipama.modernminecarts.interfaces.ChainMinecartInterface;
 import net.lordkipama.modernminecarts.recipe.ModRecipeSerializers;
@@ -23,19 +24,25 @@ import net.minecraft.sounds.SoundSource;
 import net.minecraft.tags.BlockTags;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.projectile.ProjectileUtil;
 import net.minecraft.world.item.CreativeModeTabs;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.component.CustomData;
 import net.minecraft.world.entity.vehicle.minecart.AbstractMinecart;
+import net.minecraft.world.level.ClipContext;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.BaseRailBlock;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.RailShape;
+import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.BlockHitResult;
+import net.minecraft.world.phys.EntityHitResult;
 import net.minecraft.world.phys.HitResult;
+import net.minecraft.world.phys.Vec3;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -96,6 +103,32 @@ public class ModernMinecarts implements ModInitializer {
                 world.playSound(player, pos, SoundEvents.WOOD_PLACE, SoundSource.BLOCKS, 1.0F, 1.0F);
             }
             return InteractionResult.PASS;
+        });
+
+        UseItemCallback.EVENT.register((player, world, hand) -> {
+            if (world.isClientSide() || player.isSpectator() || !player.isCrouching()) {
+                return InteractionResult.PASS;
+            }
+
+            ItemStack stack = player.getItemInHand(hand);
+            if (!stack.is(Items.IRON_CHAIN) || !modernminecarts$isRightClickingAir(player, world)) {
+                return InteractionResult.PASS;
+            }
+
+            CompoundTag nbt = stack.getOrDefault(DataComponents.CUSTOM_DATA, CustomData.EMPTY).copyTag();
+            if (!nbt.contains("ParentEntity")) {
+                return InteractionResult.PASS;
+            }
+
+            nbt.remove("ParentEntity");
+            if (nbt.isEmpty()) {
+                stack.remove(DataComponents.CUSTOM_DATA);
+            } else {
+                stack.set(DataComponents.CUSTOM_DATA, CustomData.of(nbt));
+            }
+
+            world.playSound(null, player.getX(), player.getY(), player.getZ(), SoundEvents.CHAIN_BREAK, SoundSource.NEUTRAL, 1F, 1F);
+            return InteractionResult.SUCCESS;
         });
 
         UseEntityCallback.EVENT.register((player, world, hand, entity, hitResult) -> {
@@ -224,6 +257,35 @@ public class ModernMinecarts implements ModInitializer {
         }
 
         return false;
+    }
+
+    private static boolean modernminecarts$isRightClickingAir(net.minecraft.world.entity.player.Player player, Level level) {
+        double reachDistance = 5.0D;
+        Vec3 eyePosition = player.getEyePosition();
+        Vec3 lookDirection = player.getLookAngle();
+        Vec3 endPosition = eyePosition.add(lookDirection.scale(reachDistance));
+
+        HitResult blockHit = level.clip(new ClipContext(
+                eyePosition,
+                endPosition,
+                ClipContext.Block.OUTLINE,
+                ClipContext.Fluid.NONE,
+                player
+        ));
+        if (blockHit.getType() != HitResult.Type.MISS) {
+            return false;
+        }
+
+        AABB searchBox = player.getBoundingBox().expandTowards(lookDirection.scale(reachDistance)).inflate(1.0D);
+        EntityHitResult entityHit = ProjectileUtil.getEntityHitResult(
+                player,
+                eyePosition,
+                endPosition,
+                searchBox,
+                entity -> !entity.isSpectator() && entity.isPickable(),
+                reachDistance * reachDistance
+        );
+        return entityHit == null;
     }
 
     public static Identifier id(String name) {
