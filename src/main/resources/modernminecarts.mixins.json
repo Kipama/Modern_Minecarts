@@ -1,19 +1,18 @@
 {
   "required": true,
   "package": "net.lordkipama.modernminecarts.mixin",
-  "compatibilityLevel": "JAVA_21",
+  "compatibilityLevel": "JAVA_25",
   "mixins": [
-    "MinecartInvoker",
-    "MinecartMixin",
+      "MinecartInvoker",
+      "OldMinecartBehaviorMixin",
+      "MinecartMixin",
     "FurnaceMinecartMixin",
     "HopperMinecartMixin",
     "VehicleEntityMixin",
     "EntityTrackerEntryMixin"
   ],
-  "injectors": {
-    "defaultRequire": 1
-  },
-  "client": [
-    "MinecartEntityRendererMixin"
-  ]
-}
+    "injectors": {
+      "defaultRequire": 1
+    },
+    "client": []
+  }

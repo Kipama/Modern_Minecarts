@@ -2,11 +2,11 @@ package net.lordkipama.modernminecarts.util;
 
 import net.lordkipama.modernminecarts.interfaces.ChainMinecartInterface;
 import net.lordkipama.modernminecarts.logic.MinecartTuning;
-import net.minecraft.entity.vehicle.AbstractMinecartEntity;
-import net.minecraft.entity.vehicle.FurnaceMinecartEntity;
-import net.minecraft.entity.vehicle.HopperMinecartEntity;
-import net.minecraft.entity.vehicle.VehicleInventory;
-import net.minecraft.inventory.Inventory;
+import net.minecraft.world.Container;
+import net.minecraft.world.entity.vehicle.minecart.AbstractMinecart;
+import net.minecraft.world.entity.vehicle.minecart.AbstractMinecartContainer;
+import net.minecraft.world.entity.vehicle.minecart.MinecartFurnace;
+import net.minecraft.world.entity.vehicle.minecart.MinecartHopper;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
@@ -20,15 +20,15 @@ public final class TrainInventoryUtil {
     private TrainInventoryUtil() {
     }
 
-    public static List<Inventory> collectStorageInventories(
-            AbstractMinecartEntity origin,
+    public static List<Container> collectStorageInventories(
+            AbstractMinecart origin,
             boolean includeParents,
             boolean includeChildren,
             boolean includeHoppers
     ) {
-        List<Inventory> inventories = new ArrayList<>();
+        List<Container> inventories = new ArrayList<>();
         Set<UUID> visited = new HashSet<>();
-        visited.add(origin.getUuid());
+        visited.add(origin.getUUID());
 
         if (includeParents) {
             collectDirection(getParent(origin), true, includeHoppers, inventories, visited);
@@ -41,20 +41,20 @@ public final class TrainInventoryUtil {
     }
 
     private static void collectDirection(
-            @Nullable AbstractMinecartEntity current,
+            @Nullable AbstractMinecart current,
             boolean towardParent,
             boolean includeHoppers,
-            List<Inventory> inventories,
+            List<Container> inventories,
             Set<UUID> visited
     ) {
-        List<Inventory> directionInventories = new ArrayList<>();
+        List<Container> directionInventories = new ArrayList<>();
         int traversed = 0;
         while (current != null
                 && traversed++ < MinecartTuning.MAX_TRAIN_LENGTH
-                && visited.add(current.getUuid())) {
-            if (current instanceof VehicleInventory inventory
-                    && !(current instanceof FurnaceMinecartEntity)
-                    && (includeHoppers || !(current instanceof HopperMinecartEntity))) {
+                && visited.add(current.getUUID())) {
+            if (current instanceof AbstractMinecartContainer inventory
+                    && !(current instanceof MinecartFurnace)
+                    && (includeHoppers || !(current instanceof MinecartHopper))) {
                 directionInventories.add(inventory);
             }
 
@@ -64,11 +64,11 @@ public final class TrainInventoryUtil {
         inventories.addAll(directionInventories);
     }
 
-    private static @Nullable AbstractMinecartEntity getParent(AbstractMinecartEntity cart) {
+    private static @Nullable AbstractMinecart getParent(AbstractMinecart cart) {
         return ((ChainMinecartInterface) cart).getLinkedParent();
     }
 
-    private static @Nullable AbstractMinecartEntity getChild(AbstractMinecartEntity cart) {
+    private static @Nullable AbstractMinecart getChild(AbstractMinecart cart) {
         return ((ChainMinecartInterface) cart).getLinkedChild();
     }
 }

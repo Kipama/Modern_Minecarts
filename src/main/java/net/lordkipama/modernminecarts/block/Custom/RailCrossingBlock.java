@@ -1,39 +1,57 @@
 package net.lordkipama.modernminecarts.block.Custom;
 
 import com.mojang.serialization.MapCodec;
+import net.lordkipama.modernminecarts.ModernMinecartsConfig;
+import net.minecraft.core.BlockPos;
+import net.minecraft.world.entity.vehicle.minecart.AbstractMinecart;
+import net.minecraft.world.level.BlockGetter;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.BaseRailBlock;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.state.BlockBehaviour;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.block.state.StateDefinition;
+import net.minecraft.world.level.block.state.properties.BlockStateProperties;
+import net.minecraft.world.level.block.state.properties.EnumProperty;
+import net.minecraft.world.level.block.state.properties.Property;
+import net.minecraft.world.level.block.state.properties.RailShape;
+import net.minecraft.world.phys.Vec3;
+import org.jetbrains.annotations.NotNull;
 
-import net.minecraft.block.AbstractBlock;
-import net.minecraft.block.AbstractRailBlock;
-import net.minecraft.block.Block;
-import net.minecraft.block.BlockState;
-import net.minecraft.block.enums.RailShape;
-import net.minecraft.state.StateManager;
-import net.minecraft.state.property.EnumProperty;
-import net.minecraft.state.property.Properties;
-import net.minecraft.state.property.Property;
+public class RailCrossingBlock extends BaseRailBlock implements ModernMinecartRailSpeed {
+    public static final EnumProperty<RailShape> SHAPE = BlockStateProperties.RAIL_SHAPE_STRAIGHT;
 
-public class RailCrossingBlock extends AbstractRailBlock {
-    public static final MapCodec<RailCrossingBlock> CODEC = createCodec(RailCrossingBlock::new);
-    public static final EnumProperty<RailShape> SHAPE = EnumProperty.of("shape", RailShape.class, shape -> shape != RailShape.ASCENDING_NORTH && shape != RailShape.ASCENDING_EAST && shape != RailShape.ASCENDING_SOUTH && shape != RailShape.ASCENDING_WEST && shape != RailShape.NORTH_EAST && shape != RailShape.NORTH_WEST && shape != RailShape.SOUTH_EAST && shape != RailShape.SOUTH_WEST);
-
-    public RailCrossingBlock(AbstractBlock.Settings settings) {
-        super(true, settings);
-        setDefaultState(getDefaultState().with(SHAPE, RailShape.NORTH_SOUTH).with(WATERLOGGED, false));
+    public RailCrossingBlock(BlockBehaviour.Properties properties) {
+        super(true, properties);
+        this.registerDefaultState(this.stateDefinition.any().setValue(SHAPE, RailShape.NORTH_SOUTH).setValue(WATERLOGGED, Boolean.FALSE));
     }
 
     @Override
-    protected MapCodec<RailCrossingBlock> getCodec() {
-        return CODEC;
+    protected MapCodec<? extends BaseRailBlock> codec() {
+        return MapCodec.unit(this);
     }
 
     @Override
-    public Property<RailShape> getShapeProperty() {
+    public @NotNull Property<RailShape> getShapeProperty() {
         return SHAPE;
     }
 
     @Override
-    protected void appendProperties(StateManager.Builder<Block, BlockState> builder) {
+    protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) {
         builder.add(SHAPE, WATERLOGGED);
     }
 
+    public @NotNull RailShape getRailDirection(@NotNull BlockState state, @NotNull BlockGetter level, @NotNull BlockPos pos, AbstractMinecart cart) {
+        if (cart == null) {
+            return RailShape.NORTH_SOUTH;
+        }
+
+        Vec3 movement = cart.getDeltaMovement();
+        return Math.abs(movement.z) > Math.abs(movement.x) ? RailShape.NORTH_SOUTH : RailShape.EAST_WEST;
+    }
+
+    @Override
+    public float getModernMinecartRailSpeed(BlockState state, Level level, BlockPos pos, AbstractMinecart cart) {
+        return (float) ModernMinecartsConfig.copperSpeed();
+    }
 }

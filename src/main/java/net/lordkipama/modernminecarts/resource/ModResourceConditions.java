@@ -8,7 +8,7 @@ import net.fabricmc.fabric.api.resource.conditions.v1.ResourceConditionType;
 import net.fabricmc.fabric.api.resource.conditions.v1.ResourceConditions;
 import net.lordkipama.modernminecarts.ModernMinecarts;
 import net.lordkipama.modernminecarts.ModernMinecartsConfig;
-import net.minecraft.registry.RegistryOps;
+import net.minecraft.resources.RegistryOps;
 
 public final class ModResourceConditions {
     private ModResourceConditions() {
@@ -31,7 +31,7 @@ public final class ModResourceConditions {
         }
 
         @Override
-        public boolean test(RegistryOps.RegistryInfoGetter registryLookup) {
+        public boolean test(RegistryOps.RegistryInfoLookup registryLookup) {
             return switch (feature) {
                 case "copper_rails" -> ModernMinecartsConfig.enableCopperRails();
                 case "rail_crossing" -> ModernMinecartsConfig.enableRailCrossing();

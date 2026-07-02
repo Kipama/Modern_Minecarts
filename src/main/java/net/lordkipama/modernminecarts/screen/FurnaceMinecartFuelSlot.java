@@ -1,22 +1,25 @@
 package net.lordkipama.modernminecarts.screen;
 
-import net.minecraft.inventory.Inventory;
-import net.minecraft.item.ItemStack;
-import net.minecraft.item.Items;
-import net.minecraft.screen.slot.Slot;
+import net.minecraft.world.Container;
+import net.minecraft.world.inventory.Slot;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
 
 public class FurnaceMinecartFuelSlot extends Slot {
-    public FurnaceMinecartFuelSlot(Inventory inventory, int index, int x, int y) {
-        super(inventory, index, x, y);
+    private final int slotIndex;
+
+    public FurnaceMinecartFuelSlot(Container container, int slot, int x, int y) {
+        super(container, slot, x, y);
+        this.slotIndex = slot;
     }
 
     @Override
-    public boolean canInsert(ItemStack stack) {
-        return inventory.isValid(getIndex(), stack) || stack.isOf(Items.BUCKET);
+    public boolean mayPlace(ItemStack stack) {
+        return this.container.canPlaceItem(this.slotIndex, stack) || stack.is(Items.BUCKET);
     }
 
     @Override
-    public int getMaxItemCount(ItemStack stack) {
-        return stack.isOf(Items.BUCKET) ? 1 : super.getMaxItemCount(stack);
+    public int getMaxStackSize(ItemStack stack) {
+        return stack.is(Items.BUCKET) ? 1 : super.getMaxStackSize(stack);
     }
 }

@@ -1,30 +1,25 @@
 package net.lordkipama.modernminecarts.mixin;
 
 import com.mojang.datafixers.util.Pair;
-import net.minecraft.block.enums.RailShape;
-import net.minecraft.entity.vehicle.AbstractMinecartEntity;
-import net.minecraft.server.world.ServerWorld;
-import net.minecraft.state.property.Property;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.Vec3d;
-import net.minecraft.util.math.Vec3i;
+import net.minecraft.core.Vec3i;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.world.entity.vehicle.minecart.AbstractMinecart;
+import net.minecraft.world.level.block.state.properties.RailShape;
+import net.minecraft.world.phys.Vec3;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.gen.Invoker;
 
-@Mixin(AbstractMinecartEntity.class)
+@Mixin(AbstractMinecart.class)
 public interface MinecartInvoker {
-    @Invoker("getAdjacentRailPositionsByShape")
-        public static Pair<Vec3i, Vec3i> invokeGetAdjacentRailPositionsByShape(RailShape shape){
+    @Invoker("exits")
+    static Pair<Vec3i, Vec3i> invokeGetAdjacentRailPositionsByShape(RailShape shape) {
         throw new AssertionError();
     }
 
-
     @Invoker("getMaxSpeed")
-    public double invokeGetMaxSpeed(ServerWorld world);
+    double invokeGetMaxSpeed(ServerLevel level);
 
-    @Invoker("applySlowdown")
-    public Vec3d invokeApplySlowdown(Vec3d velocity);
+    @Invoker("applyNaturalSlowdown")
+    Vec3 invokeApplyNaturalSlowdown(Vec3 movement);
 
-    @Invoker("willHitBlockAt")
-    public boolean invokeWillHitBlockAt(BlockPos pos);
 }

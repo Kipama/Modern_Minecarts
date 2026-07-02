@@ -1,163 +1,130 @@
 package net.lordkipama.modernminecarts.block.Custom;
 
-import com.google.common.base.Suppliers;
-import com.google.common.collect.BiMap;
-import com.google.common.collect.ImmutableBiMap;
-import com.llamalad7.mixinextras.sugar.Local;
-import jdk.jfr.Percentage;
+import com.mojang.serialization.MapCodec;
+import net.lordkipama.modernminecarts.ModernMinecartsConfig;
 import net.lordkipama.modernminecarts.block.ModBlocks;
-import net.minecraft.advancement.criterion.Criteria;
-import net.minecraft.block.*;
-import net.minecraft.block.enums.RailShape;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.item.ItemStack;
-import net.minecraft.item.Items;
-import net.minecraft.registry.tag.ItemTags;
-import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.server.world.ServerWorld;
-import net.minecraft.sound.SoundCategory;
-import net.minecraft.sound.SoundEvent;
-import net.minecraft.sound.SoundEvents;
-import net.minecraft.util.ActionResult;
-import net.minecraft.util.Hand;
-import net.minecraft.util.hit.BlockHitResult;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.random.Random;
+import net.lordkipama.modernminecarts.util.AdvancementHelper;
+import net.lordkipama.modernminecarts.util.RailShapeHelper;
+import net.minecraft.core.BlockPos;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.sounds.SoundEvents;
+import net.minecraft.sounds.SoundSource;
+import net.minecraft.tags.ItemTags;
+import net.minecraft.util.RandomSource;
+import net.minecraft.world.InteractionHand;
+import net.minecraft.world.InteractionResult;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.entity.vehicle.minecart.AbstractMinecart;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
+import net.minecraft.world.level.BlockGetter;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.PoweredRailBlock;
+import net.minecraft.world.level.block.state.BlockBehaviour;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.phys.BlockHitResult;
 
-import java.util.Iterator;
-import java.util.Optional;
-import java.util.function.Supplier;
-import com.google.common.base.Suppliers;
-import com.google.common.collect.BiMap;
-import com.google.common.collect.ImmutableBiMap;
-import java.util.Optional;
-import java.util.function.Supplier;
-import net.minecraft.block.Block;
-import net.minecraft.block.BlockState;
-import net.minecraft.block.Blocks;
-import net.minecraft.block.Degradable;
-import net.minecraft.world.World;
+public class CopperRailBlock extends PoweredRailBlock implements WeatheringRailBlock, ModernMinecartRailSpeed {
+    private final WeatheringRailBlock.WeatherState weatherState;
 
-public class CopperRailBlock extends PoweredRailBlock implements CustomOxidizable {
-
-    private final Oxidizable.OxidationLevel oxidationLevel;
-
-    public CopperRailBlock(Oxidizable.OxidationLevel oxidationLevel, AbstractBlock.Settings settings) {
-        super(settings);
-        this.oxidationLevel = oxidationLevel;
+    public CopperRailBlock(BlockBehaviour.Properties properties, WeatheringRailBlock.WeatherState weatherState) {
+        super(properties);
+        this.weatherState = weatherState;
     }
 
     @Override
-    public void randomTick(BlockState state, ServerWorld world, BlockPos pos, Random random) {
-        this.tickDegradation(state, world, pos, random);
+    public MapCodec<PoweredRailBlock> codec() {
+        return MapCodec.unit(this);
     }
 
     @Override
-    public boolean hasRandomTicks(BlockState state) {
-        return oxidationLevel != Oxidizable.OxidationLevel.OXIDIZED;
-    }
+    protected InteractionResult useItemOn(ItemStack itemStack, BlockState state, Level level, BlockPos pos, Player player, InteractionHand interactionHand, BlockHitResult blockHitResult) {
+        if (itemStack.getItem() == Items.HONEYCOMB) {
+            if (!level.isClientSide()) {
+                if (!player.isCreative() && !player.isSpectator()) {
+                    itemStack.shrink(1);
+                }
 
-    @Override
-    public Oxidizable.OxidationLevel getDegradationLevel() {
-        return this.oxidationLevel;
-    }
+                if (this.weatherState == WeatheringRailBlock.WeatherState.UNAFFECTED) {
+                    level.setBlock(pos, ModBlocks.WAXED_COPPER_RAIL.withPropertiesOf(state), 1);
+                } else if (this.weatherState == WeatheringRailBlock.WeatherState.EXPOSED) {
+                    level.setBlock(pos, ModBlocks.WAXED_EXPOSED_COPPER_RAIL.withPropertiesOf(state), 1);
+                } else if (this.weatherState == WeatheringRailBlock.WeatherState.WEATHERED) {
+                    level.setBlock(pos, ModBlocks.WAXED_WEATHERED_COPPER_RAIL.withPropertiesOf(state), 1);
+                } else if (this.weatherState == WeatheringRailBlock.WeatherState.OXIDIZED) {
+                    level.setBlock(pos, ModBlocks.WAXED_OXIDIZED_COPPER_RAIL.withPropertiesOf(state), 1);
+                }
 
-    @Override
-    protected ActionResult onUseWithItem(ItemStack itemstack, BlockState state, World world, BlockPos pos, PlayerEntity player, Hand hand, BlockHitResult hit){
+                if (player instanceof ServerPlayer serverPlayer) {
+                    AdvancementHelper.awardWaxOn(serverPlayer);
+                }
+            }
 
-        if (itemstack.getItem() == Items.HONEYCOMB) {
+            level.levelEvent(player, 3003, pos, 0);
+            player.swing(interactionHand);
+            return InteractionResult.SUCCESS;
+        }
 
-            //Decrement honeycomb
+        if (!itemStack.is(ItemTags.AXES)) {
+            return InteractionResult.PASS;
+        }
+        if (this.weatherState == WeatherState.UNAFFECTED) {
+            return InteractionResult.PASS;
+        }
+
+        if (!level.isClientSide()) {
+            if (this.weatherState == WeatherState.EXPOSED) {
+                level.setBlock(pos, ModBlocks.COPPER_RAIL.withPropertiesOf(state), 1);
+            } else if (this.weatherState == WeatherState.WEATHERED) {
+                level.setBlock(pos, ModBlocks.EXPOSED_COPPER_RAIL.withPropertiesOf(state), 1);
+            } else if (this.weatherState == WeatherState.OXIDIZED) {
+                level.setBlock(pos, ModBlocks.WEATHERED_COPPER_RAIL.withPropertiesOf(state), 1);
+            }
+
             if (!player.isCreative() && !player.isSpectator()) {
-                itemstack.decrement(1);
-            }
-
-            if(!world.isClient()) {
-                //Replace block with waxed version
-                if (this.oxidationLevel == Oxidizable.OxidationLevel.UNAFFECTED) {
-                    if (player instanceof ServerPlayerEntity) {
-                        Criteria.ITEM_USED_ON_BLOCK.trigger((ServerPlayerEntity)player, pos, itemstack);
-                    }
-                    world.setBlockState(pos, ModBlocks.WAXED_COPPER_RAIL.getStateWithProperties(state), 1);
-                } else if (this.oxidationLevel == Oxidizable.OxidationLevel.EXPOSED) {
-                    if (player instanceof ServerPlayerEntity) {
-                        Criteria.ITEM_USED_ON_BLOCK.trigger((ServerPlayerEntity)player, pos, itemstack);
-                    }
-                    world.setBlockState(pos, ModBlocks.WAXED_EXPOSED_COPPER_RAIL.getStateWithProperties(state), 1);
-                } else if (this.oxidationLevel == Oxidizable.OxidationLevel.WEATHERED) {
-                    if (player instanceof ServerPlayerEntity) {
-                        Criteria.ITEM_USED_ON_BLOCK.trigger((ServerPlayerEntity)player, pos, itemstack);
-                    }
-                    world.setBlockState(pos, ModBlocks.WAXED_WEATHERED_COPPER_RAIL.getStateWithProperties(state), 1);
-                } else if (this.oxidationLevel == Oxidizable.OxidationLevel.OXIDIZED) {
-                    if (player instanceof ServerPlayerEntity) {
-                        Criteria.ITEM_USED_ON_BLOCK.trigger((ServerPlayerEntity)player, pos, itemstack);
-                    }
-                    world.setBlockState(pos, ModBlocks.WAXED_OXIDIZED_COPPER_RAIL.getStateWithProperties(state), 1);
-                }
-
-
-            }
-
-            //Play sound and particle events
-            world.syncWorldEvent(player, 3003, pos, 0);
-            player.swingHand(hand);
-            return ActionResult.SUCCESS;
-
-        } else if (itemstack.isIn(ItemTags.AXES)) {
-
-            //Serverside
-            if(!world.isClient()) {
-                //Replace block with younger version
-                if (this.oxidationLevel == Oxidizable.OxidationLevel.UNAFFECTED) {
-                    return ActionResult.PASS_TO_DEFAULT_BLOCK_ACTION;
-                } else if (this.oxidationLevel == Oxidizable.OxidationLevel.EXPOSED) {
-                    world.setBlockState(pos, ModBlocks.COPPER_RAIL.getStateWithProperties(state), 1);
-                } else if (this.oxidationLevel == Oxidizable.OxidationLevel.WEATHERED) {
-                    world.setBlockState(pos, ModBlocks.EXPOSED_COPPER_RAIL.getStateWithProperties(state), 1);
-                } else if (this.oxidationLevel == Oxidizable.OxidationLevel.OXIDIZED) {
-                    world.setBlockState(pos, ModBlocks.WEATHERED_COPPER_RAIL.getStateWithProperties(state), 1);
-                }
-            }
-            //ClientSide
-            else{
-                if (this.oxidationLevel == Oxidizable.OxidationLevel.UNAFFECTED) {
-                    return ActionResult.PASS_TO_DEFAULT_BLOCK_ACTION;
-                }
-                else {
-                    player.swingHand(hand);
-                    //Play wax off sound event
-                    world.playSound(player, pos, SoundEvents.ITEM_AXE_SCRAPE, SoundCategory.BLOCKS, 1.0F, 1.0F);
-                    world.syncWorldEvent(player, 3005, pos, 0);
-
-                    if (!player.isCreative() && !player.isSpectator()) {
-                        player.getStackInHand(hand).setDamage(player.getStackInHand(hand).getDamage()+1);
-                    }
-                }
+                itemStack.setDamageValue(itemStack.getDamageValue() + 1);
             }
         }
-        return ActionResult.PASS_TO_DEFAULT_BLOCK_ACTION;
+
+        player.swing(interactionHand);
+        level.playSound(player, pos, SoundEvents.AXE_SCRAPE, SoundSource.BLOCKS, 1.0F, 1.0F);
+        level.levelEvent(player, 3005, pos, 0);
+        return InteractionResult.SUCCESS;
+    }
+
+    public boolean canMakeSlopes(BlockState state, BlockGetter world, BlockPos pos) {
+        return true;
     }
 
     @Override
-    protected boolean isPoweredByOtherRails(World world, BlockPos pos, boolean bl, int distance, RailShape shape) {
-        BlockState blockState = world.getBlockState(pos);
-        if (!(blockState.getBlock() instanceof CopperRailBlock) && !(blockState.getBlock() instanceof WaxedCopperRailBlock)) {
-            return false;
+    public float getModernMinecartRailSpeed(BlockState state, Level level, BlockPos pos, AbstractMinecart cart) {
+        float finalSpeed = switch (getAge()) {
+            case UNAFFECTED -> (float) ModernMinecartsConfig.copperSpeed();
+            case EXPOSED -> (float) ModernMinecartsConfig.exposedCopperSpeed();
+            case WEATHERED -> (float) ModernMinecartsConfig.weatheredCopperSpeed();
+            case OXIDIZED -> (float) ModernMinecartsConfig.oxidizedCopperSpeed();
+        };
+
+        if (RailShapeHelper.isAscending(state.getValue(getShapeProperty())) && finalSpeed >= ModernMinecartsConfig.maxAscendingSpeed()) {
+            return (float) ModernMinecartsConfig.maxAscendingSpeed();
         }
-        RailShape railShape = blockState.get(SHAPE);
-        if (shape == RailShape.EAST_WEST && (railShape == RailShape.NORTH_SOUTH || railShape == RailShape.ASCENDING_NORTH || railShape == RailShape.ASCENDING_SOUTH)) {
-            return false;
-        }
-        if (shape == RailShape.NORTH_SOUTH && (railShape == RailShape.EAST_WEST || railShape == RailShape.ASCENDING_EAST || railShape == RailShape.ASCENDING_WEST)) {
-            return false;
-        }
-        if (blockState.get(POWERED).booleanValue()) {
-            if (world.isReceivingRedstonePower(pos)) {
-                return true;
-            }
-            return this.isPoweredByOtherRails(world, pos, blockState, bl, distance + 1);
-        }
-        return false;
+
+        return finalSpeed;
+    }
+
+    @Override
+    public void randomTick(BlockState state, ServerLevel level, BlockPos pos, RandomSource random) {
+        this.changeOverTime(state, level, pos, random);
+    }
+
+    @Override
+    public boolean isRandomlyTicking(BlockState state) {
+        return this.weatherState != WeatherState.OXIDIZED;
+    }
+
+    @Override
+    public WeatheringRailBlock.WeatherState getAge() {
+        return this.weatherState;
     }
 }

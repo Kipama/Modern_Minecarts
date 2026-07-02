@@ -1,13 +1,13 @@
 package net.lordkipama.modernminecarts.interfaces;
 
-import net.minecraft.inventory.Inventory;
-
 import java.util.List;
+import net.minecraft.world.Container;
 
 public interface ContainerMinecartInteface {
-    default void setNumberOfChildren(int number) {}
+    default void setNumberOfChildren(int number) {
+    }
 
-    default List<Inventory> getChainInventories() {
+    default List<Container> getChainInventories() {
         return List.of();
     }
 

@@ -4,59 +4,50 @@ import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.lordkipama.modernminecarts.ModernMinecartsConfig;
-import net.minecraft.item.ItemStack;
-import net.minecraft.network.RegistryByteBuf;
-import net.minecraft.network.codec.PacketCodec;
-import net.minecraft.recipe.RawShapedRecipe;
-import net.minecraft.recipe.RecipeSerializer;
-import net.minecraft.recipe.ShapedRecipe;
-import net.minecraft.recipe.book.CraftingRecipeCategory;
+import net.minecraft.network.RegistryFriendlyByteBuf;
+import net.minecraft.network.codec.ByteBufCodecs;
+import net.minecraft.network.codec.StreamCodec;
+import net.minecraft.world.item.ItemStackTemplate;
+import net.minecraft.world.item.crafting.CraftingRecipe;
+import net.minecraft.world.item.crafting.Recipe;
+import net.minecraft.world.item.crafting.RecipeSerializer;
+import net.minecraft.world.item.crafting.ShapedRecipe;
+import net.minecraft.world.item.crafting.ShapedRecipePattern;
 
-import java.util.Optional;
-
-public class ConfigurableShapedRecipeSerializer implements RecipeSerializer<ConfigurableShapedRecipeSerializer.ConfigurableShapedRecipe> {
-    private static final ShapedRecipe.Serializer VANILLA = new ShapedRecipe.Serializer();
-    private static final MapCodec<ConfigurableShapedRecipe> CODEC = RecordCodecBuilder.mapCodec(instance -> instance.group(
-            Codec.STRING.optionalFieldOf("group", "").forGetter(ConfigurableShapedRecipe::getGroup),
-            CraftingRecipeCategory.CODEC.fieldOf("category").orElse(CraftingRecipeCategory.MISC).forGetter(ConfigurableShapedRecipe::getCategory),
-            RawShapedRecipe.CODEC.forGetter(ConfigurableShapedRecipe::getRawRecipe),
-            ItemStack.VALIDATED_CODEC.fieldOf("result").forGetter(ConfigurableShapedRecipe::getConfiguredResult),
-            Codec.BOOL.optionalFieldOf("show_notification", true).forGetter(ConfigurableShapedRecipe::showNotification),
+public final class ConfigurableShapedRecipeSerializer {
+    public static final MapCodec<ConfigurableShapedRecipe> MAP_CODEC = RecordCodecBuilder.mapCodec(instance -> instance.group(
+            Recipe.CommonInfo.MAP_CODEC.forGetter(recipe -> new Recipe.CommonInfo(recipe.showNotification())),
+            CraftingRecipe.CraftingBookInfo.MAP_CODEC.forGetter(recipe -> new CraftingRecipe.CraftingBookInfo(recipe.category(), recipe.group())),
+            ShapedRecipePattern.MAP_CODEC.forGetter(ConfigurableShapedRecipe::getPattern),
+            ItemStackTemplate.CODEC.fieldOf("result").forGetter(ConfigurableShapedRecipe::getBaseResult),
             Codec.STRING.fieldOf("yield_config").forGetter(ConfigurableShapedRecipe::yieldConfig)
     ).apply(instance, ConfigurableShapedRecipeSerializer::decodeConfiguredRecipe));
-    private static final PacketCodec<RegistryByteBuf, ConfigurableShapedRecipe> PACKET_CODEC =
-            PacketCodec.ofStatic(ConfigurableShapedRecipeSerializer::writePacket, ConfigurableShapedRecipeSerializer::readPacket);
 
-    @Override
-    public MapCodec<ConfigurableShapedRecipe> codec() {
-        return CODEC;
-    }
+    public static final StreamCodec<RegistryFriendlyByteBuf, ConfigurableShapedRecipe> STREAM_CODEC = StreamCodec.composite(
+            Recipe.CommonInfo.STREAM_CODEC,
+            recipe -> new Recipe.CommonInfo(recipe.showNotification()),
+            CraftingRecipe.CraftingBookInfo.STREAM_CODEC,
+            recipe -> new CraftingRecipe.CraftingBookInfo(recipe.category(), recipe.group()),
+            ShapedRecipePattern.STREAM_CODEC,
+            ConfigurableShapedRecipe::getPattern,
+            ItemStackTemplate.STREAM_CODEC,
+            ConfigurableShapedRecipe::getBaseResult,
+            ByteBufCodecs.STRING_UTF8,
+            ConfigurableShapedRecipe::yieldConfig,
+            ConfigurableShapedRecipeSerializer::decodeConfiguredRecipe
+    );
 
-    @Override
-    public PacketCodec<RegistryByteBuf, ConfigurableShapedRecipe> packetCodec() {
-        return PACKET_CODEC;
+    private ConfigurableShapedRecipeSerializer() {
     }
 
     private static ConfigurableShapedRecipe decodeConfiguredRecipe(
-            String group,
-            CraftingRecipeCategory category,
-            RawShapedRecipe raw,
-            ItemStack result,
-            boolean showNotification,
+            Recipe.CommonInfo commonInfo,
+            CraftingRecipe.CraftingBookInfo bookInfo,
+            ShapedRecipePattern pattern,
+            ItemStackTemplate result,
             String yieldConfig
     ) {
-        ItemStack configuredResult = result.copy();
-        configuredResult.setCount(getConfiguredYield(yieldConfig));
-        return new ConfigurableShapedRecipe(group, category, raw, configuredResult, showNotification, yieldConfig);
-    }
-
-    private static ConfigurableShapedRecipe readPacket(RegistryByteBuf buf) {
-        ShapedRecipe recipe = VANILLA.packetCodec().decode(buf);
-        return ConfigurableShapedRecipe.fromNetwork(recipe);
-    }
-
-    private static void writePacket(RegistryByteBuf buf, ConfigurableShapedRecipe recipe) {
-        VANILLA.packetCodec().encode(buf, recipe.asVanillaRecipe());
+        return new ConfigurableShapedRecipe(commonInfo, bookInfo, pattern, result, yieldConfig);
     }
 
     private static int getConfiguredYield(String yieldConfig) {
@@ -68,56 +59,39 @@ public class ConfigurableShapedRecipeSerializer implements RecipeSerializer<Conf
     }
 
     public static final class ConfigurableShapedRecipe extends ShapedRecipe {
-        private static final String NETWORK_YIELD_CONFIG = "__network_synced__";
-
-        private final RawShapedRecipe rawRecipe;
-        private final ItemStack configuredResult;
+        private final ShapedRecipePattern pattern;
+        private final ItemStackTemplate baseResult;
         private final String yieldConfig;
 
         private ConfigurableShapedRecipe(
-                String group,
-                CraftingRecipeCategory category,
-                RawShapedRecipe rawRecipe,
-                ItemStack configuredResult,
-                boolean showNotification,
+                Recipe.CommonInfo commonInfo,
+                CraftingRecipe.CraftingBookInfo bookInfo,
+                ShapedRecipePattern pattern,
+                ItemStackTemplate baseResult,
                 String yieldConfig
         ) {
-            super(group, category, rawRecipe, configuredResult, showNotification);
-            this.rawRecipe = rawRecipe;
-            this.configuredResult = configuredResult;
+            super(commonInfo, bookInfo, pattern, baseResult.withCount(getConfiguredYield(yieldConfig)));
+            this.pattern = pattern;
+            this.baseResult = baseResult;
             this.yieldConfig = yieldConfig;
         }
 
-        private static ConfigurableShapedRecipe fromNetwork(ShapedRecipe recipe) {
-            return new ConfigurableShapedRecipe(
-                    recipe.getGroup(),
-                    recipe.getCategory(),
-                    new RawShapedRecipe(recipe.getWidth(), recipe.getHeight(), recipe.getIngredients(), Optional.empty()),
-                    recipe.craft(null, null).copy(),
-                    recipe.showNotification(),
-                    NETWORK_YIELD_CONFIG
-            );
+        ShapedRecipePattern getPattern() {
+            return this.pattern;
         }
 
-        private ShapedRecipe asVanillaRecipe() {
-            return new ShapedRecipe(getGroup(), getCategory(), rawRecipe, configuredResult, showNotification());
-        }
-
-        RawShapedRecipe getRawRecipe() {
-            return rawRecipe;
-        }
-
-        ItemStack getConfiguredResult() {
-            return configuredResult;
+        ItemStackTemplate getBaseResult() {
+            return this.baseResult;
         }
 
         String yieldConfig() {
-            return yieldConfig;
+            return this.yieldConfig;
         }
 
+        @SuppressWarnings("unchecked")
         @Override
-        public RecipeSerializer<? extends ShapedRecipe> getSerializer() {
-            return ModRecipeSerializers.CONFIGURABLE_SHAPED_RECIPE;
+        public RecipeSerializer<ShapedRecipe> getSerializer() {
+            return (RecipeSerializer<ShapedRecipe>) (RecipeSerializer<?>) ModRecipeSerializers.CONFIGURABLE_SHAPED_RECIPE;
         }
     }
 }

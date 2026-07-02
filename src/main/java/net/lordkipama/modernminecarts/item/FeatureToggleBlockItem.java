@@ -1,33 +1,33 @@
 package net.lordkipama.modernminecarts.item;
 
-import net.minecraft.block.Block;
-import net.minecraft.block.BlockState;
-import net.minecraft.item.BlockItem;
-import net.minecraft.item.ItemPlacementContext;
-import net.minecraft.item.ItemUsageContext;
-import net.minecraft.util.ActionResult;
-
 import java.util.function.BooleanSupplier;
+import net.minecraft.world.InteractionResult;
+import net.minecraft.world.item.BlockItem;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.item.context.BlockPlaceContext;
+import net.minecraft.world.item.context.UseOnContext;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.state.BlockState;
 
 public class FeatureToggleBlockItem extends BlockItem {
     private final BooleanSupplier enabledSupplier;
 
-    public FeatureToggleBlockItem(Block block, Settings settings, BooleanSupplier enabledSupplier) {
-        super(block, settings);
+    public FeatureToggleBlockItem(Block block, Item.Properties properties, BooleanSupplier enabledSupplier) {
+        super(block, properties);
         this.enabledSupplier = enabledSupplier;
     }
 
     @Override
-    public ActionResult useOnBlock(ItemUsageContext context) {
-        if (!enabledSupplier.getAsBoolean()) {
-            return ActionResult.FAIL;
+    public InteractionResult useOn(UseOnContext context) {
+        if (!this.enabledSupplier.getAsBoolean()) {
+            return InteractionResult.FAIL;
         }
 
-        return super.useOnBlock(context);
+        return super.useOn(context);
     }
 
     @Override
-    protected boolean canPlace(ItemPlacementContext context, BlockState state) {
-        return enabledSupplier.getAsBoolean() && super.canPlace(context, state);
+    protected boolean canPlace(BlockPlaceContext context, BlockState state) {
+        return this.enabledSupplier.getAsBoolean() && super.canPlace(context, state);
     }
 }

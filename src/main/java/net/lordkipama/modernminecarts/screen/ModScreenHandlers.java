@@ -1,18 +1,17 @@
 package net.lordkipama.modernminecarts.screen;
 
 import net.lordkipama.modernminecarts.ModernMinecarts;
-import net.minecraft.registry.Registries;
-import net.minecraft.registry.Registry;
-import net.minecraft.resource.featuretoggle.FeatureFlags;
-import net.minecraft.screen.ScreenHandlerType;
+import net.minecraft.core.Registry;
+import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.world.flag.FeatureFlags;
+import net.minecraft.world.inventory.MenuType;
 
 public final class ModScreenHandlers {
-    public static final ScreenHandlerType<FurnaceMinecartScreenHandler> FURNACE_MINECART =
-            Registry.register(
-                    Registries.SCREEN_HANDLER,
-                    ModernMinecarts.id("furnace_minecart"),
-                    new ScreenHandlerType<>(FurnaceMinecartScreenHandler::new, FeatureFlags.VANILLA_FEATURES)
-            );
+    public static final MenuType<FurnaceMinecartScreenHandler> FURNACE_MINECART = Registry.register(
+            BuiltInRegistries.MENU,
+            ModernMinecarts.id("furnace_minecart"),
+            new MenuType<>(FurnaceMinecartScreenHandler::new, FeatureFlags.VANILLA_SET)
+    );
 
     private ModScreenHandlers() {
     }

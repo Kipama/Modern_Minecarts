@@ -1,6 +1,6 @@
 package net.lordkipama.modernminecarts.interfaces;
 
-import net.minecraft.entity.vehicle.AbstractMinecartEntity;
+import net.minecraft.world.entity.vehicle.minecart.AbstractMinecart;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -22,26 +22,34 @@ restrictions:
 * */
 
 public interface ChainMinecartInterface {
-    default @Nullable AbstractMinecartEntity getLinkedParent() {
+    default @Nullable AbstractMinecart getLinkedParent() {
         return null;
     }
-    default void setLinkedParent(@Nullable AbstractMinecartEntity parent) {}
 
-    default @Nullable AbstractMinecartEntity getLinkedChild() {
+    default void setLinkedParent(@Nullable AbstractMinecart parent) {
+    }
+
+    default @Nullable AbstractMinecart getLinkedChild() {
         return null;
     }
-    default void setLinkedChild(@Nullable AbstractMinecartEntity child) {}
 
-    default void setLinkedParentClient(int id) {}
-    default void setLinkedChildClient(int id) {}
+    default void setLinkedChild(@Nullable AbstractMinecart child) {
+    }
 
-    default AbstractMinecartEntity asAbstractMinecartEntity() { return (AbstractMinecartEntity) this; }
+    default void setLinkedParentClient(int id) {
+    }
+
+    default void setLinkedChildClient(int id) {
+    }
+
+    default AbstractMinecart asAbstractMinecart() {
+        return (AbstractMinecart) this;
+    }
 
     static void setParentChild(@NotNull ChainMinecartInterface parent, @NotNull ChainMinecartInterface child) {
-        unsetParentChild(parent, (ChainMinecartInterface)parent.getLinkedChild());
-        //unsetParentChild(child, child.getLinkedParent()); This line leads to bugs when connecting to the front of trains
-        parent.setLinkedChild(child.asAbstractMinecartEntity());
-        child.setLinkedParent(parent.asAbstractMinecartEntity());
+        unsetParentChild(parent, (ChainMinecartInterface) parent.getLinkedChild());
+        parent.setLinkedChild(child.asAbstractMinecart());
+        child.setLinkedParent(parent.asAbstractMinecart());
     }
 
     static void unsetParentChild(@Nullable ChainMinecartInterface parent, @Nullable ChainMinecartInterface child) {

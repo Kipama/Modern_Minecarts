@@ -1,82 +1,81 @@
 package net.lordkipama.modernminecarts.screen;
 
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.entity.player.PlayerInventory;
-import net.minecraft.inventory.Inventory;
-import net.minecraft.inventory.SimpleInventory;
-import net.minecraft.item.ItemStack;
-import net.minecraft.screen.ArrayPropertyDelegate;
-import net.minecraft.screen.PropertyDelegate;
-import net.minecraft.screen.ScreenHandler;
-import net.minecraft.screen.slot.Slot;
 import net.lordkipama.modernminecarts.logic.MinecartTuning;
+import net.minecraft.world.Container;
+import net.minecraft.world.SimpleContainer;
+import net.minecraft.world.entity.player.Inventory;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.inventory.AbstractContainerMenu;
+import net.minecraft.world.inventory.ContainerData;
+import net.minecraft.world.inventory.MenuType;
+import net.minecraft.world.inventory.SimpleContainerData;
+import net.minecraft.world.inventory.Slot;
+import net.minecraft.world.item.ItemStack;
 
-public class FurnaceMinecartScreenHandler extends ScreenHandler {
+public class FurnaceMinecartScreenHandler extends AbstractContainerMenu {
     private static final int PROPERTY_COUNT = 3;
-    private final Inventory inventory;
-    private final PropertyDelegate properties;
+    private final Container inventory;
+    private final ContainerData properties;
 
-    public FurnaceMinecartScreenHandler(int syncId, PlayerInventory playerInventory) {
-        this(syncId, playerInventory, new SimpleInventory(1), new ArrayPropertyDelegate(PROPERTY_COUNT));
+    public FurnaceMinecartScreenHandler(int containerId, Inventory playerInventory) {
+        this(containerId, playerInventory, new SimpleContainer(1), new SimpleContainerData(PROPERTY_COUNT));
     }
 
-    public FurnaceMinecartScreenHandler(
-            int syncId,
-            PlayerInventory playerInventory,
-            Inventory inventory,
-            PropertyDelegate properties
-    ) {
-        super(ModScreenHandlers.FURNACE_MINECART, syncId);
-        checkSize(inventory, 1);
-        checkDataCount(properties, PROPERTY_COUNT);
+    public FurnaceMinecartScreenHandler(int containerId, Inventory playerInventory, Container inventory, ContainerData properties) {
+        super(ModScreenHandlers.FURNACE_MINECART, containerId);
+        checkContainerSize(inventory, 1);
+        checkContainerDataCount(properties, PROPERTY_COUNT);
         this.inventory = inventory;
         this.properties = properties;
 
-        inventory.onOpen(playerInventory.player);
-        addSlot(new FurnaceMinecartFuelSlot(inventory, 0, 80, 45));
+        inventory.startOpen(playerInventory.player);
+        this.addSlot(new FurnaceMinecartFuelSlot(inventory, 0, 80, 45));
 
+        this.addInventorySlots(playerInventory);
+        this.addDataSlots(properties);
+    }
+
+    private void addInventorySlots(Inventory playerInventory) {
         for (int row = 0; row < 3; row++) {
             for (int column = 0; column < 9; column++) {
-                addSlot(new Slot(playerInventory, column + row * 9 + 9, 8 + column * 18, 84 + row * 18));
+                this.addSlot(new Slot(playerInventory, column + row * 9 + 9, 8 + column * 18, 84 + row * 18));
             }
         }
 
         for (int column = 0; column < 9; column++) {
-            addSlot(new Slot(playerInventory, column, 8 + column * 18, 142));
+            this.addSlot(new Slot(playerInventory, column, 8 + column * 18, 142));
         }
-
-        addProperties(properties);
     }
 
     @Override
-    public ItemStack quickMove(PlayerEntity player, int slotIndex) {
+    public ItemStack quickMoveStack(Player player, int slotIndex) {
         ItemStack result = ItemStack.EMPTY;
-        Slot slot = slots.get(slotIndex);
+        Slot slot = this.slots.get(slotIndex);
 
-        if (slot.hasStack()) {
-            ItemStack stack = slot.getStack();
+        if (slot.hasItem()) {
+            ItemStack stack = slot.getItem();
             result = stack.copy();
 
             if (slotIndex == 0) {
-                if (!insertItem(stack, 1, slots.size(), true)) {
+                if (!this.moveItemStackTo(stack, 1, this.slots.size(), true)) {
                     return ItemStack.EMPTY;
                 }
-            } else if (player.getEntityWorld().getFuelRegistry().isFuel(stack)) {
-                if (!insertItem(stack, 0, 1, false)) {
+            } else if (player.level().fuelValues().isFuel(stack)) {
+                if (!this.moveItemStackTo(stack, 0, 1, false)) {
                     return ItemStack.EMPTY;
                 }
             } else if (slotIndex < 28) {
-                if (!insertItem(stack, 28, 37, false)) {
+                if (!this.moveItemStackTo(stack, 28, 37, false)) {
                     return ItemStack.EMPTY;
                 }
-            } else if (!insertItem(stack, 1, 28, false)) {
+            } else if (!this.moveItemStackTo(stack, 1, 28, false)) {
                 return ItemStack.EMPTY;
             }
 
             if (stack.isEmpty()) {
-                slot.setStack(ItemStack.EMPTY);
+                slot.set(ItemStack.EMPTY);
             } else {
-                slot.markDirty();
+                slot.setChanged();
             }
         }
 
@@ -84,29 +83,29 @@ public class FurnaceMinecartScreenHandler extends ScreenHandler {
     }
 
     @Override
-    public boolean canUse(PlayerEntity player) {
-        return inventory.canPlayerUse(player);
+    public boolean stillValid(Player player) {
+        return this.inventory.stillValid(player);
     }
 
     @Override
-    public void onClosed(PlayerEntity player) {
-        super.onClosed(player);
-        inventory.onClose(player);
+    public void removed(Player player) {
+        super.removed(player);
+        this.inventory.stopOpen(player);
     }
 
     public boolean isBurning() {
-        return properties.get(0) > 0;
+        return this.properties.get(0) > 0;
     }
 
     public int getBurnProgress() {
-        int total = properties.get(1);
+        int total = this.properties.get(1);
         if (total <= 0) {
             total = 200;
         }
-        return properties.get(0) * 13 / total;
+        return this.properties.get(0) * 13 / total;
     }
 
     public int getSpeedProgress() {
-        return Math.max(0, Math.min(MinecartTuning.SPEEDOMETER_HEIGHT, properties.get(2)));
+        return Math.max(0, Math.min(MinecartTuning.SPEEDOMETER_HEIGHT, this.properties.get(2)));
     }
 }

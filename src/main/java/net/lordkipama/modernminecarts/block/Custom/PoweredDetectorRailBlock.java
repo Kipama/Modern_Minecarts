@@ -1,56 +1,60 @@
 package net.lordkipama.modernminecarts.block.Custom;
 
-import net.minecraft.block.AbstractBlock;
-import net.minecraft.block.Block;
-import net.minecraft.block.BlockState;
-import net.minecraft.block.DetectorRailBlock;
-import net.minecraft.block.enums.RailShape;
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.EntityCollisionHandler;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.entity.vehicle.AbstractMinecartEntity;
-import net.minecraft.entity.vehicle.CommandBlockMinecartEntity;
-import net.minecraft.entity.vehicle.VehicleInventory;
-import net.minecraft.item.ItemStack;
-import net.minecraft.item.Items;
-import net.minecraft.item.MinecartItem;
-import net.minecraft.screen.ScreenHandler;
-import net.minecraft.server.world.ServerWorld;
-import net.minecraft.sound.SoundCategory;
-import net.minecraft.sound.SoundEvents;
-import net.minecraft.state.StateManager;
-import net.minecraft.state.property.BooleanProperty;
-import net.minecraft.state.property.EnumProperty;
-import net.minecraft.state.property.Properties;
-import net.minecraft.state.property.Property;
-import net.minecraft.util.ActionResult;
-import net.minecraft.util.Hand;
-import net.minecraft.util.hit.BlockHitResult;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.Box;
-import net.minecraft.util.math.Direction;
-import net.minecraft.util.math.random.Random;
-import net.minecraft.world.BlockView;
-import net.minecraft.world.World;
+import com.mojang.serialization.MapCodec;
+import net.lordkipama.modernminecarts.block.ModBlocks;
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.sounds.SoundEvents;
+import net.minecraft.sounds.SoundSource;
+import net.minecraft.util.RandomSource;
+import net.minecraft.world.Container;
+import net.minecraft.world.InteractionHand;
+import net.minecraft.world.InteractionResult;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.EntitySelector;
+import net.minecraft.world.entity.InsideBlockEffectApplier;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.entity.vehicle.minecart.AbstractMinecart;
+import net.minecraft.world.entity.vehicle.minecart.MinecartCommandBlock;
+import net.minecraft.world.inventory.AbstractContainerMenu;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
+import net.minecraft.world.item.MinecartItem;
+import net.minecraft.world.level.BlockGetter;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.BaseRailBlock;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.RailState;
+import net.minecraft.world.level.block.state.BlockBehaviour;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.block.state.StateDefinition;
+import net.minecraft.world.level.block.state.properties.BlockStateProperties;
+import net.minecraft.world.level.block.state.properties.BooleanProperty;
+import net.minecraft.world.level.block.state.properties.EnumProperty;
+import net.minecraft.world.level.block.state.properties.Property;
+import net.minecraft.world.level.block.state.properties.RailShape;
+import net.minecraft.world.level.redstone.Orientation;
+import net.minecraft.world.phys.AABB;
+import net.minecraft.world.phys.BlockHitResult;
 
 import java.util.List;
 import java.util.function.Predicate;
 
-public class PoweredDetectorRailBlock extends DetectorRailBlock {
-    public static final EnumProperty<RailShape> SHAPE = Properties.STRAIGHT_RAIL_SHAPE;
-    public static final BooleanProperty POWERED = Properties.POWERED;
-    public static final BooleanProperty WEIGHT_INVERTED =
-            BooleanProperty.of("weight_inverted");
-    public static final BooleanProperty INVERTED = Properties.INVERTED;
+public class PoweredDetectorRailBlock extends BaseRailBlock {
+    public static final EnumProperty<RailShape> SHAPE = BlockStateProperties.RAIL_SHAPE_STRAIGHT;
+    public static final BooleanProperty POWERED = BlockStateProperties.POWERED;
+    public static final BooleanProperty WEIGHT_INVERTED = BooleanProperty.create("weight_inverted");
+    public static final BooleanProperty INVERTED = BlockStateProperties.INVERTED;
 
-    public PoweredDetectorRailBlock(AbstractBlock.Settings settings) {
-        super(settings);
-        setDefaultState(getStateManager().getDefaultState()
-                .with(SHAPE, RailShape.NORTH_SOUTH)
-                .with(POWERED, false)
-                .with(WATERLOGGED, false)
-                .with(WEIGHT_INVERTED, false)
-                .with(INVERTED, false));
+    public PoweredDetectorRailBlock(BlockBehaviour.Properties properties) {
+        super(true, properties);
+        this.registerDefaultState();
+    }
+
+    @Override
+    protected MapCodec<? extends BaseRailBlock> codec() {
+        return MapCodec.unit(this);
     }
 
     @Override
@@ -59,196 +63,159 @@ public class PoweredDetectorRailBlock extends DetectorRailBlock {
     }
 
     @Override
-    protected void appendProperties(StateManager.Builder<Block, BlockState> builder) {
+    protected boolean isSignalSource(BlockState state) {
+        return true;
+    }
+
+    protected void registerDefaultState() {
+        this.registerDefaultState(this.stateDefinition.any()
+                .setValue(SHAPE, RailShape.NORTH_SOUTH)
+                .setValue(POWERED, Boolean.FALSE)
+                .setValue(WATERLOGGED, Boolean.FALSE)
+                .setValue(WEIGHT_INVERTED, Boolean.FALSE)
+                .setValue(INVERTED, Boolean.FALSE));
+    }
+
+    @Override
+    protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) {
         builder.add(SHAPE, WATERLOGGED, POWERED, WEIGHT_INVERTED, INVERTED);
     }
 
     @Override
-    public void onEntityCollision(
-            BlockState state,
-            World world,
-            BlockPos pos,
-            Entity entity,
-            EntityCollisionHandler handler,
-            boolean collision
-    ) {
-        if (!world.isClient()) {
-            updatePoweredStatus(world, pos, state);
+    protected void entityInside(BlockState state, Level level, BlockPos pos, Entity entity, InsideBlockEffectApplier insideBlockEffectApplier, boolean triggersType) {
+        if (!level.isClientSide() && !state.getValue(POWERED)) {
+            this.checkPressed(level, pos, state);
         }
     }
 
     @Override
-    public void scheduledTick(
-            BlockState state,
-            ServerWorld world,
-            BlockPos pos,
-            Random random
-    ) {
-        updatePoweredStatus(world, pos, state);
-    }
-
-    @Override
-    public void onBlockAdded(
-            BlockState state,
-            World world,
-            BlockPos pos,
-            BlockState oldState,
-            boolean notify
-    ) {
-        if (!oldState.isOf(state.getBlock())) {
-            BlockState updatedState = updateCurves(state, world, pos, notify);
-            updatePoweredStatus(world, pos, updatedState);
-        }
-    }
-
-    @Override
-    protected ActionResult onUseWithItem(
-            ItemStack stack,
-            BlockState state,
-            World world,
-            BlockPos pos,
-            PlayerEntity player,
-            Hand hand,
-            BlockHitResult hit
-    ) {
-        if (stack.getItem() instanceof MinecartItem
-                || stack.isOf(Items.HOPPER)
-                || stack.isOf(Items.CHEST)
-                || stack.isOf(Items.BARREL)) {
-            return ActionResult.PASS_TO_DEFAULT_BLOCK_ACTION;
+    protected InteractionResult useItemOn(ItemStack itemStack, BlockState state, Level level, BlockPos pos, Player player, InteractionHand interactionHand, BlockHitResult blockHitResult) {
+        if (itemStack.getItem() instanceof MinecartItem || itemStack.is(Items.HOPPER) || itemStack.is(Items.CHEST) || itemStack.is(Items.BARREL)) {
+            return InteractionResult.PASS;
         }
 
-        if (!world.isClient()) {
-            if (player.isSneaking()) {
-                state = state.cycle(INVERTED);
-                world.playSound(
-                        null,
-                        pos,
-                        SoundEvents.ENTITY_ITEM_FRAME_PLACE,
-                        SoundCategory.BLOCKS,
-                        0.3F,
-                        0.6F
-                );
-            } else {
-                state = state.cycle(WEIGHT_INVERTED);
-                world.playSound(
-                        null,
-                        pos,
-                        SoundEvents.BLOCK_COMPARATOR_CLICK,
-                        SoundCategory.BLOCKS,
-                        0.3F,
-                        state.get(WEIGHT_INVERTED) ? 0.55F : 0.5F
-                );
+        if (player.isCrouching()) {
+            state = state.setValue(INVERTED, !state.getValue(INVERTED));
+            if (!level.isClientSide()) {
+                level.setBlock(pos, ModBlocks.POWERED_DETECTOR_RAIL.withPropertiesOf(state), 1);
             }
-
-            world.setBlockState(pos, state, Block.NOTIFY_ALL);
-            updatePoweredStatus(world, pos, state);
+            level.playSound(player, pos, SoundEvents.ITEM_FRAME_PLACE, SoundSource.BLOCKS, 0.3F, 0.6F);
+        } else {
+            state = state.setValue(WEIGHT_INVERTED, !state.getValue(WEIGHT_INVERTED));
+            state = state.setValue(POWERED, state.getValue(WEIGHT_INVERTED));
+            if (!level.isClientSide()) {
+                level.setBlock(pos, ModBlocks.POWERED_DETECTOR_RAIL.withPropertiesOf(state), 1);
+            }
+            level.playSound(player, pos, SoundEvents.COMPARATOR_CLICK, SoundSource.BLOCKS, 0.3F, state.getValue(WEIGHT_INVERTED) ? 0.55F : 0.5F);
         }
 
-        return ActionResult.SUCCESS;
+        return InteractionResult.SUCCESS;
     }
 
     @Override
-    public boolean emitsRedstonePower(BlockState state) {
+    protected BlockState updateState(BlockState state, Level level, BlockPos pos, boolean movedByPiston) {
+        state = this.updateDir(level, pos, state, true);
+        level.neighborChanged(state, pos, this, (Orientation) null, movedByPiston);
+        return state;
+    }
+
+    private void checkPressed(Level level, BlockPos pos, BlockState state) {
+        if (this.canSurvive(state, level, pos)) {
+            boolean isPowered = state.getValue(POWERED);
+            boolean isInverted = state.getValue(WEIGHT_INVERTED);
+            int analogSignal = getComparatorSignal(state, level, pos);
+            List<AbstractMinecart> minecarts = this.getInteractingMinecartOfType(level, pos, AbstractMinecart.class, candidate -> true);
+            List<AbstractMinecart> containers = minecarts.stream().filter(EntitySelector.CONTAINER_ENTITY_SELECTOR).toList();
+            boolean isContainer = !containers.isEmpty();
+            boolean minecartFull = minecarts.stream().anyMatch(Entity::isVehicle);
+
+            if ((analogSignal == 15 && !isInverted && isContainer) || (analogSignal == 0 && isInverted && isContainer)) {
+                updateRailState(level, pos, true, state);
+            } else if ((analogSignal != 0 && isInverted && isContainer) || (analogSignal != 15 && !isInverted && isContainer)) {
+                updateRailState(level, pos, false, state);
+            } else if ((!isPowered && minecartFull && !isInverted && !isContainer) || (!isPowered && !minecartFull && isInverted && !isContainer)) {
+                updateRailState(level, pos, true, state);
+            } else if ((isPowered && !minecartFull && !isInverted && !isContainer) || (isPowered && minecartFull && isInverted && !isContainer)) {
+                updateRailState(level, pos, false, state);
+            }
+            level.scheduleTick(pos, this, 0);
+        }
+        level.updateNeighbourForOutputSignal(pos, this);
+    }
+
+    private void updateRailState(Level level, BlockPos pos, boolean powered, BlockState state) {
+        BlockState blockState = state.setValue(POWERED, powered);
+        level.setBlockAndUpdate(pos, blockState);
+        this.updatePowerToConnected(level, pos, blockState);
+        level.updateNeighborsAt(pos, this);
+        level.updateNeighborsAt(pos.below(), this);
+        level.setBlocksDirty(pos, state, blockState);
+    }
+
+    private <T extends AbstractMinecart> List<T> getInteractingMinecartOfType(Level level, BlockPos pos, Class<T> cartType, Predicate<Entity> filter) {
+        return level.getEntitiesOfClass(cartType, this.getSearchBB(pos), filter);
+    }
+
+    private AABB getSearchBB(BlockPos pos) {
+        return new AABB((double) pos.getX() + 0.2D, (double) pos.getY(), (double) pos.getZ() + 0.2D, (double) (pos.getX() + 1) - 0.2D, (double) (pos.getY() + 1) - 0.2D, (double) (pos.getZ() + 1) - 0.2D);
+    }
+
+    @Override
+    protected void onPlace(BlockState state, Level level, BlockPos pos, BlockState oldState, boolean isMoving) {
+        if (!oldState.is(state.getBlock())) {
+            BlockState blockState = this.updateState(state, level, pos, isMoving);
+            this.checkPressed(level, pos, blockState);
+        }
+    }
+
+    protected void updatePowerToConnected(Level level, BlockPos pos, BlockState state) {
+        RailState railState = new RailState(level, pos, state);
+
+        for (BlockPos blockPos : railState.getConnections()) {
+            BlockState blockState = level.getBlockState(blockPos);
+            level.neighborChanged(blockState, blockPos, blockState.getBlock(), (Orientation) null, false);
+        }
+    }
+
+    @Override
+    protected void tick(BlockState state, ServerLevel level, BlockPos pos, RandomSource random) {
+        this.checkPressed(level, pos, state);
+    }
+
+    @Override
+    protected int getSignal(BlockState state, BlockGetter blockAccess, BlockPos pos, Direction side) {
+        return state.getValue(POWERED) ? 15 : 0;
+    }
+
+    @Override
+    protected int getDirectSignal(BlockState state, BlockGetter blockAccess, BlockPos pos, Direction side) {
+        if (!state.getValue(POWERED)) {
+            return 0;
+        }
+        return side == Direction.UP ? 15 : 0;
+    }
+
+    @Override
+    protected boolean hasAnalogOutputSignal(BlockState state) {
         return true;
     }
 
-    @Override
-    public int getWeakRedstonePower(
-            BlockState state,
-            BlockView world,
-            BlockPos pos,
-            Direction direction
-    ) {
-        return state.get(POWERED) ? 15 : 0;
+    private int getComparatorSignal(BlockState state, Level level, BlockPos pos) {
+        return this.getAnalogOutputSignal(state, level, pos, Direction.UP);
     }
 
     @Override
-    public int getStrongRedstonePower(
-            BlockState state,
-            BlockView world,
-            BlockPos pos,
-            Direction direction
-    ) {
-        return state.get(POWERED) && direction == Direction.UP ? 15 : 0;
-    }
-
-    @Override
-    public boolean hasComparatorOutput(BlockState state) {
-        return true;
-    }
-
-    @Override
-    public int getComparatorOutput(BlockState state, World world, BlockPos pos, Direction direction) {
-        List<CommandBlockMinecartEntity> commandCarts =
-                getCarts(world, pos, CommandBlockMinecartEntity.class, Entity::isAlive);
-        if (!commandCarts.isEmpty()) {
-            return commandCarts.get(0).getCommandExecutor().getSuccessCount();
+    protected int getAnalogOutputSignal(BlockState state, Level level, BlockPos pos, Direction side) {
+        List<MinecartCommandBlock> commandBlocks = this.getInteractingMinecartOfType(level, pos, MinecartCommandBlock.class, candidate -> true);
+        if (!commandBlocks.isEmpty()) {
+            return commandBlocks.get(0).getCommandBlock().getSuccessCount();
         }
 
-        List<AbstractMinecartEntity> carts =
-                getCarts(world, pos, AbstractMinecartEntity.class, Entity::isAlive);
-        for (AbstractMinecartEntity cart : carts) {
-            if (cart instanceof VehicleInventory inventory) {
-                return ScreenHandler.calculateComparatorOutput(inventory);
-            }
+        List<AbstractMinecart> list = this.getInteractingMinecartOfType(level, pos, AbstractMinecart.class, EntitySelector.CONTAINER_ENTITY_SELECTOR);
+        if (!list.isEmpty()) {
+            return AbstractContainerMenu.getRedstoneSignalFromContainer((Container) list.get(0));
         }
+
         return 0;
-    }
-
-    private void updatePoweredStatus(World world, BlockPos pos, BlockState state) {
-        if (!canPlaceAt(state, world, pos)) {
-            return;
-        }
-
-        boolean shouldPower = shouldPower(world, pos, state);
-        if (state.get(POWERED) != shouldPower) {
-            BlockState updatedState = state.with(POWERED, shouldPower);
-            world.setBlockState(pos, updatedState, Block.NOTIFY_ALL);
-            updateNearbyRails(world, pos, updatedState, shouldPower);
-            world.updateNeighborsAlways(pos, this, null);
-            world.updateNeighborsAlways(pos.down(), this, null);
-            world.scheduleBlockRerenderIfNeeded(pos, state, updatedState);
-            state = updatedState;
-        }
-
-        world.scheduleBlockTick(pos, this, 20);
-        world.updateComparators(pos, this);
-    }
-
-    private boolean shouldPower(World world, BlockPos pos, BlockState state) {
-        List<AbstractMinecartEntity> carts =
-                getCarts(world, pos, AbstractMinecartEntity.class, Entity::isAlive);
-        boolean weightInverted = state.get(WEIGHT_INVERTED);
-
-        for (AbstractMinecartEntity cart : carts) {
-            if (cart instanceof VehicleInventory inventory) {
-                int comparator = ScreenHandler.calculateComparatorOutput(inventory);
-                return weightInverted ? comparator == 0 : comparator == 15;
-            }
-        }
-
-        boolean occupied = carts.stream().anyMatch(Entity::hasPassengers);
-        return weightInverted ? !occupied : occupied;
-    }
-
-    private <T extends AbstractMinecartEntity> List<T> getCarts(
-            World world,
-            BlockPos pos,
-            Class<T> cartClass,
-            Predicate<Entity> predicate
-    ) {
-        return world.getEntitiesByClass(cartClass, getCartDetectionBox(pos), predicate);
-    }
-
-    private Box getCartDetectionBox(BlockPos pos) {
-        return new Box(
-                pos.getX() + 0.2D,
-                pos.getY(),
-                pos.getZ() + 0.2D,
-                pos.getX() + 0.8D,
-                pos.getY() + 0.8D,
-                pos.getZ() + 0.8D
-        );
     }
 }

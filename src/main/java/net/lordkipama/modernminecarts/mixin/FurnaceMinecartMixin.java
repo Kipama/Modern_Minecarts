@@ -1,45 +1,46 @@
 package net.lordkipama.modernminecarts.mixin;
 
+import java.util.List;
 import net.lordkipama.modernminecarts.ModernMinecartsConfig;
-import net.lordkipama.modernminecarts.interfaces.ChainMinecartInterface;
-import net.lordkipama.modernminecarts.interfaces.ContainerMinecartInteface;
-import net.lordkipama.modernminecarts.logic.MinecartTuning;
-import net.lordkipama.modernminecarts.logic.TrainEngineLogic;
 import net.lordkipama.modernminecarts.block.Custom.CopperRailBlock;
 import net.lordkipama.modernminecarts.block.Custom.PoweredDetectorRailBlock;
 import net.lordkipama.modernminecarts.block.Custom.SlopedRailBlock;
 import net.lordkipama.modernminecarts.block.Custom.WaxedCopperRailBlock;
 import net.lordkipama.modernminecarts.block.ModBlocks;
+import net.lordkipama.modernminecarts.interfaces.ChainMinecartInterface;
+import net.lordkipama.modernminecarts.interfaces.ContainerMinecartInteface;
+import net.lordkipama.modernminecarts.logic.MinecartTuning;
+import net.lordkipama.modernminecarts.logic.TrainEngineLogic;
 import net.lordkipama.modernminecarts.screen.FurnaceMinecartScreenHandler;
 import net.lordkipama.modernminecarts.util.TrainInventoryUtil;
-import net.minecraft.block.AbstractRailBlock;
-import net.minecraft.block.BlockState;
-import net.minecraft.block.Blocks;
-import net.minecraft.block.PoweredRailBlock;
-import net.minecraft.block.enums.RailShape;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.entity.player.PlayerInventory;
-import net.minecraft.entity.vehicle.AbstractMinecartEntity;
-import net.minecraft.entity.vehicle.FurnaceMinecartEntity;
-import net.minecraft.inventory.Inventories;
-import net.minecraft.inventory.Inventory;
-import net.minecraft.item.Item;
-import net.minecraft.item.ItemStack;
-import net.minecraft.item.Items;
-import net.minecraft.server.world.ServerWorld;
-import net.minecraft.storage.ReadView;
-import net.minecraft.storage.WriteView;
-import net.minecraft.screen.NamedScreenHandlerFactory;
-import net.minecraft.screen.PropertyDelegate;
-import net.minecraft.screen.ScreenHandler;
-import net.minecraft.server.world.ChunkTicketType;
-import net.minecraft.server.world.ServerWorld;
-import net.minecraft.util.ActionResult;
-import net.minecraft.util.Hand;
-import net.minecraft.util.collection.DefaultedList;
-import net.minecraft.util.math.ChunkPos;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.Vec3d;
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.NonNullList;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level.TicketType;
+import net.minecraft.util.Mth;
+import net.minecraft.world.Container;
+import net.minecraft.world.InteractionHand;
+import net.minecraft.world.InteractionResult;
+import net.minecraft.world.MenuProvider;
+import net.minecraft.world.entity.player.Inventory;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.entity.vehicle.minecart.AbstractMinecart;
+import net.minecraft.world.entity.vehicle.minecart.MinecartFurnace;
+import net.minecraft.world.inventory.AbstractContainerMenu;
+import net.minecraft.world.inventory.ContainerData;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
+import net.minecraft.world.level.block.BaseRailBlock;
+import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.PoweredRailBlock;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.block.state.properties.RailShape;
+import net.minecraft.world.level.ChunkPos;
+import net.minecraft.world.level.storage.ValueInput;
+import net.minecraft.world.level.storage.ValueOutput;
+import net.minecraft.network.chat.Component;
+import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.Nullable;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
@@ -49,37 +50,19 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
-import java.util.List;
+@Mixin(MinecartFurnace.class)
+public abstract class FurnaceMinecartMixin implements Container, MenuProvider, ContainerMinecartInteface {
+    @Shadow private int fuel;
+    @Shadow public Vec3 push;
+    @Shadow protected abstract void setHasFuel(boolean fuel);
 
-@Mixin(FurnaceMinecartEntity.class)
-public abstract class FurnaceMinecartMixin implements Inventory, NamedScreenHandlerFactory, ContainerMinecartInteface {
-    @Shadow
-    private int fuel;
-
-    @Shadow
-    public Vec3d pushVec;
-
-    @Shadow
-    protected abstract void setLit(boolean lit);
-
+    @Unique private NonNullList<ItemStack> modernminecarts$inventory = NonNullList.withSize(1, ItemStack.EMPTY);
+    @Unique private int modernminecarts$fuelBurnTime;
+    @Unique private int modernminecarts$numberOfChildren;
+    @Unique private int modernminecarts$burningFurnaces = 1;
+    @Unique private int modernminecarts$speedForDisplay;
     @Unique
-    private DefaultedList<ItemStack> modernminecarts$inventory =
-            DefaultedList.ofSize(1, ItemStack.EMPTY);
-
-    @Unique
-    private int modernminecarts$fuelBurnTime;
-
-    @Unique
-    private int modernminecarts$numberOfChildren;
-
-    @Unique
-    private int modernminecarts$burningFurnaces = 1;
-
-    @Unique
-    private int modernminecarts$speedForDisplay;
-
-    @Unique
-    private final PropertyDelegate modernminecarts$properties = new PropertyDelegate() {
+    private final ContainerData modernminecarts$properties = new ContainerData() {
         @Override
         public int get(int index) {
             return switch (index) {
@@ -100,44 +83,39 @@ public abstract class FurnaceMinecartMixin implements Inventory, NamedScreenHand
         }
 
         @Override
-        public int size() {
+        public int getCount() {
             return 3;
         }
     };
 
     @Inject(method = "tick", at = @At("HEAD"))
     private void modernminecarts$prepareFuelAndDirection(CallbackInfo ci) {
-        FurnaceMinecartEntity cart = modernminecarts$self();
-        if (cart.getEntityWorld().isClient()) {
+        MinecartFurnace cart = modernminecarts$self();
+        if (cart.level().isClientSide()) {
             return;
         }
 
         modernminecarts$numberOfChildren = modernminecarts$countChildren(cart);
         boolean hasChild = modernminecarts$getChild(cart) != null;
-        boolean isMoving = cart.getVelocity().horizontalLengthSquared() > 0.001D;
+        boolean isMoving = cart.getDeltaMovement().horizontalDistanceSqr() > 0.001D;
         boolean isRoot = modernminecarts$getParent(cart) == null;
-        boolean hasDirection = pushVec.horizontalLengthSquared() > 1.0E-7D;
-        boolean mayStart = modernminecarts$railAllowsMovement(cart)
-                && !modernminecarts$isActivelyPoweredRail(cart)
-                && isRoot
-                && (hasChild || isMoving);
+        boolean hasDirection = push.horizontalDistanceSqr() > 1.0E-7D;
+        boolean mayStart = modernminecarts$railAllowsMovement(cart) && !modernminecarts$isActivelyPoweredRail(cart) && isRoot && (hasChild || isMoving);
 
         if (fuel <= 0 && mayStart) {
             modernminecarts$burningFurnaces = burnFuelTrain();
         }
 
         if (fuel > 0 && !hasDirection) {
-            AbstractMinecartEntity child = modernminecarts$getChild(cart);
+            AbstractMinecart child = modernminecarts$getChild(cart);
             if (child != null) {
-                pushVec = new Vec3d(cart.getX() - child.getX(), 0.0D, cart.getZ() - child.getZ());
+                push = new Vec3(cart.getX() - child.getX(), 0.0D, cart.getZ() - child.getZ());
             } else if (isMoving) {
-                pushVec = new Vec3d(cart.getVelocity().x, 0.0D, cart.getVelocity().z);
+                push = new Vec3(cart.getDeltaMovement().x, 0.0D, cart.getDeltaMovement().z);
             }
         }
 
-        boolean waitingForDirection = fuel > 0
-                && pushVec.horizontalLengthSquared() <= 1.0E-7D
-                && modernminecarts$getParent(cart) == null;
+        boolean waitingForDirection = fuel > 0 && push.horizontalDistanceSqr() <= 1.0E-7D && isRoot;
         if (waitingForDirection) {
             fuel++;
         }
@@ -145,80 +123,66 @@ public abstract class FurnaceMinecartMixin implements Inventory, NamedScreenHand
 
     @Inject(method = "tick", at = @At("TAIL"))
     private void modernminecarts$finishFuelTick(CallbackInfo ci) {
-        FurnaceMinecartEntity cart = modernminecarts$self();
-        if (!cart.getEntityWorld().isClient()) {
-            if (fuel > 0
-                    && ModernMinecartsConfig.enableFurnaceMinecartChunkloading()
-                    && cart.getEntityWorld() instanceof ServerWorld serverWorld) {
-                ChunkPos chunkPos = new ChunkPos(BlockPos.ofFloored(cart.getX(), cart.getY(), cart.getZ()));
-                serverWorld.getChunkManager().addTicket(ChunkTicketType.PORTAL, chunkPos, 3);
-            }
-            if (!modernminecarts$railAllowsMovement(cart)) {
-                pushVec = Vec3d.ZERO;
-                cart.setVelocity(Vec3d.ZERO);
-            } else {
-                Vec3d velocity = cart.getVelocity();
-                double maxSpeed = MinecartTuning.FURNACE_MINECART_MAX_SPEED;
-                cart.setVelocity(
-                        Math.max(-maxSpeed, Math.min(maxSpeed, velocity.x)),
-                        velocity.y,
-                        Math.max(-maxSpeed, Math.min(maxSpeed, velocity.z))
-                );
-            }
-            setLit(fuel > 0);
+        MinecartFurnace cart = modernminecarts$self();
+        if (cart.level().isClientSide()) {
+            return;
         }
+
+        if (fuel > 0 && ModernMinecartsConfig.enableFurnaceMinecartChunkloading() && cart.level() instanceof ServerLevel serverLevel) {
+            ChunkPos chunkPos = new ChunkPos(cart.blockPosition().getX() >> 4, cart.blockPosition().getZ() >> 4);
+            serverLevel.getChunkSource().addTicketWithRadius(TicketType.PORTAL, chunkPos, 3);
+        }
+
+        if (!modernminecarts$railAllowsMovement(cart)) {
+            push = Vec3.ZERO;
+            cart.setDeltaMovement(Vec3.ZERO);
+        } else {
+            Vec3 movement = cart.getDeltaMovement();
+            double maxSpeed = MinecartTuning.FURNACE_MINECART_MAX_SPEED;
+            cart.setDeltaMovement(Mth.clamp(movement.x, -maxSpeed, maxSpeed), movement.y, Mth.clamp(movement.z, -maxSpeed, maxSpeed));
+        }
+
+        setHasFuel(fuel > 0);
     }
 
     @Inject(method = "interact", at = @At("HEAD"), cancellable = true)
-    private void modernminecarts$openFuelScreen(
-            PlayerEntity player,
-            Hand hand,
-            CallbackInfoReturnable<ActionResult> cir
-    ) {
-        if (!player.getEntityWorld().isClient()) {
-            player.openHandledScreen(this);
+    private void modernminecarts$openFuelScreen(Player player, InteractionHand hand, Vec3 location, CallbackInfoReturnable<InteractionResult> cir) {
+        if (!player.level().isClientSide()) {
+            player.openMenu(this);
         }
-        cir.setReturnValue(player.getEntityWorld().isClient()
-                ? ActionResult.SUCCESS
-                : ActionResult.SUCCESS_SERVER);
+        cir.setReturnValue(InteractionResult.SUCCESS);
     }
 
-    @Inject(method = "writeCustomData", at = @At("TAIL"))
-    private void modernminecarts$writeInventory(WriteView view, CallbackInfo ci) {
-        Inventories.writeData(view, modernminecarts$inventory);
-        view.putInt("ModernMinecartsFuelBurnTime", modernminecarts$fuelBurnTime);
+    @Inject(method = "addAdditionalSaveData", at = @At("TAIL"))
+    private void modernminecarts$writeInventory(ValueOutput output, CallbackInfo ci) {
+        output.store("ModernMinecartsInventory", ItemStack.CODEC.listOf(), List.copyOf(modernminecarts$inventory));
+        output.putInt("ModernMinecartsFuelBurnTime", modernminecarts$fuelBurnTime);
     }
 
-    @Inject(method = "readCustomData", at = @At("TAIL"))
-    private void modernminecarts$readInventory(ReadView view, CallbackInfo ci) {
-        modernminecarts$inventory = DefaultedList.ofSize(1, ItemStack.EMPTY);
-        Inventories.readData(view, modernminecarts$inventory);
-        modernminecarts$fuelBurnTime = view.getInt("ModernMinecartsFuelBurnTime", 0);
+    @Inject(method = "readAdditionalSaveData", at = @At("TAIL"))
+    private void modernminecarts$readInventory(ValueInput input, CallbackInfo ci) {
+        modernminecarts$inventory = NonNullList.withSize(1, ItemStack.EMPTY);
+        input.read("ModernMinecartsInventory", ItemStack.CODEC.listOf()).ifPresent(items -> {
+            if (!items.isEmpty()) {
+                modernminecarts$inventory.set(0, items.getFirst());
+            }
+        });
+        modernminecarts$fuelBurnTime = input.getIntOr("ModernMinecartsFuelBurnTime", 0);
     }
 
-    @Inject(method = "applySlowdown", at = @At("TAIL"), cancellable = true)
-    private void modernminecarts$capEngineSpeed(
-            Vec3d velocity,
-            CallbackInfoReturnable<Vec3d> cir
-    ) {
-        FurnaceMinecartEntity cart = modernminecarts$self();
-        if (!(cart.getEntityWorld() instanceof ServerWorld serverWorld)) {
+    @Inject(method = "applyNaturalSlowdown", at = @At("RETURN"), cancellable = true)
+    private void modernminecarts$capEngineSpeed(Vec3 movement, CallbackInfoReturnable<Vec3> cir) {
+        MinecartFurnace cart = modernminecarts$self();
+        if (!(cart.level() instanceof ServerLevel serverLevel)) {
             return;
         }
-        double maxSpeed = ((MinecartInvoker) cart).invokeGetMaxSpeed(serverWorld);
-        Vec3d slowed = cir.getReturnValue();
-        cir.setReturnValue(new Vec3d(
-                Math.max(-maxSpeed, Math.min(maxSpeed, slowed.x)),
-                slowed.y,
-                Math.max(-maxSpeed, Math.min(maxSpeed, slowed.z))
-        ));
+        double maxSpeed = ((MinecartInvoker) cart).invokeGetMaxSpeed(serverLevel);
+        Vec3 slowed = cir.getReturnValue();
+        cir.setReturnValue(new Vec3(Mth.clamp(slowed.x, -maxSpeed, maxSpeed), slowed.y, Mth.clamp(slowed.z, -maxSpeed, maxSpeed)));
     }
 
     @Inject(method = "getMaxSpeed", at = @At("RETURN"), cancellable = true)
-    private void modernminecarts$useForgeFurnaceSpeed(
-            ServerWorld world,
-            CallbackInfoReturnable<Double> cir
-    ) {
+    private void modernminecarts$useForgeFurnaceSpeed(ServerLevel world, CallbackInfoReturnable<Double> cir) {
         double railSpeed = modernminecarts$getRailSpeed();
         if (modernminecarts$getParent(modernminecarts$self()) != null) {
             cir.setReturnValue(railSpeed);
@@ -230,9 +194,8 @@ public abstract class FurnaceMinecartMixin implements Inventory, NamedScreenHand
     @Override
     public int burnFuelTrain() {
         if (modernminecarts$isActivelyPoweredRail(modernminecarts$self())) {
-            AbstractMinecartEntity child = modernminecarts$getChild(modernminecarts$self());
-            if (child instanceof FurnaceMinecartEntity
-                    && child instanceof ContainerMinecartInteface furnaceChild) {
+            AbstractMinecart child = modernminecarts$getChild(modernminecarts$self());
+            if (child instanceof MinecartFurnace && child instanceof ContainerMinecartInteface furnaceChild) {
                 return furnaceChild.burnFuelTrain();
             }
             return 0;
@@ -246,9 +209,8 @@ public abstract class FurnaceMinecartMixin implements Inventory, NamedScreenHand
         fuel = burnTime;
         modernminecarts$fuelBurnTime = burnTime;
 
-        AbstractMinecartEntity child = modernminecarts$getChild(modernminecarts$self());
-        if (child instanceof FurnaceMinecartEntity
-                && child instanceof ContainerMinecartInteface furnaceChild) {
+        AbstractMinecart child = modernminecarts$getChild(modernminecarts$self());
+        if (child instanceof MinecartFurnace && child instanceof ContainerMinecartInteface furnaceChild) {
             return 1 + furnaceChild.burnFuelTrain();
         }
         return 1;
@@ -256,17 +218,18 @@ public abstract class FurnaceMinecartMixin implements Inventory, NamedScreenHand
 
     @Unique
     private int modernminecarts$consumeFuelItem() {
-        ItemStack stack = getStack(0);
-        int burnTime = modernminecarts$self().getEntityWorld().getFuelRegistry().getFuelTicks(stack);
+        ItemStack stack = getItem(0);
+        int burnTime = modernminecarts$self().level().fuelValues().burnDuration(stack);
         if (stack.isEmpty() || burnTime <= 0) {
             return 0;
         }
 
         Item consumedFuel = stack.getItem();
-        ItemStack remainder = stack.getRecipeRemainder();
-        stack.decrement(1);
+        var remainderTemplate = stack.getCraftingRemainder();
+        ItemStack remainder = remainderTemplate != null ? remainderTemplate.create() : ItemStack.EMPTY;
+        stack.shrink(1);
         if (stack.isEmpty()) {
-            setStack(0, remainder);
+            setItem(0, remainder);
         }
         modernminecarts$refillFuelSlot(consumedFuel);
         return burnTime;
@@ -274,68 +237,59 @@ public abstract class FurnaceMinecartMixin implements Inventory, NamedScreenHand
 
     @Unique
     private void modernminecarts$refillFuelSlot(Item consumedFuel) {
-        ItemStack fuelStack = getStack(0);
-
-        for (Inventory inventory : getChainInventories()) {
-            for (int slot = 0; slot < inventory.size() && fuelStack.getCount() < fuelStack.getMaxCount(); slot++) {
-                ItemStack candidate = inventory.getStack(slot);
-                if (!candidate.isOf(consumedFuel)) {
+        ItemStack fuelStack = getItem(0);
+        for (Container inventory : getChainInventories()) {
+            for (int slot = 0; slot < inventory.getContainerSize() && fuelStack.getCount() < fuelStack.getMaxStackSize(); slot++) {
+                ItemStack candidate = inventory.getItem(slot);
+                if (!candidate.is(consumedFuel)) {
                     continue;
                 }
 
                 if (fuelStack.isEmpty()) {
                     fuelStack = candidate.copy();
                     fuelStack.setCount(0);
-                    setStack(0, fuelStack);
-                } else if (fuelStack.isOf(Items.BUCKET) && consumedFuel == Items.LAVA_BUCKET) {
-                    setStack(0, new ItemStack(Items.LAVA_BUCKET));
-                    candidate.decrement(1);
+                    setItem(0, fuelStack);
+                } else if (fuelStack.is(Items.BUCKET) && consumedFuel == Items.LAVA_BUCKET) {
+                    setItem(0, new ItemStack(Items.LAVA_BUCKET));
+                    candidate.shrink(1);
                     if (candidate.isEmpty()) {
-                        inventory.setStack(slot, new ItemStack(Items.BUCKET));
+                        inventory.setItem(slot, new ItemStack(Items.BUCKET));
                     } else {
                         modernminecarts$storeRemainder(inventory, new ItemStack(Items.BUCKET));
                     }
-                    inventory.markDirty();
+                    inventory.setChanged();
                     return;
-                } else if (!ItemStack.areItemsAndComponentsEqual(fuelStack, candidate)) {
+                } else if (!ItemStack.isSameItemSameComponents(fuelStack, candidate)) {
                     continue;
                 }
 
-                int moved = Math.min(
-                        fuelStack.getMaxCount() - fuelStack.getCount(),
-                        candidate.getCount()
-                );
-                fuelStack.increment(moved);
-                candidate.decrement(moved);
-                inventory.markDirty();
+                int moved = Math.min(fuelStack.getMaxStackSize() - fuelStack.getCount(), candidate.getCount());
+                fuelStack.grow(moved);
+                candidate.shrink(moved);
+                inventory.setChanged();
             }
         }
-        markDirty();
+        setChanged();
     }
 
     @Unique
-    private static void modernminecarts$storeRemainder(Inventory inventory, ItemStack remainder) {
-        for (int slot = 0; slot < inventory.size(); slot++) {
-            ItemStack stack = inventory.getStack(slot);
+    private static void modernminecarts$storeRemainder(Container inventory, ItemStack remainder) {
+        for (int slot = 0; slot < inventory.getContainerSize(); slot++) {
+            ItemStack stack = inventory.getItem(slot);
             if (stack.isEmpty()) {
-                inventory.setStack(slot, remainder);
+                inventory.setItem(slot, remainder);
                 return;
             }
-            if (ItemStack.areItemsAndComponentsEqual(stack, remainder) && stack.getCount() < stack.getMaxCount()) {
-                stack.increment(1);
+            if (ItemStack.isSameItemSameComponents(stack, remainder) && stack.getCount() < stack.getMaxStackSize()) {
+                stack.grow(1);
                 return;
             }
         }
     }
 
     @Override
-    public List<Inventory> getChainInventories() {
-        return TrainInventoryUtil.collectStorageInventories(
-                modernminecarts$self(),
-                false,
-                true,
-                true
-        );
+    public List<Container> getChainInventories() {
+        return TrainInventoryUtil.collectStorageInventories(modernminecarts$self(), false, true, true);
     }
 
     @Override
@@ -345,105 +299,100 @@ public abstract class FurnaceMinecartMixin implements Inventory, NamedScreenHand
 
     @Override
     public int calculateActualSpeedForDisplay() {
-        AbstractMinecartEntity parent = modernminecarts$getParent(modernminecarts$self());
+        AbstractMinecart parent = modernminecarts$getParent(modernminecarts$self());
         if (parent instanceof ContainerMinecartInteface parentFurnace) {
             return parentFurnace.calculateActualSpeedForDisplay();
         }
-
-        return TrainEngineLogic.calculateSpeedometerValue(
-                modernminecarts$self().getVelocity().horizontalLength(),
-                modernminecarts$speedForDisplay / (double) MinecartTuning.SPEEDOMETER_SCALE
-        );
+        return TrainEngineLogic.calculateSpeedometerValue(modernminecarts$self().getDeltaMovement().horizontalDistance(), modernminecarts$speedForDisplay / (double) MinecartTuning.SPEEDOMETER_SCALE);
     }
 
     @Override
     public double limitTrainSpeed(double railSpeed) {
-        AbstractMinecartEntity parent = modernminecarts$getParent(modernminecarts$self());
+        AbstractMinecart parent = modernminecarts$getParent(modernminecarts$self());
         if (parent instanceof ContainerMinecartInteface parentFurnace) {
             return parentFurnace.limitTrainSpeed(railSpeed);
         }
 
         double furnaceSpeed = Math.min(railSpeed, MinecartTuning.FURNACE_MINECART_MAX_SPEED);
-        double result = TrainEngineLogic.calculateSpeedLimit(
-                furnaceSpeed,
-                modernminecarts$numberOfChildren,
-                modernminecarts$burningFurnaces
-        );
+        double result = TrainEngineLogic.calculateSpeedLimit(furnaceSpeed, modernminecarts$numberOfChildren, modernminecarts$burningFurnaces);
         modernminecarts$speedForDisplay = TrainEngineLogic.speedToDisplayUnits(result);
         return result;
     }
 
     @Override
-    public @Nullable ScreenHandler createMenu(
-            int syncId,
-            PlayerInventory playerInventory,
-            PlayerEntity player
-    ) {
+    public @Nullable AbstractContainerMenu createMenu(int syncId, Inventory playerInventory, Player player) {
         return new FurnaceMinecartScreenHandler(syncId, playerInventory, this, modernminecarts$properties);
     }
 
     @Override
-    public int size() {
+    public Component getDisplayName() {
+        return Component.translatable("container.modernminecarts.furnace_minecart");
+    }
+
+    @Override
+    public int getContainerSize() {
         return modernminecarts$inventory.size();
     }
 
     @Override
     public boolean isEmpty() {
-        return modernminecarts$inventory.get(0).isEmpty();
+        return modernminecarts$inventory.getFirst().isEmpty();
     }
 
     @Override
-    public ItemStack getStack(int slot) {
+    public ItemStack getItem(int slot) {
         return modernminecarts$inventory.get(slot);
     }
 
     @Override
-    public ItemStack removeStack(int slot, int amount) {
-        ItemStack result = Inventories.splitStack(modernminecarts$inventory, slot, amount);
+    public ItemStack removeItem(int slot, int amount) {
+        ItemStack result = modernminecarts$inventory.get(slot).split(amount);
         if (!result.isEmpty()) {
-            markDirty();
+            setChanged();
         }
         return result;
     }
 
     @Override
-    public ItemStack removeStack(int slot) {
-        return Inventories.removeStack(modernminecarts$inventory, slot);
+    public ItemStack removeItemNoUpdate(int slot) {
+        ItemStack stack = modernminecarts$inventory.get(slot);
+        modernminecarts$inventory.set(slot, ItemStack.EMPTY);
+        return stack;
     }
 
     @Override
-    public void setStack(int slot, ItemStack stack) {
+    public void setItem(int slot, ItemStack stack) {
         modernminecarts$inventory.set(slot, stack);
-        if (stack.getCount() > getMaxCountPerStack()) {
-            stack.setCount(getMaxCountPerStack());
+        if (stack.getCount() > getMaxStackSize()) {
+            stack.setCount(getMaxStackSize());
         }
-        markDirty();
+        setChanged();
     }
 
     @Override
-    public void markDirty() {
+    public void setChanged() {
     }
 
     @Override
-    public boolean canPlayerUse(PlayerEntity player) {
-        FurnaceMinecartEntity cart = modernminecarts$self();
-        return !cart.isRemoved() && player.squaredDistanceTo(cart) <= 64.0D;
+    public boolean stillValid(Player player) {
+        MinecartFurnace cart = modernminecarts$self();
+        return !cart.isRemoved() && player.distanceToSqr(cart) <= 64.0D;
     }
 
     @Override
-    public boolean isValid(int slot, ItemStack stack) {
-        return modernminecarts$self().getEntityWorld().getFuelRegistry().isFuel(stack);
+    public boolean canPlaceItem(int slot, ItemStack stack) {
+        return modernminecarts$self().level().fuelValues().isFuel(stack);
     }
 
     @Override
-    public void clear() {
+    public void clearContent() {
         modernminecarts$inventory.clear();
     }
 
     @Unique
-    private static int modernminecarts$countChildren(AbstractMinecartEntity cart) {
+    private static int modernminecarts$countChildren(AbstractMinecart cart) {
         int count = 0;
-        AbstractMinecartEntity current = modernminecarts$getChild(cart);
+        AbstractMinecart current = modernminecarts$getChild(cart);
         while (current != null && count < 128) {
             count++;
             current = modernminecarts$getChild(current);
@@ -452,82 +401,70 @@ public abstract class FurnaceMinecartMixin implements Inventory, NamedScreenHand
     }
 
     @Unique
-    private static boolean modernminecarts$railAllowsMovement(FurnaceMinecartEntity cart) {
+    private static boolean modernminecarts$railAllowsMovement(MinecartFurnace cart) {
         BlockState state = modernminecarts$getCurrentRailState(cart);
         if (state == null) {
             return false;
         }
-        if (state.getBlock() instanceof PoweredRailBlock
-                && !state.isOf(net.minecraft.block.Blocks.ACTIVATOR_RAIL)
-                && state.contains(PoweredRailBlock.POWERED)) {
-            return state.get(PoweredRailBlock.POWERED);
+        if (state.is(Blocks.POWERED_RAIL) && state.hasProperty(PoweredRailBlock.POWERED)) {
+            return state.getValue(PoweredRailBlock.POWERED);
         }
         if (state.getBlock() instanceof PoweredDetectorRailBlock) {
-            return state.get(PoweredDetectorRailBlock.POWERED);
+            return state.getValue(PoweredDetectorRailBlock.POWERED);
         }
         return true;
     }
 
     @Unique
-    private static boolean modernminecarts$isActivelyPoweredRail(FurnaceMinecartEntity cart) {
+    private static boolean modernminecarts$isActivelyPoweredRail(MinecartFurnace cart) {
         BlockState state = modernminecarts$getCurrentRailState(cart);
         if (state == null) {
             return false;
         }
-        if (state.getBlock() instanceof PoweredRailBlock
-                && !state.isOf(Blocks.ACTIVATOR_RAIL)
-                && state.contains(PoweredRailBlock.POWERED)) {
-            return state.get(PoweredRailBlock.POWERED);
+        if (state.is(Blocks.POWERED_RAIL) && state.hasProperty(PoweredRailBlock.POWERED)) {
+            return state.getValue(PoweredRailBlock.POWERED);
         }
-        return state.getBlock() instanceof PoweredDetectorRailBlock
-                && state.get(PoweredDetectorRailBlock.POWERED);
+        return state.getBlock() instanceof PoweredDetectorRailBlock && state.getValue(PoweredDetectorRailBlock.POWERED);
     }
 
     @Unique
-    private static @Nullable BlockState modernminecarts$getCurrentRailState(
-            FurnaceMinecartEntity cart
-    ) {
-        if (!cart.isOnRail()) {
+    private static @Nullable BlockState modernminecarts$getCurrentRailState(MinecartFurnace cart) {
+        if (!cart.isOnRails()) {
             return null;
         }
-        BlockState state = cart.getEntityWorld().getBlockState(cart.getBlockPos());
-        if (!(state.getBlock() instanceof AbstractRailBlock)) {
-            state = cart.getEntityWorld().getBlockState(cart.getBlockPos().down());
+        BlockState state = cart.level().getBlockState(cart.blockPosition());
+        if (!(state.getBlock() instanceof BaseRailBlock)) {
+            state = cart.level().getBlockState(cart.blockPosition().below());
         }
-        return state.getBlock() instanceof AbstractRailBlock ? state : null;
+        return state.getBlock() instanceof BaseRailBlock ? state : null;
     }
 
     @Unique
     private double modernminecarts$getRailSpeed() {
-        FurnaceMinecartEntity cart = modernminecarts$self();
-        BlockPos railPos = cart.getBlockPos();
-        BlockState railState = cart.getEntityWorld().getBlockState(railPos);
-        if (!(railState.getBlock() instanceof AbstractRailBlock)) {
-            railPos = railPos.down();
-            railState = cart.getEntityWorld().getBlockState(railPos);
+        MinecartFurnace cart = modernminecarts$self();
+        BlockPos railPos = cart.blockPosition();
+        BlockState railState = cart.level().getBlockState(railPos);
+        if (!(railState.getBlock() instanceof BaseRailBlock)) {
+            railPos = railPos.below();
+            railState = cart.level().getBlockState(railPos);
         }
-
-        if (!(railState.getBlock() instanceof AbstractRailBlock)) {
+        if (!(railState.getBlock() instanceof BaseRailBlock)) {
             return MinecartTuning.VANILLA_RAIL_SPEED;
         }
 
-        double railSpeed = modernminecarts$getParent(cart) != null
-                ? MinecartTuning.copperRailSpeed()
-                : modernminecarts$getSpeedForRail(cart, railPos, railState);
-        if (cart.isTouchingWater() && !railState.isOf(Blocks.POWERED_RAIL)) {
+        double railSpeed = modernminecarts$getParent(cart) != null ? MinecartTuning.copperRailSpeed() : modernminecarts$getSpeedForRail(cart, railPos, railState);
+        if (cart.isInWater() && !railState.is(Blocks.POWERED_RAIL)) {
             railSpeed /= 2.0D;
         }
 
         if (railSpeed > 0.5D) {
             BlockPos nextPos = modernminecarts$getNextRailPos(cart, railPos);
-            BlockState nextState = cart.getEntityWorld().getBlockState(nextPos);
-            if (!(nextState.getBlock() instanceof AbstractRailBlock)) {
-                nextPos = nextPos.down();
-                nextState = cart.getEntityWorld().getBlockState(nextPos);
+            BlockState nextState = cart.level().getBlockState(nextPos);
+            if (!(nextState.getBlock() instanceof BaseRailBlock)) {
+                nextPos = nextPos.below();
+                nextState = cart.level().getBlockState(nextPos);
             }
-
-            if (nextState.getBlock() instanceof AbstractRailBlock nextRail
-                    && nextState.get(nextRail.getShapeProperty()).isAscending()) {
+            if (nextState.getBlock() instanceof BaseRailBlock nextRail && nextState.getValue(nextRail.getShapeProperty()).isSlope()) {
                 railSpeed = modernminecarts$getSpeedForRail(cart, nextPos, nextState);
             }
         }
@@ -536,82 +473,61 @@ public abstract class FurnaceMinecartMixin implements Inventory, NamedScreenHand
     }
 
     @Unique
-    private static double modernminecarts$getSpeedForRail(
-            FurnaceMinecartEntity cart,
-            BlockPos pos,
-            BlockState state
-    ) {
-        if (state.isOf(ModBlocks.RAIL_CROSSING)) {
+    private static double modernminecarts$getSpeedForRail(MinecartFurnace cart, BlockPos pos, BlockState state) {
+        if (state.is(ModBlocks.RAIL_CROSSING)) {
             return MinecartTuning.copperRailSpeed();
         }
-
-        if (state.isOf(ModBlocks.RAIL_JUMP)) {
-            RailShape shape = state.get(SlopedRailBlock.SHAPE);
+        if (state.is(ModBlocks.RAIL_JUMP)) {
+            RailShape shape = state.getValue(SlopedRailBlock.SHAPE);
             BlockPos launchPos = switch (shape) {
-                case ASCENDING_NORTH -> pos.north().up();
-                case ASCENDING_SOUTH -> pos.south().up();
-                case ASCENDING_EAST -> pos.east().up();
-                case ASCENDING_WEST -> pos.west().up();
+                case ASCENDING_NORTH -> pos.north().above();
+                case ASCENDING_SOUTH -> pos.south().above();
+                case ASCENDING_EAST -> pos.east().above();
+                case ASCENDING_WEST -> pos.west().above();
                 default -> pos;
             };
-            return cart.getEntityWorld().getBlockState(launchPos).isAir()
-                    ? MinecartTuning.copperRailSpeed()
-                    : MinecartTuning.ascendingCopperRailSpeed();
+            return cart.level().getBlockState(launchPos).isAir() ? MinecartTuning.copperRailSpeed() : MinecartTuning.ascendingCopperRailSpeed();
         }
-
-        if (state.getBlock() instanceof CopperRailBlock
-                || state.getBlock() instanceof WaxedCopperRailBlock) {
-            RailShape shape = state.get(((AbstractRailBlock) state.getBlock()).getShapeProperty());
-            if (shape.isAscending()) {
-                if (state.isOf(ModBlocks.COPPER_RAIL)
-                        || state.isOf(ModBlocks.WAXED_COPPER_RAIL)
-                        || state.isOf(ModBlocks.EXPOSED_COPPER_RAIL)
-                        || state.isOf(ModBlocks.WAXED_EXPOSED_COPPER_RAIL)) {
-                    return MinecartTuning.ascendingCopperRailSpeed();
-                }
+        if (state.getBlock() instanceof CopperRailBlock || state.getBlock() instanceof WaxedCopperRailBlock) {
+            RailShape shape = state.getValue(((BaseRailBlock) state.getBlock()).getShapeProperty());
+            if (shape.isSlope() && (state.is(ModBlocks.COPPER_RAIL) || state.is(ModBlocks.WAXED_COPPER_RAIL) || state.is(ModBlocks.EXPOSED_COPPER_RAIL) || state.is(ModBlocks.WAXED_EXPOSED_COPPER_RAIL))) {
+                return MinecartTuning.ascendingCopperRailSpeed();
             }
-
-            if (state.isOf(ModBlocks.COPPER_RAIL) || state.isOf(ModBlocks.WAXED_COPPER_RAIL)) {
+            if (state.is(ModBlocks.COPPER_RAIL) || state.is(ModBlocks.WAXED_COPPER_RAIL)) {
                 return MinecartTuning.copperRailSpeed();
             }
-            if (state.isOf(ModBlocks.EXPOSED_COPPER_RAIL)
-                    || state.isOf(ModBlocks.WAXED_EXPOSED_COPPER_RAIL)) {
+            if (state.is(ModBlocks.EXPOSED_COPPER_RAIL) || state.is(ModBlocks.WAXED_EXPOSED_COPPER_RAIL)) {
                 return MinecartTuning.exposedCopperRailSpeed();
             }
-            if (state.isOf(ModBlocks.WEATHERED_COPPER_RAIL)
-                    || state.isOf(ModBlocks.WAXED_WEATHERED_COPPER_RAIL)) {
+            if (state.is(ModBlocks.WEATHERED_COPPER_RAIL) || state.is(ModBlocks.WAXED_WEATHERED_COPPER_RAIL)) {
                 return MinecartTuning.weatheredCopperRailSpeed();
             }
             return MinecartTuning.oxidizedCopperRailSpeed();
         }
-
         return MinecartTuning.VANILLA_RAIL_SPEED;
     }
 
     @Unique
-    private static BlockPos modernminecarts$getNextRailPos(
-            FurnaceMinecartEntity cart,
-            BlockPos railPos
-    ) {
-        Vec3d velocity = cart.getVelocity();
-        if (Math.abs(velocity.x) > Math.abs(velocity.z)) {
-            return velocity.x >= 0.0D ? railPos.east() : railPos.west();
+    private static BlockPos modernminecarts$getNextRailPos(MinecartFurnace cart, BlockPos railPos) {
+        Vec3 movement = cart.getDeltaMovement();
+        if (Math.abs(movement.x) > Math.abs(movement.z)) {
+            return movement.x >= 0.0D ? railPos.east() : railPos.west();
         }
-        return velocity.z >= 0.0D ? railPos.south() : railPos.north();
+        return movement.z >= 0.0D ? railPos.south() : railPos.north();
     }
 
     @Unique
-    private static @Nullable AbstractMinecartEntity modernminecarts$getParent(AbstractMinecartEntity cart) {
+    private static @Nullable AbstractMinecart modernminecarts$getParent(AbstractMinecart cart) {
         return ((ChainMinecartInterface) cart).getLinkedParent();
     }
 
     @Unique
-    private static @Nullable AbstractMinecartEntity modernminecarts$getChild(AbstractMinecartEntity cart) {
+    private static @Nullable AbstractMinecart modernminecarts$getChild(AbstractMinecart cart) {
         return ((ChainMinecartInterface) cart).getLinkedChild();
     }
 
     @Unique
-    private FurnaceMinecartEntity modernminecarts$self() {
-        return (FurnaceMinecartEntity) (Object) this;
+    private MinecartFurnace modernminecarts$self() {
+        return (MinecartFurnace) (Object) this;
     }
 }
