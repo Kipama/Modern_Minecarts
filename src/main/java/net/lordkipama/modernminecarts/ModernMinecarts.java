@@ -2,7 +2,6 @@ package net.lordkipama.modernminecarts;
 
 import java.util.HashSet;
 import java.util.Set;
-import java.util.UUID;
 import net.fabricmc.api.ModInitializer;
 import net.fabricmc.fabric.api.event.player.UseBlockCallback;
 import net.fabricmc.fabric.api.event.player.UseEntityCallback;
@@ -34,7 +33,7 @@ import net.minecraft.state.property.Properties;
 import net.minecraft.util.ActionResult;
 import net.minecraft.util.Hand;
 import net.minecraft.util.Identifier;
-import net.minecraft.util.Uuids;
+import net.minecraft.util.TypedActionResult;
 import net.minecraft.util.hit.BlockHitResult;
 import net.minecraft.util.hit.EntityHitResult;
 import net.minecraft.util.hit.HitResult;
@@ -189,17 +188,17 @@ public class ModernMinecarts implements ModInitializer {
 
         UseItemCallback.EVENT.register((player, world, hand) -> {
             if (world.isClient() || player.isSpectator() || !player.isSneaking()) {
-                return ActionResult.PASS;
+                return TypedActionResult.pass(player.getStackInHand(hand));
             }
 
             ItemStack stack = player.getStackInHand(hand);
-            if (!stack.isOf(Items.IRON_CHAIN) || !modernminecarts$isRightClickingAir(player, world)) {
-                return ActionResult.PASS;
+            if (!stack.isOf(Items.CHAIN) || !modernminecarts$isRightClickingAir(player, world)) {
+                return TypedActionResult.pass(stack);
             }
 
             NbtCompound nbt = stack.getOrDefault(DataComponentTypes.CUSTOM_DATA, NbtComponent.DEFAULT).copyNbt();
             if (!nbt.contains("ParentEntity")) {
-                return ActionResult.PASS;
+                return TypedActionResult.pass(stack);
             }
 
             nbt.remove("ParentEntity");
@@ -210,7 +209,7 @@ public class ModernMinecarts implements ModInitializer {
             }
 
             world.playSound(null, player.getX(), player.getY(), player.getZ(), SoundEvents.BLOCK_CHAIN_BREAK, SoundCategory.NEUTRAL, 1F, 1F);
-            return ActionResult.SUCCESS;
+            return TypedActionResult.success(stack);
         });
 
         UseEntityCallback.EVENT.register((player, world, hand, entity, hitResult) -> {
@@ -220,13 +219,12 @@ public class ModernMinecarts implements ModInitializer {
             if (entity instanceof AbstractMinecartEntity cart) {
                 ItemStack stack = player.getStackInHand(hand);
 
-                if (player.isSneaking() && stack.isOf(Items.IRON_CHAIN)) {
+                if (player.isSneaking() && stack.isOf(Items.CHAIN)) {
                     if (world instanceof ServerWorld server) {
                         NbtCompound nbt = stack.getOrDefault(DataComponentTypes.CUSTOM_DATA, NbtComponent.DEFAULT).copyNbt();
-                        UUID parentEntityUuid = nbt.get("ParentEntity", Uuids.CODEC).orElse(null);
 
-                        if (parentEntityUuid != null && !cart.getUuid().equals(parentEntityUuid)) {
-                            if (server.getEntity(parentEntityUuid) instanceof AbstractMinecartEntity parent) {
+                        if (nbt.contains("ParentEntity") && !cart.getUuid().equals(nbt.getUuid("ParentEntity"))) {
+                            if (server.getEntity(nbt.getUuid("ParentEntity")) instanceof AbstractMinecartEntity parent) {
                                 Set<ChainMinecartInterface> train = new HashSet<>();
                                 train.add((ChainMinecartInterface) parent);
 
@@ -239,11 +237,11 @@ public class ModernMinecarts implements ModInitializer {
                                 if (train.contains(cart)) {
                                     if (((ChainMinecartInterface) parent).getLinkedParent() == cart) {
                                         if (((ChainMinecartInterface) cart).getLinkedParent() != null) {
-                                            cart.dropStack(server, new ItemStack(Items.IRON_CHAIN));
+                                            cart.dropStack(new ItemStack(Items.CHAIN));
                                             ChainMinecartInterface.unsetParentChild((ChainMinecartInterface) ((ChainMinecartInterface) cart).getLinkedParent(), (ChainMinecartInterface) cart);
                                         }
                                         if (((ChainMinecartInterface) parent).getLinkedChild() != null) {
-                                            parent.dropStack(server, new ItemStack(Items.IRON_CHAIN));
+                                            parent.dropStack(new ItemStack(Items.CHAIN));
                                             ChainMinecartInterface.unsetParentChild((ChainMinecartInterface) parent, (ChainMinecartInterface) ((ChainMinecartInterface) parent).getLinkedChild());
                                         }
 
@@ -253,11 +251,11 @@ public class ModernMinecarts implements ModInitializer {
                                 } else if (((ChainMinecartInterface) cart).getLinkedParent() != parent) {
                                     if (((ChainMinecartInterface) cart).getLinkedParent() != null) {
                                         ChainMinecartInterface.unsetParentChild((ChainMinecartInterface) ((ChainMinecartInterface) cart).getLinkedParent(), (ChainMinecartInterface) cart);
-                                        cart.dropStack(server, new ItemStack(Items.IRON_CHAIN));
+                                        cart.dropStack(new ItemStack(Items.CHAIN));
                                     }
                                     if (((ChainMinecartInterface) parent).getLinkedChild() != null) {
                                         ChainMinecartInterface.unsetParentChild((ChainMinecartInterface) parent, (ChainMinecartInterface) ((ChainMinecartInterface) parent).getLinkedChild());
-                                        parent.dropStack(server, new ItemStack(Items.IRON_CHAIN));
+                                        parent.dropStack(new ItemStack(Items.CHAIN));
                                     }
                                     if (!player.isCreative()) {
                                         stack.decrement(1);
@@ -279,15 +277,14 @@ public class ModernMinecarts implements ModInitializer {
                                 stack.remove(DataComponentTypes.CUSTOM_DATA);
                             }
                         } else {
-                            if (parentEntityUuid != null && cart.getUuid().equals(parentEntityUuid)) {
+                            if (nbt.contains("ParentEntity") && cart.getUuid().equals(nbt.getUuid("ParentEntity"))) {
                                 nbt.remove("ParentEntity");
                                 world.playSound(null, cart.getX(), cart.getY(), cart.getZ(), SoundEvents.BLOCK_CHAIN_HIT, SoundCategory.NEUTRAL, 1F, 1F);
                                 if (nbt.isEmpty()) {
                                     stack.remove(DataComponentTypes.CUSTOM_DATA);
                                 }
                             } else {
-                                nbt.put("ParentEntity", Uuids.CODEC, cart.getUuid());
-                                stack.set(DataComponentTypes.CUSTOM_DATA, NbtComponent.of(nbt));
+                                nbt.putUuid("ParentEntity", cart.getUuid());
                                 world.playSound(null, cart.getX(), cart.getY(), cart.getZ(), SoundEvents.BLOCK_CHAIN_HIT, SoundCategory.NEUTRAL, 1F, 1F);
                             }
                         }

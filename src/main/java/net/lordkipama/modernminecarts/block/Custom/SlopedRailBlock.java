@@ -1,17 +1,13 @@
 package net.lordkipama.modernminecarts.block.Custom;
 
 import com.mojang.serialization.MapCodec;
-
-import jdk.jfr.Percentage;
 import net.minecraft.block.AbstractRailBlock;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
-import net.minecraft.block.RailPlacementHelper;
 import net.minecraft.block.enums.RailShape;
 import net.minecraft.fluid.FluidState;
 import net.minecraft.fluid.Fluids;
 import net.minecraft.item.ItemPlacementContext;
-import net.minecraft.item.Items;
 import net.minecraft.state.StateManager;
 import net.minecraft.state.property.EnumProperty;
 import net.minecraft.state.property.Property;
@@ -24,12 +20,26 @@ public class SlopedRailBlock extends AbstractRailBlock {
     public static final EnumProperty<RailShape> SHAPE = EnumProperty.of(
             "shape",
             RailShape.class,
-            RailShape::isAscending
+            shape -> shape != RailShape.NORTH_EAST
+                    && shape != RailShape.NORTH_WEST
+                    && shape != RailShape.SOUTH_EAST
+                    && shape != RailShape.SOUTH_WEST
+    );
+    public static final EnumProperty<RailShape> CONST_SHAPE = EnumProperty.of(
+            "const_shape",
+            RailShape.class,
+            RailShape.ASCENDING_EAST,
+            RailShape.ASCENDING_WEST,
+            RailShape.ASCENDING_NORTH,
+            RailShape.ASCENDING_SOUTH
     );
 
     public SlopedRailBlock(Settings settings) {
         super(true, settings);
-        setDefaultState(getDefaultState().with(SHAPE, RailShape.ASCENDING_NORTH).with(WATERLOGGED, false));
+        setDefaultState(getDefaultState()
+                .with(SHAPE, RailShape.ASCENDING_NORTH)
+                .with(CONST_SHAPE, RailShape.ASCENDING_NORTH)
+                .with(WATERLOGGED, false));
     }
 
     @Override
@@ -44,7 +54,7 @@ public class SlopedRailBlock extends AbstractRailBlock {
 
     @Override
     protected void appendProperties(StateManager.Builder<Block, BlockState> builder) {
-        builder.add(SHAPE, WATERLOGGED);
+        builder.add(SHAPE, CONST_SHAPE, WATERLOGGED);
     }
 
     @Override
@@ -55,16 +65,24 @@ public class SlopedRailBlock extends AbstractRailBlock {
         Direction direction = ctx.getHorizontalPlayerFacing();
         switch (direction) {
             case EAST -> {
-                blockState = blockState.with(this.getShapeProperty(), RailShape.ASCENDING_EAST).with(WATERLOGGED, Boolean.valueOf(bl));
+                blockState = blockState.with(this.getShapeProperty(), RailShape.ASCENDING_EAST)
+                        .with(CONST_SHAPE, RailShape.ASCENDING_EAST)
+                        .with(WATERLOGGED, Boolean.valueOf(bl));
             }
             case WEST -> {
-                blockState = blockState.with(this.getShapeProperty(), RailShape.ASCENDING_WEST).with(WATERLOGGED, Boolean.valueOf(bl));
+                blockState = blockState.with(this.getShapeProperty(), RailShape.ASCENDING_WEST)
+                        .with(CONST_SHAPE, RailShape.ASCENDING_WEST)
+                        .with(WATERLOGGED, Boolean.valueOf(bl));
             }
             case NORTH -> {
-                blockState = blockState.with(this.getShapeProperty(), RailShape.ASCENDING_NORTH).with(WATERLOGGED, Boolean.valueOf(bl));
+                blockState = blockState.with(this.getShapeProperty(), RailShape.ASCENDING_NORTH)
+                        .with(CONST_SHAPE, RailShape.ASCENDING_NORTH)
+                        .with(WATERLOGGED, Boolean.valueOf(bl));
             }
             case SOUTH -> {
-                blockState = blockState.with(this.getShapeProperty(), RailShape.ASCENDING_SOUTH).with(WATERLOGGED, Boolean.valueOf(bl));
+                blockState = blockState.with(this.getShapeProperty(), RailShape.ASCENDING_SOUTH)
+                        .with(CONST_SHAPE, RailShape.ASCENDING_SOUTH)
+                        .with(WATERLOGGED, Boolean.valueOf(bl));
             }
         }
 
@@ -82,12 +100,15 @@ public class SlopedRailBlock extends AbstractRailBlock {
             AbstractRailBlock.dropStacks(state, world, pos);
             world.removeBlock(pos, notify);
         } else {
+            RailShape constantShape = state.get(CONST_SHAPE);
+            if (state.get(SHAPE) != constantShape) {
+                state = state.with(SHAPE, constantShape);
+            }
             world.setBlockState(pos, state);
         }
     }
 
     private static boolean shouldDropRail(BlockPos pos, World world) {
-        System.out.println(!AbstractRailBlock.hasTopRim(world, pos.down()));
         return !AbstractRailBlock.hasTopRim(world, pos.down());
     }
 
