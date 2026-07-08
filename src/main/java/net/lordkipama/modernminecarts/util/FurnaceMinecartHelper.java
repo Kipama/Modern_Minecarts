@@ -42,7 +42,6 @@ import java.util.Optional;
 
 public final class FurnaceMinecartHelper {
     private static final Field FUEL_FIELD = ObfuscationReflectionHelper.findField(MinecartFurnace.class, "fuel");
-    private static final Field CURRENT_SPEED_CAP_ON_RAIL_FIELD = ObfuscationReflectionHelper.findField(AbstractMinecart.class, "currentSpeedCapOnRail");
 
     private FurnaceMinecartHelper() {
     }
@@ -132,7 +131,6 @@ public final class FurnaceMinecartHelper {
         if (fuel <= 0) {
             minecart.push = Vec3.ZERO;
         } else if (MinecartLinkHelper.getLinkedParent(minecart) == null) {
-            setCurrentSpeedCapOnRailUnchecked(minecart, (float) getTargetSpeed(minecart, stats));
             applyTargetSpeed(minecart, getTargetSpeed(minecart, stats), hasChild || isMoving);
         }
 
@@ -282,14 +280,6 @@ public final class FurnaceMinecartHelper {
             return;
         }
         minecart.setDeltaMovement(adjusted.x, movement.y, adjusted.z);
-    }
-
-    private static void setCurrentSpeedCapOnRailUnchecked(AbstractMinecart minecart, float speedCap) {
-        try {
-            CURRENT_SPEED_CAP_ON_RAIL_FIELD.setFloat(minecart, speedCap);
-        } catch (IllegalAccessException e) {
-            throw new IllegalStateException("Unable to set minecart rail speed cap", e);
-        }
     }
 
     public static TrainStats getTrainStats(AbstractMinecart minecart) {

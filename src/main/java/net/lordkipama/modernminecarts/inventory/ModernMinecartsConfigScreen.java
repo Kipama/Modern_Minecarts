@@ -74,7 +74,7 @@ public class ModernMinecartsConfigScreen extends Screen {
         int centerX = this.width / 2;
         int buttonY = footerTop + 5;
         this.addRenderableWidget(Button.builder(CommonComponents.GUI_DONE, button -> saveAndClose()).bounds(centerX - 102, buttonY, 100, 20).build());
-        this.addRenderableWidget(Button.builder(CommonComponents.GUI_CANCEL, button -> this.minecraft.setScreen(this.parent)).bounds(centerX + 2, buttonY, 100, 20).build());
+        this.addRenderableWidget(Button.builder(CommonComponents.GUI_CANCEL, button -> this.minecraft.gui.setScreen(this.parent)).bounds(centerX + 2, buttonY, 100, 20).build());
     }
 
     private void addConfigEntries() {
@@ -143,7 +143,7 @@ public class ModernMinecartsConfigScreen extends Screen {
             ModernMinecartsConfig.setCopperRailRecipeYield(parseRecipeYield(this.copperRailRecipeYield.getValue(), "copper_rail_recipe_yield"));
             ModernMinecartsConfig.setPoweredRailRecipeYield(parseRecipeYield(this.poweredRailRecipeYield.getValue(), "powered_rail_recipe_yield"));
             ModernMinecartsConfig.save();
-            this.minecraft.setScreen(this.parent);
+            this.minecraft.gui.setScreen(this.parent);
         } catch (IllegalArgumentException exception) {
             this.statusMessage = Component.literal(exception.getMessage());
         }

@@ -74,7 +74,7 @@ public class FurnaceMinecartMenu extends AbstractContainerMenu {
     }
 
     public int getSpeed() {
-        return this.data.get(2);
+        return Math.min(32, this.data.get(2));
     }
 
     public int getLitProgress() {
