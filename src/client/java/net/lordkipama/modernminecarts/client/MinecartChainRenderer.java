@@ -3,24 +3,22 @@ package net.lordkipama.modernminecarts.client;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.mojang.math.Axis;
-import java.util.Objects;
 import net.fabricmc.fabric.api.client.rendering.v1.level.LevelRenderContext;
 import net.fabricmc.fabric.api.client.rendering.v1.level.LevelRenderEvents;
 import net.lordkipama.modernminecarts.ModernMinecarts;
 import net.lordkipama.modernminecarts.interfaces.ChainMinecartInterface;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.renderer.LevelRenderer;
-import net.minecraft.client.renderer.MultiBufferSource;
+import net.minecraft.client.renderer.SubmitNodeCollector;
 import net.minecraft.client.renderer.rendertype.RenderType;
 import net.minecraft.client.renderer.rendertype.RenderTypes;
 import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.core.BlockPos;
 import net.minecraft.resources.Identifier;
+import net.minecraft.util.LightCoordsUtil;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.vehicle.minecart.AbstractMinecart;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
-import org.joml.Matrix3f;
 import org.joml.Matrix4f;
 
 public final class MinecartChainRenderer {
@@ -31,7 +29,7 @@ public final class MinecartChainRenderer {
     }
 
     public static void register() {
-        LevelRenderEvents.AFTER_SOLID_FEATURES.register(MinecartChainRenderer::render);
+        LevelRenderEvents.COLLECT_SUBMITS.register(MinecartChainRenderer::render);
     }
 
     private static void render(LevelRenderContext context) {
@@ -40,9 +38,13 @@ public final class MinecartChainRenderer {
             return;
         }
 
-        MultiBufferSource.BufferSource bufferSource = context.bufferSource();
+        SubmitNodeCollector submitNodeCollector = context.submitNodeCollector();
         PoseStack poseStack = context.poseStack();
-        Vec3 cameraPos = minecraft.gameRenderer.getMainCamera().position();
+        if (poseStack == null) {
+            return;
+        }
+
+        Vec3 cameraPos = context.gameRenderer().mainCamera().position();
         float partialTick = minecraft.getDeltaTracker().getGameTimeDeltaPartialTick(false);
         AABB renderBounds = new AABB(cameraPos, cameraPos).inflate(128.0D);
 
@@ -70,19 +72,19 @@ public final class MinecartChainRenderer {
             double hAngle = Math.toDegrees(Math.atan2(endZ - startZ, endX - startX));
             hAngle += Math.ceil(-hAngle / 360.0D) * 360.0D;
             double vAngle = Math.asin(distanceY / distance);
-            int packedLight = LevelRenderer.getLightCoords(
+            int packedLight = LightCoordsUtil.getLightCoords(
                     minecraft.level,
                     BlockPos.containing((startX + endX) * 0.5D, (startY + endY) * 0.5D, (startZ + endZ) * 0.5D)
             );
 
             poseStack.pushPose();
             poseStack.translate(endX - cameraPos.x, endY - cameraPos.y, endZ - cameraPos.z);
-            renderChain(distanceX, distanceY, distanceZ, (float) hAngle, (float) vAngle, poseStack, bufferSource, packedLight);
+            renderChain(distanceX, distanceY, distanceZ, (float) hAngle, (float) vAngle, poseStack, submitNodeCollector, packedLight);
             poseStack.popPose();
         }
     }
 
-    private static void renderChain(float x, float y, float z, float hAngle, float vAngle, PoseStack poseStack, MultiBufferSource buffer, int packedLight) {
+    private static void renderChain(float x, float y, float z, float hAngle, float vAngle, PoseStack poseStack, SubmitNodeCollector submitNodeCollector, int packedLight) {
         float length = (float) Math.sqrt(x * x + y * y + z * z) - 1.0F;
         if (length <= 0.0F) {
             return;
@@ -92,44 +94,33 @@ public final class MinecartChainRenderer {
         poseStack.mulPose(Axis.YP.rotationDegrees(-hAngle - 90.0F));
         poseStack.mulPose(Axis.XP.rotation(-vAngle));
         poseStack.translate(0.0D, 0.0D, 0.5D);
-        poseStack.pushPose();
-
-        VertexConsumer vertexConsumer = buffer.getBuffer(CHAIN_TYPE);
-        float vertX1 = 0.0F;
-        float vertY1 = 0.25F;
-        float vertX2 = (float) Math.sin(Math.PI * 2.0D) * 0.125F;
-        float vertY2 = (float) Math.cos(Math.PI * 2.0D) * 0.125F;
-        float minU = 0.0F;
-        float maxU = 0.1875F;
-        float minV = 0.0F;
-        float maxV = length / 10.0F;
-        PoseStack.Pose entry = poseStack.last();
-        Matrix4f matrix4f = entry.pose();
-        Matrix3f matrix3f = entry.normal();
-
-        addChainVertex(vertexConsumer, matrix4f, matrix3f, vertX1, vertY1, 0.0F, 0, 0, 0, 255, minU, minV, packedLight);
-        addChainVertex(vertexConsumer, matrix4f, matrix3f, vertX1, vertY1, length, 255, 255, 255, 255, minU, maxV, packedLight);
-        addChainVertex(vertexConsumer, matrix4f, matrix3f, vertX2, vertY2, length, 255, 255, 255, 255, maxU, maxV, packedLight);
-        addChainVertex(vertexConsumer, matrix4f, matrix3f, vertX2, vertY2, 0.0F, 0, 0, 0, 255, maxU, minV, packedLight);
-
-        poseStack.popPose();
+        submitChainQuad(submitNodeCollector, poseStack, length, packedLight);
         poseStack.translate(0.19D, 0.19D, 0.0D);
         poseStack.mulPose(Axis.ZP.rotationDegrees(90.0F));
-
-        entry = poseStack.last();
-        matrix4f = entry.pose();
-        matrix3f = entry.normal();
-
-        addChainVertex(vertexConsumer, matrix4f, matrix3f, vertX1, vertY1, 0.0F, 0, 0, 0, 255, minU, minV, packedLight);
-        addChainVertex(vertexConsumer, matrix4f, matrix3f, vertX1, vertY1, length, 255, 255, 255, 255, minU, maxV, packedLight);
-        addChainVertex(vertexConsumer, matrix4f, matrix3f, vertX2, vertY2, length, 255, 255, 255, 255, maxU, maxV, packedLight);
-        addChainVertex(vertexConsumer, matrix4f, matrix3f, vertX2, vertY2, 0.0F, 0, 0, 0, 255, maxU, minV, packedLight);
-
+        submitChainQuad(submitNodeCollector, poseStack, length, packedLight);
         poseStack.popPose();
     }
 
-    private static void addChainVertex(VertexConsumer vertexConsumer, Matrix4f pose, Matrix3f normalMatrix, float x, float y, float z, int red, int green, int blue, int alpha, float u, float v, int packedLight) {
-        Objects.requireNonNull(normalMatrix);
+    private static void submitChainQuad(SubmitNodeCollector submitNodeCollector, PoseStack poseStack, float length, int packedLight) {
+        submitNodeCollector.submitCustomGeometry(poseStack, CHAIN_TYPE, (pose, vertexConsumer) -> {
+            float vertX1 = 0.0F;
+            float vertY1 = 0.25F;
+            float vertX2 = (float) Math.sin(Math.PI * 2.0D) * 0.125F;
+            float vertY2 = (float) Math.cos(Math.PI * 2.0D) * 0.125F;
+            float minU = 0.0F;
+            float maxU = 0.1875F;
+            float minV = 0.0F;
+            float maxV = length / 10.0F;
+            Matrix4f matrix4f = pose.pose();
+
+            addChainVertex(vertexConsumer, matrix4f, vertX1, vertY1, 0.0F, 0, 0, 0, 255, minU, minV, packedLight);
+            addChainVertex(vertexConsumer, matrix4f, vertX1, vertY1, length, 255, 255, 255, 255, minU, maxV, packedLight);
+            addChainVertex(vertexConsumer, matrix4f, vertX2, vertY2, length, 255, 255, 255, 255, maxU, maxV, packedLight);
+            addChainVertex(vertexConsumer, matrix4f, vertX2, vertY2, 0.0F, 0, 0, 0, 255, maxU, minV, packedLight);
+        });
+    }
+
+    private static void addChainVertex(VertexConsumer vertexConsumer, Matrix4f pose, float x, float y, float z, int red, int green, int blue, int alpha, float u, float v, int packedLight) {
         vertexConsumer.addVertex(pose, x, y, z)
                 .setColor(red, green, blue, alpha)
                 .setUv(u, v)
