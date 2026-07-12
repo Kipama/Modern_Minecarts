@@ -4,7 +4,7 @@
 
 ModernMinecarts is all about rekindling your love for Minecarts.
 
-It once again makes them a viable method of transport for players and items, while keeping a vanilla style.
+It makes them a viable method of transport for players and items again, while keeping a vanilla style.
 
 ### Copper Rails
 
@@ -12,7 +12,7 @@ These rails are twice as fast as powered rails.
 
 However, oxidation causes them to become slower over time, down to half the speed of powered rails.
 
-They are crafted like regular powered rails, using copper instead of gold. 
+They are crafted like regular powered rails, using copper instead of gold.
 Wax them with honeycomb to keep them from oxidizing.
 
 ---
@@ -27,7 +27,7 @@ Connected hopper minecarts and chest minecarts join their inventories, allowing 
 
 ### Furnace Minecarts
 
-Furnace Minecarts have gotten an upgrade, now travelling at twice the speed.
+Furnace Minecarts have gotten an upgrade, now travelling twice as fast.
 They have a new UI screen with a speedometer and a fuel slot that accepts all fuel types.
 
 They also refuel themselves from attached chest and hopper minecarts,
@@ -45,14 +45,37 @@ Rail Crossing: A simple rail intersection that acts like a straight rail from al
 
 Powered Detector Rail: It merges the functionalities of powered and detector rails. 
 Stop empty carts or trains until fully loaded, or invert it to unload full minecarts and send them off once empty.
+Shift right-click to swap the direction it faces.
 
 ---
 
-### Smaller Changes
+### Customizability
+
+The Mod now features a config file that allows you to customize the mod to your liking.
+
+The following features can be disabled:
+- Furnace Minecart Chunkloading
+- Minecart Chaining
+- Copper Rails
+- Rail Crossing
+- Powered Detector Rail
+- Rail Jump
+
+The following values can be tweaked:
+
+- Copper Rail Speeds for each stage of oxidation
+- Copper Rail Recipe yield
+- Powered Rail Recipe yield
+
+
+---
+
+### Other Changes
 
 - Doubled the powered rail crafting result from 6 to 12 rails.
 - Reduced minecart air drag to allow for further jumps.
 
+---
 
 ## v1.2.0 Changelog
 
@@ -71,6 +94,7 @@ Stop empty carts or trains until fully loaded, or invert it to unload full minec
 - Furnace minecarts no longer consume fuel on powered rails.
 - Removed warnings and debug statements to prevent log spam.
 - Fixed bug that prevented villagers from becoming toolsmiths
+- Fixed issues with wax on and wax off achievements
 - Improved architecture on Fabric and Neoforge, which should lead to more mod compatibility on these versions.
 - Readded regular rail to creative menu on 1.19.2
 
@@ -91,9 +115,12 @@ Stop empty carts or trains until fully loaded, or invert it to unload full minec
 - 1.21.3-1.21.4
 - 1.21.11
 - 26.1
+- 26.2
 
 #### Fabric
 
 - 1.20.1
 - 1.21.1
 - 1.21.11
+- 26.1
+- 26.2
