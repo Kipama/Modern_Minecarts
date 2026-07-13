@@ -39,6 +39,10 @@ public class CustomRailBlock extends RailBlock {
             return InteractionResult.PASS;
         }
 
+        if (interactionHand == InteractionHand.OFF_HAND && !player.getMainHandItem().isEmpty()) {
+            return InteractionResult.PASS;
+        }
+
         ItemStack itemStack = player.getItemInHand(interactionHand);
         if (!itemStack.is(Items.STICK)) {
             return InteractionResult.PASS;
