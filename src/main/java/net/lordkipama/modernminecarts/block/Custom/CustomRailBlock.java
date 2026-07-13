@@ -50,7 +50,7 @@ public class CustomRailBlock extends RailBlock {
         }
 
         if (level instanceof ServerLevel) {
-            level.setBlock(pos, ModBlocks.SLOPED_RAIL.get().withPropertiesOf(replacementState), 3);
+            level.setBlock(pos, createSlopedRailState(replacementState), 3);
             if (!player.isCreative() && !player.isSpectator()) {
                 itemStack.shrink(1);
             }
@@ -97,5 +97,14 @@ public class CustomRailBlock extends RailBlock {
         }
 
         return null;
+    }
+
+    private BlockState createSlopedRailState(BlockState replacementState) {
+        RailShape shape = replacementState.getValue(SHAPE);
+        return ModBlocks.SLOPED_RAIL.get()
+                .defaultBlockState()
+                .setValue(SlopedRailBlock.SHAPE, shape)
+                .setValue(SlopedRailBlock.CONST_SHAPE, shape)
+                .setValue(BlockStateProperties.WATERLOGGED, replacementState.getValue(BlockStateProperties.WATERLOGGED));
     }
 }
