@@ -25,6 +25,7 @@ import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
+import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.item.ItemEntity;
@@ -73,6 +74,10 @@ public final class ModEvents {
         ItemStack stack = player.getItemInHand(event.getHand());
 
         if (!ModernMinecartsConfig.enableRailJump()) {
+            return;
+        }
+
+        if (event.getHand() == InteractionHand.OFF_HAND && !player.getMainHandItem().isEmpty()) {
             return;
         }
 
