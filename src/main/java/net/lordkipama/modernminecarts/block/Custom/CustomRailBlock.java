@@ -39,6 +39,12 @@ public class CustomRailBlock extends RailBlock {
             return InteractionResult.PASS;
         }
 
+        // Forge retries block interaction with the offhand after a main-hand PASS, so
+        // ignore offhand stick conversions while the player is actively using another item.
+        if (interactionHand == InteractionHand.OFF_HAND && !player.getMainHandItem().isEmpty()) {
+            return InteractionResult.PASS;
+        }
+
         ItemStack itemStack = player.getItemInHand(interactionHand);
         if (!itemStack.is(Items.STICK)) {
             return InteractionResult.PASS;
