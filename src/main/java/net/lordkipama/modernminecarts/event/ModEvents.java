@@ -11,6 +11,7 @@ import java.util.Collection;
 import java.util.List;
 import net.lordkipama.modernminecarts.ModernMinecarts;
 import net.lordkipama.modernminecarts.ModernMinecartsConfig;
+import net.lordkipama.modernminecarts.block.Custom.SlopedRailBlock;
 import net.lordkipama.modernminecarts.block.ModBlocks;
 import net.lordkipama.modernminecarts.util.FurnaceMinecartHelper;
 import net.lordkipama.modernminecarts.util.MinecartLinkHelper;
@@ -348,7 +349,7 @@ public final class ModEvents {
     private static BlockState getSlopedRailReplacementState(BlockState state, Level level, BlockPos pos) {
         RailShape shape = state.getValue(BlockStateProperties.RAIL_SHAPE);
         if (shape == RailShape.ASCENDING_NORTH || shape == RailShape.ASCENDING_SOUTH || shape == RailShape.ASCENDING_EAST || shape == RailShape.ASCENDING_WEST) {
-            return ModBlocks.SLOPED_RAIL.get().withPropertiesOf(state);
+            return createSlopedRailState(state);
         }
 
         if (shape == RailShape.NORTH_SOUTH) {
@@ -359,11 +360,11 @@ public final class ModEvents {
 
             if ((south.is(net.minecraft.tags.BlockTags.RAILS) || southBelow.is(net.minecraft.tags.BlockTags.RAILS))
                     && !(north.is(net.minecraft.tags.BlockTags.RAILS) || northBelow.is(net.minecraft.tags.BlockTags.RAILS))) {
-                return ModBlocks.SLOPED_RAIL.get().withPropertiesOf(state.setValue(BlockStateProperties.RAIL_SHAPE, RailShape.ASCENDING_NORTH));
+                return createSlopedRailState(state.setValue(BlockStateProperties.RAIL_SHAPE, RailShape.ASCENDING_NORTH));
             }
             if (!(south.is(net.minecraft.tags.BlockTags.RAILS) || southBelow.is(net.minecraft.tags.BlockTags.RAILS))
                     && (north.is(net.minecraft.tags.BlockTags.RAILS) || northBelow.is(net.minecraft.tags.BlockTags.RAILS))) {
-                return ModBlocks.SLOPED_RAIL.get().withPropertiesOf(state.setValue(BlockStateProperties.RAIL_SHAPE, RailShape.ASCENDING_SOUTH));
+                return createSlopedRailState(state.setValue(BlockStateProperties.RAIL_SHAPE, RailShape.ASCENDING_SOUTH));
             }
             return null;
         }
@@ -376,14 +377,23 @@ public final class ModEvents {
 
             if ((east.is(net.minecraft.tags.BlockTags.RAILS) || eastBelow.is(net.minecraft.tags.BlockTags.RAILS))
                     && !(west.is(net.minecraft.tags.BlockTags.RAILS) || westBelow.is(net.minecraft.tags.BlockTags.RAILS))) {
-                return ModBlocks.SLOPED_RAIL.get().withPropertiesOf(state.setValue(BlockStateProperties.RAIL_SHAPE, RailShape.ASCENDING_WEST));
+                return createSlopedRailState(state.setValue(BlockStateProperties.RAIL_SHAPE, RailShape.ASCENDING_WEST));
             }
             if (!(east.is(net.minecraft.tags.BlockTags.RAILS) || eastBelow.is(net.minecraft.tags.BlockTags.RAILS))
                     && (west.is(net.minecraft.tags.BlockTags.RAILS) || westBelow.is(net.minecraft.tags.BlockTags.RAILS))) {
-                return ModBlocks.SLOPED_RAIL.get().withPropertiesOf(state.setValue(BlockStateProperties.RAIL_SHAPE, RailShape.ASCENDING_EAST));
+                return createSlopedRailState(state.setValue(BlockStateProperties.RAIL_SHAPE, RailShape.ASCENDING_EAST));
             }
         }
 
         return null;
+    }
+
+    private static BlockState createSlopedRailState(BlockState replacementState) {
+        RailShape shape = replacementState.getValue(BlockStateProperties.RAIL_SHAPE);
+        return ModBlocks.SLOPED_RAIL.get()
+                .defaultBlockState()
+                .setValue(SlopedRailBlock.SHAPE, shape)
+                .setValue(SlopedRailBlock.CONST_SHAPE, shape)
+                .setValue(BlockStateProperties.WATERLOGGED, replacementState.getValue(BlockStateProperties.WATERLOGGED));
     }
 }
