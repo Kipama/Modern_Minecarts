@@ -35,14 +35,19 @@ public class CustomRailBlock extends RailBlock {
 
     @Override
     public InteractionResult use(BlockState state, Level level, BlockPos pos, Player player, InteractionHand interactionHand, BlockHitResult blockHitResult) {
+        if (!ModernMinecartsConfig.enableRailJump()) {
+            return InteractionResult.PASS;
+        }
+
+        if (interactionHand == InteractionHand.OFF_HAND && !player.getMainHandItem().isEmpty()) {
+            return InteractionResult.PASS;
+        }
+
         ItemStack itemStack = player.getItemInHand(interactionHand);
         if (!itemStack.is(Items.STICK)) {
             return InteractionResult.PASS;
         }
 
-        if (!ModernMinecartsConfig.enableRailJump()) {
-            return InteractionResult.PASS;
-        }
         BlockState replacementState = getReplacementState(state, level, pos);
         if (replacementState == null) {
             return InteractionResult.PASS;
