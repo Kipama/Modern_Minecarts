@@ -72,7 +72,7 @@ public class CustomRailBlock extends RailBlock {
     private BlockState getReplacementState(BlockState state, Level level, BlockPos pos) {
         RailShape railShape = state.getValue(BlockStateProperties.RAIL_SHAPE);
         if (railShape == RailShape.ASCENDING_NORTH || railShape == RailShape.ASCENDING_SOUTH || railShape == RailShape.ASCENDING_EAST || railShape == RailShape.ASCENDING_WEST) {
-            return ModBlocks.SLOPED_RAIL.get().withPropertiesOf(state);
+            return createSlopedRailState(state);
         }
         if (railShape == RailShape.NORTH_SOUTH) {
             BlockState northernBlockState = level.getBlockState(pos.north());
@@ -81,10 +81,10 @@ public class CustomRailBlock extends RailBlock {
             BlockState southernBelowBlockState = level.getBlockState(pos.below().south());
 
             if ((southernBlockState.is(BlockTags.RAILS) || southernBelowBlockState.is(BlockTags.RAILS)) && !(northernBlockState.is(BlockTags.RAILS) || northernBelowBlockState.is(BlockTags.RAILS))) {
-                return ModBlocks.SLOPED_RAIL.get().withPropertiesOf(state.setValue(SHAPE, RailShape.ASCENDING_NORTH));
+                return createSlopedRailState(state.setValue(SHAPE, RailShape.ASCENDING_NORTH));
             }
             if (!(southernBlockState.is(BlockTags.RAILS) || southernBelowBlockState.is(BlockTags.RAILS)) && (northernBlockState.is(BlockTags.RAILS) || northernBelowBlockState.is(BlockTags.RAILS))) {
-                return ModBlocks.SLOPED_RAIL.get().withPropertiesOf(state.setValue(SHAPE, RailShape.ASCENDING_SOUTH));
+                return createSlopedRailState(state.setValue(SHAPE, RailShape.ASCENDING_SOUTH));
             }
             return null;
         }
@@ -95,13 +95,22 @@ public class CustomRailBlock extends RailBlock {
             BlockState easternBelowBlockState = level.getBlockState(pos.below().east());
 
             if ((easternBlockState.is(BlockTags.RAILS) || easternBelowBlockState.is(BlockTags.RAILS)) && !(westernBlockState.is(BlockTags.RAILS) || westernBelowBlockState.is(BlockTags.RAILS))) {
-                return ModBlocks.SLOPED_RAIL.get().withPropertiesOf(state.setValue(SHAPE, RailShape.ASCENDING_WEST));
+                return createSlopedRailState(state.setValue(SHAPE, RailShape.ASCENDING_WEST));
             }
             if (!(easternBlockState.is(BlockTags.RAILS) || easternBelowBlockState.is(BlockTags.RAILS)) && (westernBlockState.is(BlockTags.RAILS) || westernBelowBlockState.is(BlockTags.RAILS))) {
-                return ModBlocks.SLOPED_RAIL.get().withPropertiesOf(state.setValue(SHAPE, RailShape.ASCENDING_EAST));
+                return createSlopedRailState(state.setValue(SHAPE, RailShape.ASCENDING_EAST));
             }
         }
 
         return null;
+    }
+
+    private BlockState createSlopedRailState(BlockState replacementState) {
+        RailShape shape = replacementState.getValue(SHAPE);
+        return ModBlocks.SLOPED_RAIL.get()
+                .defaultBlockState()
+                .setValue(SlopedRailBlock.SHAPE, shape)
+                .setValue(SlopedRailBlock.CONST_SHAPE, shape)
+                .setValue(BlockStateProperties.WATERLOGGED, replacementState.getValue(BlockStateProperties.WATERLOGGED));
     }
 }
