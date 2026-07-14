@@ -9,6 +9,7 @@ public class ModernMinecartsConfig {
     public static float exposed_copper_speed = 0.6f;
     public static float weathered_copper_speed = 0.3f;
     public static float oxidized_copper_speed = 0.2f;
+    public static float powered_rail_speed = 0.4f;
 
     //This limits a minecarts speed when moving diagonally.
     //If your minecarts "bump into" ascending rails instead of driving up, decrease this value until fixed.
