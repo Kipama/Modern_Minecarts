@@ -27,6 +27,7 @@ public final class ModernMinecartsConfig {
     private static double exposedCopperSpeed = 0.6D;
     private static double weatheredCopperSpeed = 0.3D;
     private static double oxidizedCopperSpeed = 0.2D;
+    private static double poweredRailSpeed = 0.4D;
     private static double maxAscendingSpeed = 0.5D;
 
     private static boolean enableFurnaceMinecartChunkloading = true;
@@ -57,6 +58,7 @@ public final class ModernMinecartsConfig {
         exposedCopperSpeed = readDouble(properties, "exposed_copper_speed", 0.6D, MIN_SPEED, MAX_SPEED, logger);
         weatheredCopperSpeed = readDouble(properties, "weathered_copper_speed", 0.3D, MIN_SPEED, MAX_SPEED, logger);
         oxidizedCopperSpeed = readDouble(properties, "oxidized_copper_speed", 0.2D, MIN_SPEED, MAX_SPEED, logger);
+        poweredRailSpeed = readDouble(properties, "powered_rail_speed", 0.4D, MIN_SPEED, MAX_SPEED, logger);
         maxAscendingSpeed = readDouble(properties, "max_ascending_speed", 0.5D, MIN_SPEED, MAX_SPEED, logger);
 
         enableFurnaceMinecartChunkloading = readBoolean(
@@ -104,6 +106,7 @@ public final class ModernMinecartsConfig {
                 writer.write("exposed_copper_speed=" + exposedCopperSpeed + "\n");
                 writer.write("weathered_copper_speed=" + weatheredCopperSpeed + "\n");
                 writer.write("oxidized_copper_speed=" + oxidizedCopperSpeed + "\n");
+                writer.write("powered_rail_speed=" + poweredRailSpeed + "\n");
                 writer.write("max_ascending_speed=" + maxAscendingSpeed + "\n\n");
 
                 writer.write("# New Features\n");
@@ -138,6 +141,10 @@ public final class ModernMinecartsConfig {
 
     public static double oxidizedCopperSpeed() {
         return oxidizedCopperSpeed;
+    }
+
+    public static double poweredRailSpeed() {
+        return poweredRailSpeed;
     }
 
     public static double maxAscendingSpeed() {
