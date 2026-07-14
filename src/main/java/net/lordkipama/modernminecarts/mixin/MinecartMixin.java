@@ -586,7 +586,6 @@ public class MinecartMixin implements ChainMinecartInterface {
             parentUuid = nbt.getUuid("ParentUuid");
         if(nbt.contains("ChildUuid"))
             childUuid = nbt.getUuid("ChildUuid");
-        System.out.println(nbt.getKeys());
     }
 
     @Inject(method = "writeCustomDataToNbt", at = @At("HEAD"))
@@ -594,30 +593,23 @@ public class MinecartMixin implements ChainMinecartInterface {
         AbstractMinecartEntity thisObject = (AbstractMinecartEntity) (Object) this;
 
         if (thisObject.getWorld() instanceof ServerWorld) {
-            System.out.println("Server");
         } else {
-            System.out.println("Client");
         }
 
         if (this.parentUuid != null) {
-            System.out.println("ParentUuid not null");
             try {
                 nbt.putUuid("ParentUuid", this.parentUuid);
             } catch (Exception e) {
-                System.err.println("Failed to write ParentUuid: " + e.getMessage());
             }
         }
 
         if (this.childUuid != null) {
-            System.out.println("ChildUuid not null");
             try {
                 nbt.putUuid("ChildUuid", this.childUuid);
             } catch (Exception e) {
-                System.err.println("Failed to write ChildUuid: " + e.getMessage());
             }
         }
 
-        System.out.println("FinalNBT: " + nbt.getKeys());
     }
 
     @Override
