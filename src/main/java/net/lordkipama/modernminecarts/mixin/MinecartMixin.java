@@ -249,6 +249,10 @@ public class MinecartMixin implements ChainMinecartInterface {
 
 
         if (thisObject.isOnRail()){
+            if (block.isOf(Blocks.POWERED_RAIL)) {
+                cir.setReturnValue(MinecartTuning.poweredRailSpeed());
+            }
+
             //If Rail is flat
             if(block.getBlock().getClass() == CopperRailBlock.class || block.getBlock().getClass() == WaxedCopperRailBlock.class) {
                 if(block.isOf(ModBlocks.COPPER_RAIL) || block.isOf(ModBlocks.WAXED_COPPER_RAIL)) {

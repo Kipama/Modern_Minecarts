@@ -553,6 +553,10 @@ public abstract class FurnaceMinecartMixin implements Inventory, NamedScreenHand
             return MinecartTuning.copperRailSpeed();
         }
 
+        if (state.isOf(Blocks.POWERED_RAIL)) {
+            return MinecartTuning.poweredRailSpeed();
+        }
+
         if (state.isOf(ModBlocks.RAIL_JUMP)) {
             RailShape shape = state.get(SlopedRailBlock.SHAPE);
             BlockPos launchPos = switch (shape) {
