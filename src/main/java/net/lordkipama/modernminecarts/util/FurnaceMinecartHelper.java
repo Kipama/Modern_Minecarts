@@ -253,6 +253,9 @@ public final class FurnaceMinecartHelper {
         BlockPos railPos = minecart.getOnPos();
         BlockState railState = minecart.level().getBlockState(railPos);
         if (railState.getBlock() instanceof BaseRailBlock railBlock) {
+            if (railState.is(Blocks.POWERED_RAIL)) {
+                return ModernMinecartsConfig.poweredRailSpeed();
+            }
             if (usesDefaultFurnaceRailSpeed(railBlock)) {
                 return minecart.isInWater() ? 0.2D : 0.4D;
             }
