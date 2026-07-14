@@ -270,16 +270,13 @@ public class ModernMinecarts implements ModInitializer {
 								}
 
 								if (train.contains(cart)) {
-									System.out.println("Train contains cart");
 									if(((ChainMinecartInterface) parent).getLinkedParent()==cart){
 										if(((ChainMinecartInterface) cart).getLinkedParent()!=null){
 											cart.dropStack(new ItemStack(Items.CHAIN));
-											System.out.println("Parent not null");
 											ChainMinecartInterface.unsetParentChild((ChainMinecartInterface) ((ChainMinecartInterface) cart).getLinkedParent(), (ChainMinecartInterface) cart);
 										}
 										if(((ChainMinecartInterface) parent).getLinkedChild()!=null){
 											parent.dropStack(new ItemStack(Items.CHAIN));
-											System.out.println("Child not null");
 											ChainMinecartInterface.unsetParentChild((ChainMinecartInterface) parent, ((ChainMinecartInterface) ((ChainMinecartInterface) parent).getLinkedChild()));
 										}
 
@@ -288,16 +285,13 @@ public class ModernMinecarts implements ModInitializer {
 									}
 								} else {
 									if(((ChainMinecartInterface) cart).getLinkedParent()!= parent) {
-										System.out.println("Train doesnt contain cart");
 										if (((ChainMinecartInterface) cart).getLinkedParent() != null) {
 											ChainMinecartInterface.unsetParentChild((ChainMinecartInterface) ((ChainMinecartInterface) cart).getLinkedParent(),(ChainMinecartInterface) cart);
 											cart.dropStack(new ItemStack(Items.CHAIN));
-											System.out.println("Parent not null");
 										}
 										if (((ChainMinecartInterface) parent).getLinkedChild() != null) {
 											ChainMinecartInterface.unsetParentChild((ChainMinecartInterface) parent, (ChainMinecartInterface) ((ChainMinecartInterface) parent).getLinkedChild());
 											parent.dropStack(new ItemStack(Items.CHAIN));
-											System.out.println("Child not null");
 										}
 										if(!player.isCreative()){
 											stack.decrement(1);
