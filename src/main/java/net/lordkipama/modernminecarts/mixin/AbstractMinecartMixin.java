@@ -43,6 +43,15 @@ abstract class AbstractMinecartMixin {
         BlockPos railPos = minecart.getCurrentBlockPosOrRailBelow();
         BlockState railState = level.getBlockState(railPos);
 
+        if (railState.is(Blocks.POWERED_RAIL)) {
+            double railMaxSpeed = ModernMinecartsConfig.poweredRailSpeed();
+            if (MinecartLinkHelper.getLinkedParent(minecart) != null) {
+                railMaxSpeed = modernminecarts$legacyAirLateralSpeed;
+            }
+            cir.setReturnValue(railMaxSpeed);
+            return;
+        }
+
         if (railState.getBlock() instanceof BaseRailBlock railBlock
                 && ModernMinecarts.MOD_ID.equals(BuiltInRegistries.BLOCK.getKey(railState.getBlock()).getNamespace())) {
             float railMaxSpeed = railBlock.getRailMaxSpeed(railState, level, railPos, minecart);

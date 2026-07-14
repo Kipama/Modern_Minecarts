@@ -20,6 +20,9 @@ public class ModernMinecartsConfig {
     private static final ModConfigSpec.DoubleValue OXIDIZED_COPPER_SPEED = BUILDER
             .comment("Base speed for oxidized copper rails.", "Allowed range: 0.01 - 1.6")
             .defineInRange("oxidized_copper_speed", 0.2D, MIN_SPEED, MAX_SPEED);
+    private static final ModConfigSpec.DoubleValue POWERED_RAIL_SPEED = BUILDER
+            .comment("Base speed for regular powered rails.", "Allowed range: 0.01 - 1.6")
+            .defineInRange("powered_rail_speed", 0.4D, MIN_SPEED, MAX_SPEED);
     private static final ModConfigSpec.DoubleValue MAX_ASCENDING_SPEED = BUILDER
             .comment("Maximum speed while entering ascending rails.")
             .defineInRange("max_ascending_speed", 0.5D, MIN_SPEED, MAX_SPEED);
@@ -54,6 +57,7 @@ public class ModernMinecartsConfig {
     public static float exposedCopperSpeed() { return EXPOSED_COPPER_SPEED.get().floatValue(); }
     public static float weatheredCopperSpeed() { return WEATHERED_COPPER_SPEED.get().floatValue(); }
     public static float oxidizedCopperSpeed() { return OXIDIZED_COPPER_SPEED.get().floatValue(); }
+    public static float poweredRailSpeed() { return POWERED_RAIL_SPEED.get().floatValue(); }
     public static float maxAscendingSpeed() { return MAX_ASCENDING_SPEED.get().floatValue(); }
     public static boolean enableFurnaceMinecartChunkloading() { return ENABLE_FURNACE_MINECART_CHUNKLOADING.get(); }
     public static boolean enableMinecartChaining() { return ENABLE_MINECART_CHAINING.get(); }
@@ -68,6 +72,7 @@ public class ModernMinecartsConfig {
     public static void setExposedCopperSpeed(double value) { EXPOSED_COPPER_SPEED.set(value); }
     public static void setWeatheredCopperSpeed(double value) { WEATHERED_COPPER_SPEED.set(value); }
     public static void setOxidizedCopperSpeed(double value) { OXIDIZED_COPPER_SPEED.set(value); }
+    public static void setPoweredRailSpeed(double value) { POWERED_RAIL_SPEED.set(value); }
     public static void setMaxAscendingSpeed(double value) { MAX_ASCENDING_SPEED.set(value); }
     public static void setEnableFurnaceMinecartChunkloading(boolean value) { ENABLE_FURNACE_MINECART_CHUNKLOADING.set(value); }
     public static void setEnableMinecartChaining(boolean value) { ENABLE_MINECART_CHAINING.set(value); }
