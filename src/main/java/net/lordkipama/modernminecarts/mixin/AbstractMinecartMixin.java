@@ -1,5 +1,6 @@
 package net.lordkipama.modernminecarts.mixin;
 
+import net.lordkipama.modernminecarts.ModernMinecartsConfig;
 import net.lordkipama.modernminecarts.block.ModBlocks;
 import net.lordkipama.modernminecarts.util.FurnaceMinecartHelper;
 import net.lordkipama.modernminecarts.util.MinecartLinkHelper;
@@ -33,6 +34,12 @@ abstract class AbstractMinecartMixin {
 
     @Inject(method = "getMaxSpeedWithRail", at = @At("RETURN"), cancellable = true)
     private void modernminecarts$raiseFurnaceRailSpeed(CallbackInfoReturnable<Double> cir) {
+        AbstractMinecart minecart = (AbstractMinecart) (Object) this;
+        BlockState railState = minecart.level().getBlockState(minecart.getCurrentRailPosition());
+        if (railState.is(Blocks.POWERED_RAIL)) {
+            cir.setReturnValue((double) ModernMinecartsConfig.poweredRailSpeed());
+        }
+
         if (!((Object) this instanceof MinecartFurnace furnaceMinecart)) {
             return;
         }
