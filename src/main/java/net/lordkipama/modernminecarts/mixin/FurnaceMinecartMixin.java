@@ -477,6 +477,11 @@ public abstract class FurnaceMinecartMixin implements Container, MenuProvider, C
         if (state.is(ModBlocks.RAIL_CROSSING)) {
             return MinecartTuning.copperRailSpeed();
         }
+
+        if (state.is(Blocks.POWERED_RAIL)) {
+            return MinecartTuning.poweredRailSpeed();
+        }
+
         if (state.is(ModBlocks.RAIL_JUMP)) {
             RailShape shape = state.getValue(SlopedRailBlock.SHAPE);
             BlockPos launchPos = switch (shape) {
