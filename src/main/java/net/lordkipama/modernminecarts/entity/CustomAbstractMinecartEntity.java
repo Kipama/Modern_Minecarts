@@ -203,6 +203,9 @@ public abstract class CustomAbstractMinecartEntity extends AbstractMinecart impl
         if (!state.is(BlockTags.RAILS)) return getMaxSpeed();
 
         float railMaxSpeed = ((BaseRailBlock)state.getBlock()).getRailMaxSpeed(state, this.level(), pos, this);
+        if (state.is(Blocks.POWERED_RAIL)) {
+            railMaxSpeed = ModernMinecartsConfig.poweredRailSpeed();
+        }
         if(getLinkedParent()!=null){
             railMaxSpeed= 0.8F;
         }
