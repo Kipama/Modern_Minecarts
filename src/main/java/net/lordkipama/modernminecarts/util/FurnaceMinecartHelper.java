@@ -251,6 +251,9 @@ public final class FurnaceMinecartHelper {
         BlockPos railPos = minecart.getOnPos();
         BlockState railState = minecart.level().getBlockState(railPos);
         if (railState.getBlock() instanceof BaseRailBlock railBlock) {
+            if (railState.is(Blocks.POWERED_RAIL)) {
+                return ModernMinecartsConfig.poweredRailSpeed();
+            }
             if (railBlock instanceof ModernMinecartRailSpeed speedRail) {
                 return speedRail.getModernMinecartRailSpeed(railState, minecart.level(), railPos, minecart);
             }
