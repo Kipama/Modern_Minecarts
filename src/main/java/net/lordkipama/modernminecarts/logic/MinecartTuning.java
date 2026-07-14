@@ -29,6 +29,10 @@ public final class MinecartTuning {
         return ModernMinecartsConfig.oxidizedCopperSpeed();
     }
 
+    public static double poweredRailSpeed() {
+        return ModernMinecartsConfig.poweredRailSpeed();
+    }
+
     public static double ascendingCopperRailSpeed() {
         return ModernMinecartsConfig.maxAscendingSpeed();
     }

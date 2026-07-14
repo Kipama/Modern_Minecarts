@@ -252,6 +252,10 @@ public class MinecartMixin implements ChainMinecartInterface, TrackedMinecartSpe
         BlockState blockUnder = cart.level().getBlockState(pos.below());
 
         if (cart.isOnRails()) {
+            if (block.is(Blocks.POWERED_RAIL)) {
+                cir.setReturnValue(MinecartTuning.poweredRailSpeed());
+            }
+
             if (block.getBlock().getClass() == CopperRailBlock.class || block.getBlock().getClass() == WaxedCopperRailBlock.class) {
                 cir.setReturnValue(modernminecarts$getCopperRailSpeed(block, false));
             } else if (blockUnder.getBlock().getClass() == CopperRailBlock.class || blockUnder.getBlock().getClass() == WaxedCopperRailBlock.class) {
