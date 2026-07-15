@@ -7,8 +7,6 @@ import net.lordkipama.modernminecarts.block.ModBlocks;
 import net.lordkipama.modernminecarts.entity.ChainMinecartInterface;
 import net.lordkipama.modernminecarts.entity.CustomAbstractMinecartEntity;
 import net.minecraft.advancements.CriteriaTriggers;
-import net.minecraft.client.Minecraft;
-import net.minecraft.client.model.EntityModel;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.server.ServerAdvancementManager;
 import net.minecraft.server.level.ServerLevel;
@@ -28,7 +26,6 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
-import net.minecraftforge.client.event.RenderLivingEvent;
 import net.minecraftforge.event.entity.player.PlayerEvent;
 import net.minecraftforge.event.entity.player.PlayerInteractEvent;
 import net.minecraftforge.eventbus.api.Event;
@@ -46,7 +43,7 @@ public class ModEvents {
 
         @SubscribeEvent
         public static void PlayerInteractEvent(PlayerInteractEvent.RightClickBlock event) {
-            BlockState pBlockstate = Minecraft.getInstance().level.getBlockState(event.getPos());
+            BlockState pBlockstate = event.getLevel().getBlockState(event.getPos());
             Block targetedBlock = pBlockstate.getBlock();
 
             //Wax/Deage Rail
