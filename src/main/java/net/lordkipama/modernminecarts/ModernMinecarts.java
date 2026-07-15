@@ -37,10 +37,9 @@ public class ModernMinecarts {
     public ModernMinecarts() {
         IEventBus modEventBus = FMLJavaModLoadingContext.get().getModEventBus();
         ModLoadingContext.get().registerConfig(ModConfig.Type.COMMON, ModernMinecartsConfig.SPEC);
-        ModLoadingContext.get().registerExtensionPoint(
-                ConfigScreenHandler.ConfigScreenFactory.class,
-                () -> new ConfigScreenHandler.ConfigScreenFactory((minecraft, parent) -> new ModernMinecartsConfigScreen(parent))
-        );
+        if (FMLEnvironment.dist == Dist.CLIENT) {
+            ModernMinecartsClient.register();
+        }
 
         ModItems.register(modEventBus);
         ModBlocks.register(modEventBus);
