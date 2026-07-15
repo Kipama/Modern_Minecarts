@@ -2,7 +2,7 @@ package net.lordkipama.modernminecarts.client;
 
 import net.lordkipama.modernminecarts.ModernMinecarts;
 import net.lordkipama.modernminecarts.entity.*;
- net.lordkipama.modernminecarts.renderer.CustomMinecartRenderer;
+import net.lordkipama.modernminecarts.renderer.CustomMinecartRenderer;
 import net.minecraft.client.model.geom.ModelLayers;
 import net.minecraft.client.renderer.entity.EntityRenderer;
 import net.minecraft.client.renderer.entity.EntityRendererProvider;
