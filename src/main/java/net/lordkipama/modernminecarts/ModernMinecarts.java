@@ -33,7 +33,7 @@ public class ModernMinecarts {
 
     public ModernMinecarts(IEventBus modEventBus, ModContainer modContainer) {
         modContainer.registerConfig(ModConfig.Type.COMMON, ModernMinecartsConfig.SPEC);
-        if (FMLEnvironment.getDist() == Dist.CLIENT) {
+        if (FMLEnvironment.dist == Dist.CLIENT) {
             ModernMinecartsClient.register(modContainer, modEventBus);
         }
 
