@@ -23,6 +23,7 @@ build
 eclipse
 run
 .worktrees
+.agents
 
 # neoforge
 runs
