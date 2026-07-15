@@ -33,7 +33,7 @@ public class ModernMinecarts {
     // Directly reference a slf4j logger
 
     public static Logger LOGGER = LogManager.getLogger();
-    public static IProxy PROXY = DistExecutor.safeRunForDist(() -> ClientProxy::new, () -> ServerProxy::new);
+    public static IProxy PROXY = DistExecutor.unsafeRunForDist(() -> ClientProxy::new, () -> ServerProxy::new);
 
     public ModernMinecarts() {
         IEventBus modEventBus = FMLJavaModLoadingContext.get().getModEventBus();
