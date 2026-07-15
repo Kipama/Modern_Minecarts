@@ -1,24 +1,23 @@
 package net.lordkipama.modernminecarts;
 
+
+
+import net.neoforged.api.distmarker.Dist;
+import net.lordkipama.modernminecarts.client.ModernMinecartsClient;
 import com.mojang.logging.LogUtils;
 import net.lordkipama.modernminecarts.Item.ModItems;
 import net.lordkipama.modernminecarts.Proxy.ModernMinecartsPacketHandler;
 import net.lordkipama.modernminecarts.attachment.MinecartAttachmentTypes;
 import net.lordkipama.modernminecarts.block.ModBlocks;
-import net.lordkipama.modernminecarts.inventory.FurnaceMinecartScreen;
 import net.lordkipama.modernminecarts.inventory.ModMenus;
-import net.lordkipama.modernminecarts.inventory.ModernMinecartsConfigScreen;
 import net.lordkipama.modernminecarts.recipe.ModConditionSerializers;
 import net.minecraft.world.item.CreativeModeTabs;
 import net.minecraft.world.level.block.Block;
 import net.neoforged.bus.api.IEventBus;
-import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.ModContainer;
 import net.neoforged.fml.common.Mod;
 import net.neoforged.fml.config.ModConfig;
 import net.neoforged.fml.loading.FMLEnvironment;
-import net.neoforged.neoforge.client.event.RegisterMenuScreensEvent;
-import net.neoforged.neoforge.client.gui.IConfigScreenFactory;
 import net.neoforged.neoforge.event.BuildCreativeModeTabContentsEvent;
 import net.neoforged.neoforge.registries.DeferredBlock;
 import org.slf4j.Logger;
@@ -30,7 +29,9 @@ public class ModernMinecarts {
 
     public ModernMinecarts(IEventBus modEventBus, ModContainer modContainer) {
         modContainer.registerConfig(ModConfig.Type.COMMON, ModernMinecartsConfig.SPEC);
-        modContainer.registerExtensionPoint(IConfigScreenFactory.class, (IConfigScreenFactory) (container, modListScreen) -> new ModernMinecartsConfigScreen(modListScreen));
+        if (FMLEnvironment.dist == Dist.CLIENT) {
+            ModernMinecartsClient.register(modContainer, modEventBus);
+        }
 
         ModItems.register(modEventBus);
         ModBlocks.register(modEventBus);
@@ -44,7 +45,6 @@ public class ModernMinecarts {
         LOGGER.info("Modern Minecarts is running on the NeoForge 1.21 architecture without legacy vanilla namespace minecart overrides.");
 
         if (FMLEnvironment.dist.isClient()) {
-            modEventBus.addListener(ClientModEvents::registerMenuScreens);
         }
     }
 
@@ -76,13 +76,6 @@ public class ModernMinecarts {
     private static void acceptIfEnabled(BuildCreativeModeTabContentsEvent event, DeferredBlock<? extends Block> block, boolean enabled) {
         if (enabled) {
             event.accept(block);
-        }
-    }
-
-    public static class ClientModEvents {
-        @SubscribeEvent
-        public static void registerMenuScreens(RegisterMenuScreensEvent event) {
-            event.register(ModMenus.FURNACE_MINECART_MENU.get(), FurnaceMinecartScreen::new);
         }
     }
 }
