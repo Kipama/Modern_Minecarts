@@ -98,7 +98,13 @@ The following values can be tweaked:
 - Improved architecture on Fabric and Neoforge, which should lead to more mod compatibility on these versions.
 - Readded regular rail to creative menu on 1.19.2
 
-### Curretly supported versions
+## v1.2.1 Changelog
+
+- Added config option for vanilla powered rail speed
+- Fixed Server side issues on Forge versions
+- Removed more debug statements
+
+## Curretly supported versions
 
 #### Forge
 
