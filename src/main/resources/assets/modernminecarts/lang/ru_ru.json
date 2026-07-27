@@ -1,0 +1,22 @@
+{
+  "modmenu.descriptionTranslation.modernminecarts":"Расширяет возможности транспортировки вагонеток за счет более быстрых рельсов, автосцепок, тепловых двигателей, трамплинов и энергорельсового датчика.",
+
+
+  "block.modernminecarts.copper_rail": "Медные рельсы",
+  "block.modernminecarts.waxed_copper_rail": "Вощёные медные рельсы",
+
+  "block.modernminecarts.exposed_copper_rail": "Потемневшие медные рельсы",
+  "block.modernminecarts.waxed_exposed_copper_rail": "Вощёные потемневшие медные рельсы",
+
+  "block.modernminecarts.weathered_copper_rail": "Состаренные медные рельсы",
+  "block.modernminecarts.waxed_weathered_copper_rail": "Вощёные состаренные медные рельсы",
+
+  "block.modernminecarts.oxidized_copper_rail": "Окисленные медные рельсы",
+  "block.modernminecarts.waxed_oxidized_copper_rail": "Вощёные окисленные медные рельсы",
+
+
+  "block.modernminecarts.rail_crossing": "Железнодорожный переезд",
+  "block.modernminecarts.rail_jump": "Рельсовый трамплин",
+  "container.modernminecarts.furnace_minecart": "Самоходная вагонетка",
+  "block.modernminecarts.powered_detector_rail": "Энергорельсовый датчик"
+}
