@@ -27,12 +27,12 @@ public final class TrainEngineLogic {
     }
 
     public static int calculateSpeedometerValue(double actualSpeed, double speedLimit) {
-        if (actualSpeed > speedLimit) {
-            return speedToDisplayUnits(speedLimit);
+        if (speedLimit <= 0.0D) {
+            return 0;
         }
-        return Math.max(
-                0,
-                (int) Math.round(actualSpeed * MinecartTuning.SPEEDOMETER_SCALE + 0.2D)
+        return Math.min(
+                MinecartTuning.SPEEDOMETER_HEIGHT,
+                (int) Math.round(actualSpeed / speedLimit * MinecartTuning.SPEEDOMETER_HEIGHT)
         );
     }
 }
