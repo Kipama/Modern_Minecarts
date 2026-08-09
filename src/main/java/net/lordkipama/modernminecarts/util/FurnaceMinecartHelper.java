@@ -41,6 +41,7 @@ import java.util.List;
 import java.util.Optional;
 
 public final class FurnaceMinecartHelper {
+    private static final int SPEEDOMETER_HEIGHT = 32;
     private static final Field FUEL_FIELD = ObfuscationReflectionHelper.findField(MinecartFurnace.class, "fuel");
 
     private FurnaceMinecartHelper() {
@@ -71,11 +72,11 @@ public final class FurnaceMinecartHelper {
         if (parent instanceof MinecartFurnace parentFurnace) {
             return calculateActualSpeedForDisplay(parentFurnace);
         }
-        int speedForDisplay = getSpeedForDisplay(minecart);
-        if (minecart.getDeltaMovement().length() > (double) speedForDisplay / 80.0D) {
-            return speedForDisplay;
+        double speedLimit = getTargetSpeed(minecart, getTrainStats(minecart));
+        if (speedLimit <= 0.0D) {
+            return 0;
         }
-        return (int) Math.round(minecart.getDeltaMovement().length() * 80.0D + 0.2D);
+        return Math.min(SPEEDOMETER_HEIGHT, (int) Math.round(minecart.getDeltaMovement().length() / speedLimit * SPEEDOMETER_HEIGHT));
     }
 
     public static MenuProvider createMenuProvider(MinecartFurnace minecart) {
@@ -239,10 +240,6 @@ public final class FurnaceMinecartHelper {
         }
 
         return baseSpeed;
-    }
-
-    private static int getSpeedForDisplay(MinecartFurnace minecart) {
-        return (int) Math.round(getTargetSpeed(minecart, getTrainStats(minecart)) * 80.0D);
     }
 
     private static double getBaseRailSpeed(MinecartFurnace minecart) {
