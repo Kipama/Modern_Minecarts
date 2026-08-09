@@ -46,7 +46,7 @@ import org.spongepowered.asm.mixin.injection.callback.LocalCapture;
 import java.util.UUID;
 
 
-@Mixin(AbstractMinecartEntity.class)
+@Mixin(value = AbstractMinecartEntity.class, priority = 900)
 public class MinecartMixin implements ChainMinecartInterface {
     @Unique private @Nullable UUID parentUuid;
     @Unique private @Nullable UUID childUuid;
