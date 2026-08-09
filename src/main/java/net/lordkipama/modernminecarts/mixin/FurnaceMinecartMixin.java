@@ -169,7 +169,7 @@ public abstract class FurnaceMinecartMixin implements Inventory, NamedScreenHand
                 cart.setVelocity(Vec3d.ZERO);
             } else {
                 Vec3d velocity = cart.getVelocity();
-                double maxSpeed = MinecartTuning.FURNACE_MINECART_MAX_SPEED;
+                double maxSpeed = MinecartTuning.furnaceMinecartSpeed();
                 cart.setVelocity(
                         Math.max(-maxSpeed, Math.min(maxSpeed, velocity.x)),
                         velocity.y,
@@ -363,7 +363,7 @@ public abstract class FurnaceMinecartMixin implements Inventory, NamedScreenHand
             return parentFurnace.limitTrainSpeed(railSpeed);
         }
 
-        double furnaceSpeed = Math.min(railSpeed, MinecartTuning.FURNACE_MINECART_MAX_SPEED);
+        double furnaceSpeed = Math.min(railSpeed, MinecartTuning.furnaceMinecartSpeed());
         double result = TrainEngineLogic.calculateSpeedLimit(
                 furnaceSpeed,
                 modernminecarts$numberOfChildren,
