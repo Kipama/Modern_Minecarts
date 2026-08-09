@@ -45,9 +45,6 @@ abstract class AbstractMinecartMixin {
 
         if (railState.is(Blocks.POWERED_RAIL)) {
             double railMaxSpeed = ModernMinecartsConfig.poweredRailSpeed();
-            if (MinecartLinkHelper.getLinkedParent(minecart) != null) {
-                railMaxSpeed = modernminecarts$legacyAirLateralSpeed;
-            }
             cir.setReturnValue(railMaxSpeed);
             return;
         }
@@ -55,9 +52,7 @@ abstract class AbstractMinecartMixin {
         if (railState.getBlock() instanceof BaseRailBlock railBlock
                 && ModernMinecarts.MOD_ID.equals(BuiltInRegistries.BLOCK.getKey(railState.getBlock()).getNamespace())) {
             float railMaxSpeed = railBlock.getRailMaxSpeed(railState, level, railPos, minecart);
-            if (MinecartLinkHelper.getLinkedParent(minecart) != null) {
-                railMaxSpeed = modernminecarts$legacyAirLateralSpeed;
-            } else if (minecart.isInWater()) {
+            if (minecart.isInWater()) {
                 railMaxSpeed /= 2.0F;
             }
 
