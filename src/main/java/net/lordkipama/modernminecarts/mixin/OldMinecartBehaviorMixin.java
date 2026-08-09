@@ -46,6 +46,11 @@ public abstract class OldMinecartBehaviorMixin extends MinecartBehavior {
         AbstractMinecart cart = this.minecart;
         BlockPos pos = cart.getCurrentBlockPosOrRailBelow();
         BlockState state = world.getBlockState(pos);
+        if (!BaseRailBlock.isRail(state)) {
+            cart.setOnRails(false);
+            ((MinecartInvoker) cart).invokeComeOffTrack(world);
+            return;
+        }
         cart.resetFallDistance();
 
         double x = cart.getX();
