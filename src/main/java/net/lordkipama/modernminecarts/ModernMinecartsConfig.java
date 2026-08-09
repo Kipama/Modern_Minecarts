@@ -29,6 +29,7 @@ public final class ModernMinecartsConfig {
     private static double oxidizedCopperSpeed = 0.2D;
     private static double poweredRailSpeed = 0.4D;
     private static double maxAscendingSpeed = 0.5D;
+    private static double furnaceMinecartSpeed = 0.4D;
 
     private static boolean enableFurnaceMinecartChunkloading = true;
     private static boolean enableMinecartChaining = true;
@@ -60,6 +61,7 @@ public final class ModernMinecartsConfig {
         oxidizedCopperSpeed = readDouble(properties, "oxidized_copper_speed", 0.2D, MIN_SPEED, MAX_SPEED, logger);
         poweredRailSpeed = readDouble(properties, "powered_rail_speed", 0.4D, MIN_SPEED, MAX_SPEED, logger);
         maxAscendingSpeed = readDouble(properties, "max_ascending_speed", 0.5D, MIN_SPEED, MAX_SPEED, logger);
+        furnaceMinecartSpeed = readDouble(properties, "furnace_minecart_speed", 0.4D, MIN_SPEED, MAX_SPEED, logger);
 
         enableFurnaceMinecartChunkloading = readBoolean(
                 properties,
@@ -107,7 +109,8 @@ public final class ModernMinecartsConfig {
                 writer.write("weathered_copper_speed=" + weatheredCopperSpeed + "\n");
                 writer.write("oxidized_copper_speed=" + oxidizedCopperSpeed + "\n");
                 writer.write("powered_rail_speed=" + poweredRailSpeed + "\n");
-                writer.write("max_ascending_speed=" + maxAscendingSpeed + "\n\n");
+                writer.write("max_ascending_speed=" + maxAscendingSpeed + "\n");
+                writer.write("furnace_minecart_speed=" + furnaceMinecartSpeed + "\n\n");
 
                 writer.write("# New Features\n");
                 writer.write("enable_furnace_minecart_chunkloading=" + enableFurnaceMinecartChunkloading + "\n");
@@ -149,6 +152,10 @@ public final class ModernMinecartsConfig {
 
     public static double maxAscendingSpeed() {
         return maxAscendingSpeed;
+    }
+
+    public static double furnaceMinecartSpeed() {
+        return furnaceMinecartSpeed;
     }
 
     public static boolean enableFurnaceMinecartChunkloading() {

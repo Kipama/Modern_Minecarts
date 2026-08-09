@@ -18,7 +18,7 @@ public final class TrainEngineLogic {
         return Math.max(
                 railSpeed - (railSpeed / (10.0D * burning))
                         * (nonBurningCarts - 2 * burning),
-                MinecartTuning.MINIMUM_ENGINE_SPEED
+                railSpeed / 2.0D
         );
     }
 
