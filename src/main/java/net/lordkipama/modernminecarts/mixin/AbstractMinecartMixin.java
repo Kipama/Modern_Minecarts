@@ -49,9 +49,7 @@ abstract class AbstractMinecartMixin {
         }
 
         double targetSpeed = FurnaceMinecartHelper.getAppliedRailSpeed(furnaceMinecart);
-        if (targetSpeed > cir.getReturnValue()) {
-            cir.setReturnValue(targetSpeed);
-        }
+        cir.setReturnValue(targetSpeed);
     }
 
     @Inject(method = "getMaxSpeedAirLateral", at = @At("RETURN"), cancellable = true)
