@@ -138,7 +138,7 @@ public abstract class FurnaceMinecartMixin implements Container, MenuProvider, C
             cart.setDeltaMovement(Vec3.ZERO);
         } else {
             Vec3 movement = cart.getDeltaMovement();
-            double maxSpeed = MinecartTuning.FURNACE_MINECART_MAX_SPEED;
+            double maxSpeed = MinecartTuning.furnaceMinecartSpeed();
             cart.setDeltaMovement(Mth.clamp(movement.x, -maxSpeed, maxSpeed), movement.y, Mth.clamp(movement.z, -maxSpeed, maxSpeed));
         }
 
@@ -313,7 +313,7 @@ public abstract class FurnaceMinecartMixin implements Container, MenuProvider, C
             return parentFurnace.limitTrainSpeed(railSpeed);
         }
 
-        double furnaceSpeed = Math.min(railSpeed, MinecartTuning.FURNACE_MINECART_MAX_SPEED);
+        double furnaceSpeed = Math.min(railSpeed, MinecartTuning.furnaceMinecartSpeed());
         double result = TrainEngineLogic.calculateSpeedLimit(furnaceSpeed, modernminecarts$numberOfChildren, modernminecarts$burningFurnaces);
         modernminecarts$speedForDisplay = TrainEngineLogic.speedToDisplayUnits(result);
         return result;
