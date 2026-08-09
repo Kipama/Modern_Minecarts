@@ -1,6 +1,15 @@
 package net.lordkipama.modernminecarts;
 
+import net.neoforged.neoforge.common.ModConfigSpec;
+
 public class ModernMinecartsConfig {
+
+    private static final ModConfigSpec.Builder BUILDER = new ModConfigSpec.Builder();
+    private static final ModConfigSpec.DoubleValue FURNACE_MINECART_SPEED = BUILDER
+            .comment("Maximum speed for powered furnace minecarts.", "Allowed range: 0.01 - 1.6")
+            .defineInRange("furnace_minecart_speed", 0.4D, 0.01D, 1.6D);
+
+    public static final ModConfigSpec SPEC = BUILDER.build();
 
     public static boolean allowFurnaceMinecartChunkloading = true;
 
@@ -10,7 +19,6 @@ public class ModernMinecartsConfig {
     public static float weathered_copper_speed = 0.3f;
     public static float oxidized_copper_speed = 0.2f;
     public static float powered_rail_speed = 0.4f;
-    public static float furnace_minecart_speed = 0.4f;
 
     //This limits a minecarts speed when moving diagonally.
     //If your minecarts "bump into" ascending rails instead of driving up, decrease this value until fixed.
@@ -21,6 +29,6 @@ public class ModernMinecartsConfig {
     }
 
     public static float furnaceMinecartSpeed() {
-        return furnace_minecart_speed;
+        return FURNACE_MINECART_SPEED.get().floatValue();
     }
 }
