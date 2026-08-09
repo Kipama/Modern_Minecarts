@@ -26,6 +26,9 @@ public class ModernMinecartsConfig {
     private static final ModConfigSpec.DoubleValue MAX_ASCENDING_SPEED = BUILDER
             .comment("Maximum speed while entering ascending rails.")
             .defineInRange("max_ascending_speed", 0.5D, MIN_SPEED, MAX_SPEED);
+    private static final ModConfigSpec.DoubleValue FURNACE_MINECART_SPEED = BUILDER
+            .comment("Maximum speed for powered furnace minecarts.", "Allowed range: 0.01 - 1.6")
+            .defineInRange("furnace_minecart_speed", 0.4D, MIN_SPEED, MAX_SPEED);
     private static final ModConfigSpec.BooleanValue ENABLE_FURNACE_MINECART_CHUNKLOADING = BUILDER
             .comment("If true, burning furnace minecarts keep nearby chunks loaded.")
             .define("enable_furnace_minecart_chunkloading", true);
@@ -75,6 +78,9 @@ public class ModernMinecartsConfig {
 
     public static float maxAscendingSpeed() {
         return MAX_ASCENDING_SPEED.get().floatValue();
+    }
+    public static float furnaceMinecartSpeed() {
+        return FURNACE_MINECART_SPEED.get().floatValue();
     }
 
     public static boolean enableFurnaceMinecartChunkloading() {
@@ -131,6 +137,9 @@ public class ModernMinecartsConfig {
 
     public static void setMaxAscendingSpeed(double value) {
         MAX_ASCENDING_SPEED.set(value);
+    }
+    public static void setFurnaceMinecartSpeed(double value) {
+        FURNACE_MINECART_SPEED.set(value);
     }
 
     public static void setEnableFurnaceMinecartChunkloading(boolean value) {

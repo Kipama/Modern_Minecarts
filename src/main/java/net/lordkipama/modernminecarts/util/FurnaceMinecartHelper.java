@@ -233,11 +233,11 @@ public final class FurnaceMinecartHelper {
     }
 
     public static double getTargetSpeed(MinecartFurnace minecart, TrainStats stats) {
-        double baseSpeed = Math.min(getBaseRailSpeed(minecart), 0.4D);
+        double baseSpeed = Math.min(getBaseRailSpeed(minecart), ModernMinecartsConfig.furnaceMinecartSpeed());
         int nonBurningCarts = Math.max(0, stats.totalCarts - stats.burningFurnaces);
         if (stats.burningFurnaces > 0 && nonBurningCarts > 2 * stats.burningFurnaces) {
             double penaltySteps = nonBurningCarts - 2.0D * stats.burningFurnaces;
-            return Math.max(baseSpeed - ((baseSpeed / (10.0D * stats.burningFurnaces)) * penaltySteps), 0.2D);
+            return Math.max(baseSpeed - ((baseSpeed / (10.0D * stats.burningFurnaces)) * penaltySteps), baseSpeed / 2.0D);
         }
 
         return baseSpeed;

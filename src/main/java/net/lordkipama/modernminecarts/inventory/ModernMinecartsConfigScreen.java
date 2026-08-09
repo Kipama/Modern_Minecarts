@@ -34,6 +34,7 @@ public class ModernMinecartsConfigScreen extends Screen {
     private static final double DEFAULT_OXIDIZED_COPPER_SPEED = 0.2D;
     private static final double DEFAULT_POWERED_RAIL_SPEED = 0.4D;
     private static final double DEFAULT_MAX_ASCENDING_SPEED = 0.5D;
+    private static final double DEFAULT_FURNACE_MINECART_SPEED = 0.4D;
     private static final boolean DEFAULT_ENABLE_FURNACE_MINECART_CHUNKLOADING = true;
     private static final boolean DEFAULT_ENABLE_MINECART_CHAINING = true;
     private static final boolean DEFAULT_ENABLE_COPPER_RAILS = true;
@@ -51,6 +52,7 @@ public class ModernMinecartsConfigScreen extends Screen {
     private EditBox oxidizedCopperSpeed;
     private EditBox poweredRailSpeed;
     private EditBox maxAscendingSpeed;
+    private EditBox furnaceMinecartSpeed;
     private ToggleButton enableFurnaceMinecartChunkloading;
     private ToggleButton enableMinecartChaining;
     private ToggleButton enableCopperRails;
@@ -93,6 +95,8 @@ public class ModernMinecartsConfigScreen extends Screen {
         this.configList.addConfigEntry(new NumberEntry("Powered Rail Speed", this.poweredRailSpeed, DEFAULT_POWERED_RAIL_SPEED));
         this.maxAscendingSpeed = createNumberField(ModernMinecartsConfig.maxAscendingSpeed());
         this.configList.addConfigEntry(new NumberEntry("Max Ascending Speed", this.maxAscendingSpeed, DEFAULT_MAX_ASCENDING_SPEED));
+        this.furnaceMinecartSpeed = createNumberField(ModernMinecartsConfig.furnaceMinecartSpeed());
+        this.configList.addConfigEntry(new NumberEntry("Furnace Minecart Speed", this.furnaceMinecartSpeed, DEFAULT_FURNACE_MINECART_SPEED));
 
         this.configList.addConfigEntry(new CategoryEntry("New Features"));
         this.enableFurnaceMinecartChunkloading = createToggleButton(ModernMinecartsConfig.enableFurnaceMinecartChunkloading());
@@ -139,6 +143,7 @@ public class ModernMinecartsConfigScreen extends Screen {
             ModernMinecartsConfig.setOxidizedCopperSpeed(parseRanged(this.oxidizedCopperSpeed.getValue(), "oxidized_copper_speed"));
             ModernMinecartsConfig.setPoweredRailSpeed(parseRanged(this.poweredRailSpeed.getValue(), "powered_rail_speed"));
             ModernMinecartsConfig.setMaxAscendingSpeed(parseRanged(this.maxAscendingSpeed.getValue(), "max_ascending_speed"));
+            ModernMinecartsConfig.setFurnaceMinecartSpeed(parseRanged(this.furnaceMinecartSpeed.getValue(), "furnace_minecart_speed"));
             ModernMinecartsConfig.setEnableFurnaceMinecartChunkloading(this.enableFurnaceMinecartChunkloading.getValue());
             ModernMinecartsConfig.setEnableMinecartChaining(this.enableMinecartChaining.getValue());
             ModernMinecartsConfig.setEnableCopperRails(this.enableCopperRails.getValue());

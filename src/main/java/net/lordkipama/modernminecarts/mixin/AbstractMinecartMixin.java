@@ -70,9 +70,7 @@ abstract class AbstractMinecartMixin {
                 && MinecartLinkHelper.getLinkedParent(furnaceMinecart) == null
                 && FurnaceMinecartHelper.getFuel(furnaceMinecart) > 0) {
             double targetSpeed = FurnaceMinecartHelper.getAppliedRailSpeed(furnaceMinecart);
-            if (targetSpeed > cir.getReturnValue()) {
-                cir.setReturnValue(targetSpeed);
-            }
+        cir.setReturnValue(targetSpeed);
         }
     }
 
