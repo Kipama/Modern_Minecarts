@@ -19,6 +19,9 @@ public interface MinecartInvoker {
     @Invoker("getMaxSpeed")
     double invokeGetMaxSpeed(ServerLevel level);
 
+    @Invoker("comeOffTrack")
+    void invokeComeOffTrack(ServerLevel level);
+
     @Invoker("applyNaturalSlowdown")
     Vec3 invokeApplyNaturalSlowdown(Vec3 movement);
 
