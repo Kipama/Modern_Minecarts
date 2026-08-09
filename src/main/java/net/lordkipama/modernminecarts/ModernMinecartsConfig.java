@@ -31,4 +31,12 @@ public class ModernMinecartsConfig {
     public static float furnaceMinecartSpeed() {
         return FURNACE_MINECART_SPEED.get().floatValue();
     }
+
+    public static void setFurnaceMinecartSpeed(double value) {
+        FURNACE_MINECART_SPEED.set(value);
+    }
+
+    public static void save() {
+        SPEC.save();
+    }
 }
