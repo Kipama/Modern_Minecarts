@@ -33,6 +33,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class CustomMinecartFurnaceEntity extends CustomAbstractMinecartContainerEntity {
+    private static final int SPEEDOMETER_HEIGHT = 32;
+
     private int fuel;
     private int fuelBurnTime;
     public double xPush;
@@ -41,7 +43,7 @@ public class CustomMinecartFurnaceEntity extends CustomAbstractMinecartContainer
 
     public int numberOfChildren=-1;
     public int numBurningFurni=1;
-    private int speedForDisplay;
+    private double maxSpeedForDisplay = 0.4D;
 
     protected final ContainerData dataAccess = new ContainerData() {
         public int get(int p_58431_) {
@@ -71,12 +73,10 @@ public class CustomMinecartFurnaceEntity extends CustomAbstractMinecartContainer
         if(this.getLinkedParent() instanceof CustomMinecartFurnaceEntity furnaceMC){
             return furnaceMC.calculateActualSpeedForDisplay();
         }
-        if(this.getDeltaMovement().length()> ((double) speedForDisplay /80)){
-            return speedForDisplay;
+        if (maxSpeedForDisplay <= 0.0D) {
+            return 0;
         }
-        else{
-            return (int)Math.round(this.getDeltaMovement().length()*80+0.2);
-        }
+        return Math.min(SPEEDOMETER_HEIGHT, (int) Math.round(this.getDeltaMovement().length() / maxSpeedForDisplay * SPEEDOMETER_HEIGHT));
     }
 
     public CustomMinecartFurnaceEntity(EntityType<? extends CustomAbstractMinecartEntity> pEntityType, Level pLevel) {
@@ -291,7 +291,7 @@ public class CustomMinecartFurnaceEntity extends CustomAbstractMinecartContainer
             return getLinkedParent().getMaxSpeedWithRail();
         }
         double trainLimitedSpeed = getTrainLimitedSpeed(maxSpeed, true);
-        speedForDisplay = (int) Math.round(trainLimitedSpeed * 80.0D);
+        maxSpeedForDisplay = trainLimitedSpeed;
         return trainLimitedSpeed;
     }
 
