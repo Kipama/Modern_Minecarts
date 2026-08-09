@@ -273,39 +273,34 @@ public class CustomMinecartFurnaceEntity extends CustomAbstractMinecartContainer
         if(getLinkedParent()!=null){
             return getLinkedParent().getMaxSpeed();
         }
-        //I know numberOfChildren-numBurningFurni+1 is the number of children that arent burning furni
-        else if(numberOfChildren-numBurningFurni+1>2*numBurningFurni){
-            return Math.max(0.4f-((0.4f/(10*numBurningFurni))*((numberOfChildren-numBurningFurni+1)-2*numBurningFurni)),0.2f);}
-        else {
-            return 0.4f;
-        }
+        return getTrainLimitedSpeed(ModernMinecartsConfig.furnaceMinecartSpeed(), true);
     }
+
     @Override
     public float getMaxCartSpeedOnRail() {
         if(getLinkedParent()!=null){
             return getLinkedParent().getMaxCartSpeedOnRail();
         }
-        else if(numberOfChildren-numBurningFurni>2*numBurningFurni){
-            return Math.max(0.4f-((0.4f/(10*numBurningFurni))*((numberOfChildren-numBurningFurni+1)-2*numBurningFurni)),0.2f);}
-        else {
-            return 0.4f;
-        }
+        return (float) getTrainLimitedSpeed(ModernMinecartsConfig.furnaceMinecartSpeed(), false);
     }
 
     @Override
     public double getMaxSpeedWithRail() {
-        double superResult = super.getMaxSpeedWithRail();
+        double maxSpeed = Math.min(super.getMaxSpeedWithRail(), ModernMinecartsConfig.furnaceMinecartSpeed());
         if(getLinkedParent()!=null){
-            return superResult;
+            return getLinkedParent().getMaxSpeedWithRail();
         }
-        if(numberOfChildren-numBurningFurni+1>2*numBurningFurni){
-            speedForDisplay =  (int)((Math.max(superResult-((superResult/(10*numBurningFurni))*((numberOfChildren-numBurningFurni+1)-2*numBurningFurni)),0.2f))*80);
-            return Math.max(superResult-((superResult/(10*numBurningFurni))*((numberOfChildren-numBurningFurni+1)-2*numBurningFurni)),0.2f);}
-               //double i=     superResult-((superResult/20*numBurningFurni)*(numberOfChildren-numBurningFurni+1);
-        else {
-            speedForDisplay = (int)(superResult*80);
-            return superResult;
+        double trainLimitedSpeed = getTrainLimitedSpeed(maxSpeed, true);
+        speedForDisplay = (int) Math.round(trainLimitedSpeed * 80.0D);
+        return trainLimitedSpeed;
+    }
+
+    private double getTrainLimitedSpeed(double maxSpeed, boolean includeCurrentCart) {
+        int unpoweredMinecarts = numberOfChildren - numBurningFurni + 1;
+        if ((includeCurrentCart ? unpoweredMinecarts : unpoweredMinecarts - 1) > 2 * numBurningFurni) {
+            return Math.max(maxSpeed - maxSpeed / (10 * numBurningFurni) * (unpoweredMinecarts - 2 * numBurningFurni), maxSpeed / 2.0D);
         }
+        return maxSpeed;
     }
 
     protected void moveAlongTrack(BlockPos pPos, BlockState pState) {
