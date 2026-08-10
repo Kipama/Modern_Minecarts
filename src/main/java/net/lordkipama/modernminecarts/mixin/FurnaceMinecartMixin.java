@@ -183,12 +183,14 @@ public abstract class FurnaceMinecartMixin implements Container, MenuProvider, C
 
     @Inject(method = "getMaxSpeed", at = @At("RETURN"), cancellable = true)
     private void modernminecarts$useForgeFurnaceSpeed(ServerLevel world, CallbackInfoReturnable<Double> cir) {
-        double railSpeed = modernminecarts$getRailSpeed();
-        if (modernminecarts$getParent(modernminecarts$self()) != null) {
-            cir.setReturnValue(railSpeed);
-        } else {
-            cir.setReturnValue(limitTrainSpeed(railSpeed));
+        AbstractMinecart parent = modernminecarts$getParent(modernminecarts$self());
+        if (parent != null) {
+            cir.setReturnValue(((MinecartInvoker) parent).invokeGetMaxSpeed(world));
+            return;
         }
+
+        double railSpeed = modernminecarts$getRailSpeed();
+        cir.setReturnValue(limitTrainSpeed(railSpeed));
     }
 
     @Override
@@ -449,10 +451,10 @@ public abstract class FurnaceMinecartMixin implements Container, MenuProvider, C
             railState = cart.level().getBlockState(railPos);
         }
         if (!(railState.getBlock() instanceof BaseRailBlock)) {
-            return MinecartTuning.VANILLA_RAIL_SPEED;
+            return MinecartTuning.furnaceMinecartSpeed();
         }
 
-        double railSpeed = modernminecarts$getParent(cart) != null ? MinecartTuning.copperRailSpeed() : modernminecarts$getSpeedForRail(cart, railPos, railState);
+        double railSpeed = modernminecarts$getSpeedForRail(cart, railPos, railState);
         if (cart.isInWater() && !railState.is(Blocks.POWERED_RAIL)) {
             railSpeed /= 2.0D;
         }
@@ -509,7 +511,7 @@ public abstract class FurnaceMinecartMixin implements Container, MenuProvider, C
             }
             return MinecartTuning.oxidizedCopperRailSpeed();
         }
-        return MinecartTuning.VANILLA_RAIL_SPEED;
+        return MinecartTuning.furnaceMinecartSpeed();
     }
 
     @Unique
