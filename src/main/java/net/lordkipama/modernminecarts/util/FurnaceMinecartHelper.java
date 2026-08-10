@@ -252,9 +252,10 @@ public final class FurnaceMinecartHelper {
             if (railBlock instanceof ModernMinecartRailSpeed speedRail) {
                 return speedRail.getModernMinecartRailSpeed(railState, minecart.level(), railPos, minecart);
             }
-            return minecart.isInWater() ? 0.2D : 0.4D;
+            double furnaceSpeed = ModernMinecartsConfig.furnaceMinecartSpeed();
+            return minecart.isInWater() ? furnaceSpeed / 2.0D : furnaceSpeed;
         }
-        return 0.4D;
+        return ModernMinecartsConfig.furnaceMinecartSpeed();
     }
 
     private static void applyTargetSpeed(MinecartFurnace minecart, double targetSpeed, boolean shouldMove) {
