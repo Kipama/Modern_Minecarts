@@ -219,12 +219,14 @@ public abstract class FurnaceMinecartMixin implements Inventory, NamedScreenHand
 
     @Inject(method = "getMaxSpeed", at = @At("RETURN"), cancellable = true)
     private void modernminecarts$useForgeFurnaceSpeed(CallbackInfoReturnable<Double> cir) {
-        double railSpeed = modernminecarts$getRailSpeed();
-        if (modernminecarts$getParent(modernminecarts$self()) != null) {
-            cir.setReturnValue(railSpeed);
-        } else {
-            cir.setReturnValue(limitTrainSpeed(railSpeed));
+        AbstractMinecartEntity parent = modernminecarts$getParent(modernminecarts$self());
+        if (parent != null) {
+            cir.setReturnValue(((MinecartInvoker) parent).invokeGetMaxSpeed());
+            return;
         }
+
+        double railSpeed = modernminecarts$getRailSpeed();
+        cir.setReturnValue(limitTrainSpeed(railSpeed));
     }
 
     @Override
@@ -508,7 +510,7 @@ public abstract class FurnaceMinecartMixin implements Inventory, NamedScreenHand
         }
 
         if (!(railState.getBlock() instanceof AbstractRailBlock)) {
-            return MinecartTuning.VANILLA_RAIL_SPEED;
+            return MinecartTuning.furnaceMinecartSpeed();
         }
 
         double railSpeed = modernminecarts$getParent(cart) != null
@@ -589,7 +591,7 @@ public abstract class FurnaceMinecartMixin implements Inventory, NamedScreenHand
             return MinecartTuning.oxidizedCopperRailSpeed();
         }
 
-        return MinecartTuning.VANILLA_RAIL_SPEED;
+        return MinecartTuning.furnaceMinecartSpeed();
     }
 
     @Unique
