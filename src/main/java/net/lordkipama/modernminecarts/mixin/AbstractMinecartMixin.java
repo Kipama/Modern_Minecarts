@@ -40,6 +40,12 @@ abstract class AbstractMinecartMixin {
     @Inject(method = "getMaxSpeed", at = @At("RETURN"), cancellable = true)
     private void modernminecarts$applyRailSpeedOverrides(ServerLevel level, CallbackInfoReturnable<Double> cir) {
         AbstractMinecart minecart = (AbstractMinecart) (Object) this;
+        AbstractMinecart linkedParent = MinecartLinkHelper.getLinkedParent(minecart);
+        if (linkedParent != null) {
+            cir.setReturnValue(linkedParent.getMaxSpeed(level));
+            return;
+        }
+
         BlockPos railPos = minecart.getCurrentBlockPosOrRailBelow();
         BlockState railState = level.getBlockState(railPos);
 

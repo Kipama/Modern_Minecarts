@@ -251,11 +251,12 @@ public final class FurnaceMinecartHelper {
                 return ModernMinecartsConfig.poweredRailSpeed();
             }
             if (usesDefaultFurnaceRailSpeed(railBlock)) {
-                return minecart.isInWater() ? 0.2D : 0.4D;
+                double furnaceSpeed = ModernMinecartsConfig.furnaceMinecartSpeed();
+                return minecart.isInWater() ? furnaceSpeed / 2.0D : furnaceSpeed;
             }
             return railBlock.getRailMaxSpeed(railState, minecart.level(), railPos, minecart);
         }
-        return 0.4D;
+        return ModernMinecartsConfig.furnaceMinecartSpeed();
     }
 
     private static boolean usesDefaultFurnaceRailSpeed(BaseRailBlock railBlock) {
