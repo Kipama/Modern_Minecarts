@@ -245,6 +245,11 @@ public class MinecartMixin implements ChainMinecartInterface {
     @Inject(method = "getMaxSpeed", at = @At("RETURN"), cancellable = true)
     private void injectedGetMaxSpeed(ServerWorld world, CallbackInfoReturnable<Double> cir) {
         AbstractMinecartEntity thisObject = (AbstractMinecartEntity)(Object)this;
+        AbstractMinecartEntity linkedParent = getLinkedParent();
+        if (linkedParent != null) {
+            cir.setReturnValue(((MinecartInvoker) linkedParent).invokeGetMaxSpeed(world));
+            return;
+        }
 
         int i = MathHelper.floor(thisObject.getX());
         int j = MathHelper.floor(thisObject.getY());
