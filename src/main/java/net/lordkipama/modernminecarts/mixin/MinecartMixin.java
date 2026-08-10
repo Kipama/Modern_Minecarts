@@ -252,6 +252,12 @@ public class MinecartMixin implements ChainMinecartInterface, TrackedMinecartSpe
     @Inject(method = "getMaxSpeed", at = @At("RETURN"), cancellable = true)
     private void injectedGetMaxSpeed(ServerLevel world, CallbackInfoReturnable<Double> cir) {
         AbstractMinecart cart = (AbstractMinecart) (Object) this;
+        AbstractMinecart linkedParent = getLinkedParent();
+        if (linkedParent != null) {
+            cir.setReturnValue(((MinecartInvoker) linkedParent).invokeGetMaxSpeed(world));
+            return;
+        }
+
         BlockPos pos = cart.blockPosition();
         BlockState block = cart.level().getBlockState(pos);
         BlockState blockUnder = cart.level().getBlockState(pos.below());
