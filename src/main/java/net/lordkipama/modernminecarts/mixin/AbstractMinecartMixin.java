@@ -35,6 +35,12 @@ abstract class AbstractMinecartMixin {
     @Inject(method = "getMaxSpeedWithRail", at = @At("RETURN"), cancellable = true)
     private void modernminecarts$raiseFurnaceRailSpeed(CallbackInfoReturnable<Double> cir) {
         AbstractMinecart minecart = (AbstractMinecart) (Object) this;
+        AbstractMinecart linkedParent = MinecartLinkHelper.getLinkedParent(minecart);
+        if (linkedParent != null) {
+            cir.setReturnValue(linkedParent.getMaxSpeedWithRail());
+            return;
+        }
+
         BlockState railState = minecart.level().getBlockState(minecart.getCurrentRailPosition());
         if (railState.is(Blocks.POWERED_RAIL)) {
             cir.setReturnValue((double) ModernMinecartsConfig.poweredRailSpeed());
