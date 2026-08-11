@@ -47,6 +47,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 @Mixin(AbstractMinecart.class)
 public class MinecartMixin implements ChainMinecartInterface, TrackedMinecartSpeed {
+    @Unique private static final double modernminecarts$passengerRailMovementFactor = 0.75D;
     @Unique private @Nullable UUID parentUuid;
     @Unique private @Nullable UUID childUuid;
     @Unique private int parentIdClient;
@@ -254,7 +255,14 @@ public class MinecartMixin implements ChainMinecartInterface, TrackedMinecartSpe
         AbstractMinecart cart = (AbstractMinecart) (Object) this;
         AbstractMinecart linkedParent = getLinkedParent();
         if (linkedParent != null) {
-            cir.setReturnValue(((MinecartInvoker) linkedParent).invokeGetMaxSpeed(world));
+            double maxRailSpeed = ((MinecartInvoker) linkedParent).invokeGetMaxSpeed(world);
+            if (linkedParent.distanceTo(cart) - 1.0D > 1.5D) {
+                maxRailSpeed *= 1.2D;
+            }
+            if (cart.isVehicle()) {
+                maxRailSpeed /= modernminecarts$passengerRailMovementFactor;
+            }
+            cir.setReturnValue(maxRailSpeed);
             return;
         }
 
@@ -469,6 +477,10 @@ public class MinecartMixin implements ChainMinecartInterface, TrackedMinecartSpe
                     cart.setDeltaMovement(direction.scale(-0.05));
                 } else {
                     cart.setDeltaMovement(Vec3.ZERO);
+                }
+
+                if (cart.isVehicle()) {
+                    cart.setDeltaMovement(cart.getDeltaMovement().scale(1.0D / modernminecarts$passengerRailMovementFactor));
                 }
             } else {
                 ChainMinecartInterface.unsetParentChild((ChainMinecartInterface) getLinkedParent(), this);
