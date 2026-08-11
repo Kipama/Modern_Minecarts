@@ -259,7 +259,7 @@ public class MinecartMixin implements ChainMinecartInterface, TrackedMinecartSpe
             if (linkedParent.distanceTo(cart) - 1.0D > 1.5D) {
                 maxRailSpeed *= 1.2D;
             }
-            if (cart.hasPassengers()) {
+            if (cart.isVehicle()) {
                 maxRailSpeed /= modernminecarts$passengerRailMovementFactor;
             }
             cir.setReturnValue(maxRailSpeed);
@@ -479,7 +479,7 @@ public class MinecartMixin implements ChainMinecartInterface, TrackedMinecartSpe
                     cart.setDeltaMovement(Vec3.ZERO);
                 }
 
-                if (cart.hasPassengers()) {
+                if (cart.isVehicle()) {
                     cart.setDeltaMovement(cart.getDeltaMovement().scale(1.0D / modernminecarts$passengerRailMovementFactor));
                 }
             } else {
