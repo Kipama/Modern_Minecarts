@@ -50,6 +50,7 @@ import java.util.UUID;
 
 @Mixin(value = AbstractMinecartEntity.class, priority = 900)
 public class MinecartMixin implements ChainMinecartInterface {
+    @Unique private static final double modernminecarts$passengerRailMovementFactor = 0.75D;
     @Unique private @Nullable UUID parentUuid;
     @Unique private @Nullable UUID childUuid;
 
@@ -244,7 +245,14 @@ public class MinecartMixin implements ChainMinecartInterface {
         AbstractMinecartEntity thisObject = (AbstractMinecartEntity)(Object)this;
         AbstractMinecartEntity linkedParent = getLinkedParent();
         if (linkedParent != null) {
-            cir.setReturnValue(((MinecartInvoker) linkedParent).invokeGetMaxSpeed());
+            double maxRailSpeed = ((MinecartInvoker) linkedParent).invokeGetMaxSpeed();
+            if (linkedParent.distanceTo(thisObject) - 1.0D > 1.5D) {
+                maxRailSpeed *= 1.2D;
+            }
+            if (thisObject.hasPassengers()) {
+                maxRailSpeed /= modernminecarts$passengerRailMovementFactor;
+            }
+            cir.setReturnValue(maxRailSpeed);
             return;
         }
 
@@ -574,6 +582,10 @@ public class MinecartMixin implements ChainMinecartInterface {
                         thisObject.setVelocity(direction.multiply(-0.05));
                     else
                         thisObject.setVelocity(Vec3d.ZERO);
+
+                    if (thisObject.hasPassengers()) {
+                        thisObject.setVelocity(thisObject.getVelocity().multiply(1.0D / modernminecarts$passengerRailMovementFactor));
+                    }
                 }
                 else {
                     ChainMinecartInterface.unsetParentChild((ChainMinecartInterface) getLinkedParent(), this);
