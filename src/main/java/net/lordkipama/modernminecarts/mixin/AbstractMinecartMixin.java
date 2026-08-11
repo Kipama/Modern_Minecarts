@@ -43,7 +43,8 @@ abstract class AbstractMinecartMixin {
         AbstractMinecart minecart = (AbstractMinecart) (Object) this;
         AbstractMinecart linkedParent = MinecartLinkHelper.getLinkedParent(minecart);
         if (linkedParent != null) {
-            cir.setReturnValue(linkedParent.getMaxSpeed(level));
+            double parentMaxRailSpeed = ((AbstractMinecartAccessor) linkedParent).modernminecarts$invokeGetMaxSpeed(level);
+            cir.setReturnValue(MinecartLinkHelper.getFollowerMaxRailSpeed(minecart, linkedParent, parentMaxRailSpeed));
             return;
         }
 
@@ -88,7 +89,7 @@ abstract class AbstractMinecartMixin {
     @Inject(method = "moveAlongTrack", at = @At("RETURN"))
     private void modernminecarts$clampRailSpeedAfterMovement(ServerLevel level, CallbackInfo ci) {
         AbstractMinecart minecart = (AbstractMinecart) (Object) this;
-        double maxRailSpeed = minecart.getMaxSpeed(level);
+        double maxRailSpeed = ((AbstractMinecartAccessor) minecart).modernminecarts$invokeGetMaxSpeed(level);
         Vec3 motion = minecart.getDeltaMovement();
         minecart.setDeltaMovement(Mth.clamp(motion.x, -maxRailSpeed, maxRailSpeed), motion.y, Mth.clamp(motion.z, -maxRailSpeed, maxRailSpeed));
     }
