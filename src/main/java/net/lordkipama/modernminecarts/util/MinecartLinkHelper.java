@@ -14,6 +14,10 @@ import net.neoforged.neoforge.network.PacketDistributor;
 import org.jetbrains.annotations.Nullable;
 
 public final class MinecartLinkHelper {
+    private static final double PASSENGER_RAIL_MOVEMENT_FACTOR = 0.75D;
+    private static final double FOLLOWER_CATCH_UP_DISTANCE = 1.5D;
+    private static final double FOLLOWER_CATCH_UP_SPEED_MULTIPLIER = 1.2D;
+
     private MinecartLinkHelper() {
     }
 
@@ -104,6 +108,14 @@ public final class MinecartLinkHelper {
         return false;
     }
 
+    public static double getFollowerMaxRailSpeed(AbstractMinecart minecart, AbstractMinecart parent, double parentMaxRailSpeed) {
+        if (parent.distanceTo(minecart) - 1.0D > FOLLOWER_CATCH_UP_DISTANCE) {
+            parentMaxRailSpeed *= FOLLOWER_CATCH_UP_SPEED_MULTIPLIER;
+        }
+
+        return minecart.isVehicle() ? parentMaxRailSpeed / PASSENGER_RAIL_MOVEMENT_FACTOR : parentMaxRailSpeed;
+    }
+
     public static void tickFollower(AbstractMinecart minecart) {
         if (minecart.level().isClientSide()) {
             return;
@@ -144,12 +156,17 @@ public final class MinecartLinkHelper {
             } else {
                 newVelocity = newVelocity.multiply(0.0D, distance, 0.0D);
             }
-            minecart.setDeltaMovement(newVelocity);
+            minecart.setDeltaMovement(newVelocity.scale(getPassengerRailSpeedCompensation(minecart)));
         } else {
             double newDistance = distance - 0.33D;
             minecart.setDeltaMovement(direction.multiply(parentVelocity.length(), parentVelocity.length(), parentVelocity.length())
-                    .multiply(newDistance * newDistance, newDistance, newDistance * newDistance));
+                    .multiply(newDistance * newDistance, newDistance, newDistance * newDistance)
+                    .scale(getPassengerRailSpeedCompensation(minecart)));
         }
+    }
+
+    private static double getPassengerRailSpeedCompensation(AbstractMinecart minecart) {
+        return minecart.isVehicle() ? 1.0D / PASSENGER_RAIL_MOVEMENT_FACTOR : 1.0D;
     }
 
     public static void unlinkRemovedNeighbor(AbstractMinecart minecart) {
