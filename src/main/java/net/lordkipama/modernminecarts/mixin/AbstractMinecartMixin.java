@@ -42,7 +42,8 @@ abstract class AbstractMinecartMixin {
         AbstractMinecart minecart = (AbstractMinecart) (Object) this;
         AbstractMinecart linkedParent = MinecartLinkHelper.getLinkedParent(minecart);
         if (linkedParent != null) {
-            cir.setReturnValue(linkedParent.getMaxSpeed(level));
+            double parentMaxRailSpeed = ((AbstractMinecartAccessor) linkedParent).modernminecarts$invokeGetMaxSpeed(level);
+            cir.setReturnValue(MinecartLinkHelper.getFollowerMaxRailSpeed(minecart, linkedParent, parentMaxRailSpeed));
             return;
         }
 
