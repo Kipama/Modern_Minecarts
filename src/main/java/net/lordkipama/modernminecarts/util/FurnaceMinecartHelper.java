@@ -99,6 +99,7 @@ public final class FurnaceMinecartHelper {
         int fuel = getFuel(minecart);
         BlockState railState = minecart.level().getBlockState(minecart.getOnPos());
         Block block = railState.getBlock();
+        boolean isOnRail = railState.is(BlockTags.RAILS);
         Vec3 movement = minecart.getDeltaMovement();
         boolean isMoving = movement.horizontalDistanceSqr() > 0.001D;
         boolean hasChild = MinecartLinkHelper.getLinkedChild(minecart) != null;
@@ -131,7 +132,7 @@ public final class FurnaceMinecartHelper {
             }
         }
 
-        if (fuel <= 0) {
+        if (fuel <= 0 || !isOnRail) {
             minecart.xPush = 0.0D;
             minecart.zPush = 0.0D;
         } else if (MinecartLinkHelper.getLinkedParent(minecart) == null) {
