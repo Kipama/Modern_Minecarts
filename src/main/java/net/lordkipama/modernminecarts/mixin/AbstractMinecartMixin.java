@@ -125,6 +125,14 @@ abstract class AbstractMinecartMixin {
         }
     }
 
+    @Inject(method = "moveAlongTrack", at = @At("RETURN"))
+    private void modernminecarts$clampRailSpeedAfterMovement(BlockPos pos, BlockState state, CallbackInfo ci) {
+        AbstractMinecart minecart = (AbstractMinecart) (Object) this;
+        double maxRailSpeed = minecart.getMaxSpeedWithRail();
+        Vec3 motion = minecart.getDeltaMovement();
+        minecart.setDeltaMovement(Mth.clamp(motion.x, -maxRailSpeed, maxRailSpeed), motion.y, Mth.clamp(motion.z, -maxRailSpeed, maxRailSpeed));
+    }
+
     @Inject(method = "comeOffTrack", at = @At("HEAD"), cancellable = true)
     private void modernminecarts$jumpOffSlopedRail(CallbackInfo cir) {
         AbstractMinecart minecart = (AbstractMinecart) (Object) this;
