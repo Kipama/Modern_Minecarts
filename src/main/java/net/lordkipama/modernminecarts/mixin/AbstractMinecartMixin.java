@@ -80,6 +80,14 @@ abstract class AbstractMinecartMixin {
         PoweredDetectorRailHelper.applyMotion((AbstractMinecart) (Object) this, level);
     }
 
+    @Inject(method = "moveAlongTrack", at = @At("RETURN"))
+    private void modernminecarts$clampRailSpeedAfterMovement(ServerLevel level, CallbackInfo ci) {
+        AbstractMinecart minecart = (AbstractMinecart) (Object) this;
+        double maxRailSpeed = minecart.getMaxSpeed(level);
+        Vec3 motion = minecart.getDeltaMovement();
+        minecart.setDeltaMovement(Mth.clamp(motion.x, -maxRailSpeed, maxRailSpeed), motion.y, Mth.clamp(motion.z, -maxRailSpeed, maxRailSpeed));
+    }
+
     @Inject(method = "comeOffTrack", at = @At("HEAD"), cancellable = true)
     private void modernminecarts$jumpOffSlopedRail(ServerLevel level, CallbackInfo cir) {
         AbstractMinecart minecart = (AbstractMinecart) (Object) this;
