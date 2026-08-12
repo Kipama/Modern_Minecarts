@@ -5,6 +5,8 @@
   "mixins": [
     "MinecartInvoker",
     "MinecartMixin",
+    "DefaultMinecartControllerMixin",
+    "ExperimentalMinecartControllerMixin",
     "FurnaceMinecartMixin",
     "HopperMinecartMixin",
     "VehicleEntityMixin",

@@ -110,7 +110,9 @@ public class ModBlocks {
         return Registry.register(
                 Registries.ITEM,
                 itemKey,
-                new BlockItem(block, new Item.Settings().registryKey(itemKey))
+                new BlockItem(block, new Item.Settings()
+                        .registryKey(itemKey)
+                        .useBlockPrefixedTranslationKey())
         );
     }
 
@@ -120,7 +122,9 @@ public class ModBlocks {
         return Registry.register(
                 Registries.ITEM,
                 itemKey,
-                new FeatureToggleBlockItem(block, new Item.Settings().registryKey(itemKey), enabledSupplier)
+                new FeatureToggleBlockItem(block, new Item.Settings()
+                        .registryKey(itemKey)
+                        .useBlockPrefixedTranslationKey(), enabledSupplier)
         );
     }
 
