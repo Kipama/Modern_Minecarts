@@ -5,6 +5,7 @@
   "mixins": [
     "MinecartInvoker",
     "MinecartMixin",
+    "PoweredRailBlockMixin",
     "DefaultMinecartControllerMixin",
     "ExperimentalMinecartControllerMixin",
     "FurnaceMinecartMixin",
