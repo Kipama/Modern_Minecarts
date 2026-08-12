@@ -5,6 +5,7 @@
   "mixins": [
     "MinecartInvoker",
     "MinecartMixin",
+    "PoweredRailBlockMixin",
     "FurnaceMinecartMixin",
     "HopperMinecartMixin",
     "EntityTrackerEntryMixin"

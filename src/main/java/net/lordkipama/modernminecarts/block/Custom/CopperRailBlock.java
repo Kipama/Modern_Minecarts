@@ -143,7 +143,7 @@ public class CopperRailBlock extends PoweredRailBlock implements CustomOxidizabl
     @Override
     protected boolean isPoweredByOtherRails(World world, BlockPos pos, boolean bl, int distance, RailShape shape) {
         BlockState blockState = world.getBlockState(pos);
-        if (!(blockState.getBlock() instanceof CopperRailBlock) && !(blockState.getBlock() instanceof WaxedCopperRailBlock)) {
+        if (!(blockState.getBlock() instanceof PoweredRailBlock)) {
             return false;
         }
         RailShape railShape = blockState.get(SHAPE);
