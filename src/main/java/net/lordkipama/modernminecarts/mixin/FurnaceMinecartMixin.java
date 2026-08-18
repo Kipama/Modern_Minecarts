@@ -100,7 +100,7 @@ public abstract class FurnaceMinecartMixin implements Container, MenuProvider, C
         boolean isMoving = cart.getDeltaMovement().horizontalDistanceSqr() > 0.001D;
         boolean isRoot = modernminecarts$getParent(cart) == null;
         boolean hasDirection = push.horizontalDistanceSqr() > 1.0E-7D;
-        boolean mayStart = modernminecarts$railAllowsMovement(cart) && !modernminecarts$isActivelyPoweredRail(cart) && isRoot && (hasChild || isMoving);
+        boolean mayStart = modernminecarts$railAllowsMovement(cart) && isRoot && (hasChild || isMoving);
 
         if (fuel <= 0 && mayStart) {
             modernminecarts$burningFurnaces = burnFuelTrain();
@@ -135,7 +135,6 @@ public abstract class FurnaceMinecartMixin implements Container, MenuProvider, C
 
         if (!modernminecarts$railAllowsMovement(cart)) {
             push = Vec3.ZERO;
-            cart.setDeltaMovement(Vec3.ZERO);
         } else {
             Vec3 movement = cart.getDeltaMovement();
             double maxSpeed = MinecartTuning.furnaceMinecartSpeed();
@@ -195,14 +194,6 @@ public abstract class FurnaceMinecartMixin implements Container, MenuProvider, C
 
     @Override
     public int burnFuelTrain() {
-        if (modernminecarts$isActivelyPoweredRail(modernminecarts$self())) {
-            AbstractMinecart child = modernminecarts$getChild(modernminecarts$self());
-            if (child instanceof MinecartFurnace && child instanceof ContainerMinecartInteface furnaceChild) {
-                return furnaceChild.burnFuelTrain();
-            }
-            return 0;
-        }
-
         int burnTime = modernminecarts$consumeFuelItem();
         if (burnTime <= 0) {
             return 0;
@@ -454,7 +445,9 @@ public abstract class FurnaceMinecartMixin implements Container, MenuProvider, C
             return MinecartTuning.furnaceMinecartSpeed();
         }
 
-        double railSpeed = modernminecarts$getSpeedForRail(cart, railPos, railState);
+        double railSpeed = fuel > 0 && modernminecarts$isActivelyPoweredRail(cart)
+                ? MinecartTuning.furnaceMinecartSpeed()
+                : modernminecarts$getSpeedForRail(cart, railPos, railState);
         if (cart.isInWater() && !railState.is(Blocks.POWERED_RAIL)) {
             railSpeed /= 2.0D;
         }
