@@ -85,7 +85,7 @@ public class ModBlocks {
             java.util.function.Function<BlockBehaviour.Properties, ? extends T> factory,
             BlockBehaviour.Properties properties
     ) {
-        DeferredBlock<T> registered = BLOCKS.registerBlock(name, factory, properties);
+        DeferredBlock<T> registered = BLOCKS.registerBlock(name, factory, () -> properties);
         registerBlockItem(name, registered);
         return registered;
     }
