@@ -50,6 +50,14 @@ abstract class AbstractMinecartMixin {
         BlockPos railPos = minecart.getCurrentBlockPosOrRailBelow();
         BlockState railState = level.getBlockState(railPos);
 
+        if ((Object) this instanceof MinecartFurnace furnaceMinecart
+                && FurnaceMinecartHelper.getFuel(furnaceMinecart) > 0
+                && (!FurnaceMinecartHelper.usesPoweredRailLogic(railState)
+                || railState.getValue(PoweredRailBlock.POWERED))) {
+            cir.setReturnValue(FurnaceMinecartHelper.getAppliedRailSpeed(furnaceMinecart));
+            return;
+        }
+
         if (railState.is(Blocks.POWERED_RAIL)) {
             double railMaxSpeed = ModernMinecartsConfig.poweredRailSpeed();
             cir.setReturnValue(railMaxSpeed);
@@ -66,12 +74,6 @@ abstract class AbstractMinecartMixin {
             cir.setReturnValue((double) modernminecarts$getFrontAdjustedRailSpeed(minecart, level, railPos, railMaxSpeed));
         }
 
-        if ((Object) this instanceof MinecartFurnace furnaceMinecart
-                && MinecartLinkHelper.getLinkedParent(furnaceMinecart) == null
-                && FurnaceMinecartHelper.getFuel(furnaceMinecart) > 0) {
-            double targetSpeed = FurnaceMinecartHelper.getAppliedRailSpeed(furnaceMinecart);
-            cir.setReturnValue(targetSpeed);
-        }
     }
 
     @Inject(method = "moveAlongTrack", at = @At("HEAD"))
