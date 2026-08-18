@@ -16,6 +16,7 @@ import net.minecraft.world.entity.vehicle.minecart.AbstractMinecart;
 import net.minecraft.world.entity.vehicle.minecart.MinecartFurnace;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.BaseRailBlock;
+import net.minecraft.world.level.block.PoweredRailBlock;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.RailShape;
 import net.minecraft.world.phys.Vec3;
@@ -51,6 +52,14 @@ abstract class AbstractMinecartMixin {
         BlockPos railPos = minecart.getCurrentBlockPosOrRailBelow();
         BlockState railState = level.getBlockState(railPos);
 
+        if ((Object) this instanceof MinecartFurnace furnaceMinecart
+                && FurnaceMinecartHelper.getFuel(furnaceMinecart) > 0
+                && (!FurnaceMinecartHelper.usesPoweredRailLogic(railState)
+                || railState.getValue(PoweredRailBlock.POWERED))) {
+            cir.setReturnValue(FurnaceMinecartHelper.getAppliedRailSpeed(furnaceMinecart));
+            return;
+        }
+
         if (railState.is(Blocks.POWERED_RAIL)) {
             double railMaxSpeed = ModernMinecartsConfig.poweredRailSpeed();
             if (MinecartLinkHelper.getLinkedParent(minecart) != null) {
@@ -73,12 +82,6 @@ abstract class AbstractMinecartMixin {
             cir.setReturnValue((double) modernminecarts$getFrontAdjustedRailSpeed(minecart, level, railPos, railMaxSpeed));
         }
 
-        if ((Object) this instanceof MinecartFurnace furnaceMinecart
-                && MinecartLinkHelper.getLinkedParent(furnaceMinecart) == null
-                && FurnaceMinecartHelper.getFuel(furnaceMinecart) > 0) {
-            double targetSpeed = FurnaceMinecartHelper.getAppliedRailSpeed(furnaceMinecart);
-        cir.setReturnValue(targetSpeed);
-        }
     }
 
     @Inject(method = "moveAlongTrack", at = @At("HEAD"))
