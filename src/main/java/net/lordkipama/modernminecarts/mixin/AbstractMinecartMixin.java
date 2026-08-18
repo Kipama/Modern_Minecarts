@@ -50,7 +50,10 @@ abstract class AbstractMinecartMixin {
             return;
         }
 
-        if (MinecartLinkHelper.getLinkedParent(furnaceMinecart) != null || FurnaceMinecartHelper.getFuel(furnaceMinecart) <= 0) {
+        if (MinecartLinkHelper.getLinkedParent(furnaceMinecart) != null
+                || FurnaceMinecartHelper.getFuel(furnaceMinecart) <= 0
+                || (FurnaceMinecartHelper.usesPoweredRailLogic(railState)
+                && !railState.getValue(PoweredRailBlock.POWERED))) {
             return;
         }
 

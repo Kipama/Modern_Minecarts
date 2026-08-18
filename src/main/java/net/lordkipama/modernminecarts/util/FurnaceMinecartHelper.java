@@ -102,12 +102,11 @@ public final class FurnaceMinecartHelper {
         Vec3 movement = minecart.getDeltaMovement();
         boolean isMoving = movement.horizontalDistanceSqr() > 0.001D;
         boolean hasChild = MinecartLinkHelper.getLinkedChild(minecart) != null;
-        boolean isPoweredRail = block instanceof PoweredRailBlock poweredRail && !poweredRail.isActivatorRail();
-        boolean isDetectorRail = ModernMinecartsConfig.enablePoweredDetectorRail() && block instanceof PoweredDetectorRailBlock;
-        boolean isRailPowered = (isPoweredRail || isDetectorRail) && railState.getValue(PoweredRailBlock.POWERED);
+        boolean usesPoweredRailLogic = usesPoweredRailLogic(railState);
+        boolean isRailPowered = usesPoweredRailLogic && railState.getValue(PoweredRailBlock.POWERED);
         boolean consumeFuel = railState.is(BlockTags.RAILS)
                 && MinecartLinkHelper.getLinkedParent(minecart) == null
-                && !isRailPowered
+                && (!usesPoweredRailLogic || isRailPowered)
                 && (hasChild || isMoving);
 
         if (fuel <= 0 && consumeFuel) {
@@ -131,10 +130,15 @@ public final class FurnaceMinecartHelper {
             }
         }
 
+        if (fuel > 0 && usesPoweredRailLogic && !isRailPowered) {
+            minecart.xPush = 0.0D;
+            minecart.zPush = 0.0D;
+        }
+
         if (fuel <= 0 || !isOnRail) {
             minecart.xPush = 0.0D;
             minecart.zPush = 0.0D;
-        } else if (MinecartLinkHelper.getLinkedParent(minecart) == null) {
+        } else if (MinecartLinkHelper.getLinkedParent(minecart) == null && !usesPoweredRailLogic) {
             applyTargetSpeed(minecart, getTargetSpeed(minecart, stats), hasChild || isMoving);
         }
 
@@ -234,6 +238,12 @@ public final class FurnaceMinecartHelper {
         return getTargetSpeed(minecart, getTrainStats(minecart));
     }
 
+    public static boolean usesPoweredRailLogic(BlockState railState) {
+        Block block = railState.getBlock();
+        return (block instanceof PoweredRailBlock poweredRail && !poweredRail.isActivatorRail())
+                || (ModernMinecartsConfig.enablePoweredDetectorRail() && block instanceof PoweredDetectorRailBlock);
+    }
+
     public static double getTargetSpeed(MinecartFurnace minecart, TrainStats stats) {
         double baseSpeed = Math.min(getBaseRailSpeed(minecart), ModernMinecartsConfig.furnaceMinecartSpeed());
         int nonBurningCarts = Math.max(0, stats.totalCarts - stats.burningFurnaces);
@@ -249,8 +259,8 @@ public final class FurnaceMinecartHelper {
         BlockPos railPos = minecart.getOnPos();
         BlockState railState = minecart.level().getBlockState(railPos);
         if (railState.getBlock() instanceof BaseRailBlock railBlock) {
-            if (railState.is(Blocks.POWERED_RAIL)) {
-                return ModernMinecartsConfig.poweredRailSpeed();
+            if (railBlock instanceof PoweredRailBlock poweredRail && !poweredRail.isActivatorRail()) {
+                return ModernMinecartsConfig.furnaceMinecartSpeed();
             }
             if (usesDefaultFurnaceRailSpeed(railBlock)) {
                 double furnaceSpeed = ModernMinecartsConfig.furnaceMinecartSpeed();

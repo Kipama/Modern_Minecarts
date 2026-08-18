@@ -6,6 +6,7 @@
     "AbstractMinecartContainerMixin",
     "AbstractMinecartMixin",
     "MinecartChestMixin",
+    "MinecartFurnaceMixin",
     "MinecartHopperMixin"
   ],
   "injectors": {
