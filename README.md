@@ -93,16 +93,29 @@ The following values can be tweaked:
 - Furnace minecarts now work independently from chained minecarts again
 - Furnace minecarts no longer consume fuel on powered rails.
 - Removed warnings and debug statements to prevent log spam.
-- Fixed bug that prevented villagers from becoming toolsmiths
-- Fixed issues with wax on and wax off achievements
+- Fixed bug that prevented villagers from becoming toolsmiths.
+- Fixed issues with wax on and wax off achievements.
 - Improved architecture on Fabric and Neoforge, which should lead to more mod compatibility on these versions.
 - Readded regular rail to creative menu on 1.19.2
 
 ## v1.2.1 Changelog
 
-- Added config option for vanilla powered rail speed
-- Fixed Server side issues on Forge versions
-- Removed more debug statements
+- Added config option for vanilla powered rail speed.
+- Fixed Server side issues on Forge versions.
+- Removed more debug statements.
+
+## v1.2.2 Changelog
+
+- Added config option for furnace minecart speed.
+- Linked minecarts now correctly use the max speed set by the configs.
+- Fixed compatibility issue with Porting Lib on Fabric.
+- Fixed copper rails on Fabric 1.21.11.
+- Fixed modded item names on Fabric 1.21.11.
+- Fixed bug that let Furnace Minecarts continue to drive off rails while burning fuel.
+- Furnace Minecarts now stop on unpowered copper/powered rails across all versions.
+- 
+- Powered Rails and Copper Rails now share redstone signals with each other on Fabric (Parity with Forge versions)
+
 
 ## Curretly supported versions
 
