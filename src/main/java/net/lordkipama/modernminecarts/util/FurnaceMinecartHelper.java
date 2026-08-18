@@ -129,9 +129,9 @@ public final class FurnaceMinecartHelper {
             }
         }
 
-        if (fuel > 0 && usesPoweredRailLogic) {
-            // Let the rail control movement. This keeps burning through its current
-            // fuel while an unpowered powered rail brakes like a normal rail.
+        if (fuel > 0 && usesPoweredRailLogic && !isRailPowered) {
+            // Keep burning through the current fuel, but let an unpowered rail brake
+            // like a normal rail. A powered rail retains this direction to restart.
             minecart.push = Vec3.ZERO;
         }
 
