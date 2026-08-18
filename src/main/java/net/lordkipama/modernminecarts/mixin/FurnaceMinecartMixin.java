@@ -125,7 +125,6 @@ public abstract class FurnaceMinecartMixin implements Inventory, NamedScreenHand
         boolean isRoot = modernminecarts$getParent(cart) == null;
         boolean hasDirection = pushX * pushX + pushZ * pushZ > 1.0E-7D;
         boolean mayStart = modernminecarts$railAllowsMovement(cart)
-                && !modernminecarts$isActivelyPoweredRail(cart)
                 && isRoot
                 && (hasChild || isMoving);
 
@@ -166,7 +165,6 @@ public abstract class FurnaceMinecartMixin implements Inventory, NamedScreenHand
             if (!modernminecarts$railAllowsMovement(cart)) {
                 pushX = 0;
                 pushZ = 0;
-                cart.setVelocity(Vec3d.ZERO);
             } else {
                 Vec3d velocity = cart.getVelocity();
                 double maxSpeed = MinecartTuning.furnaceMinecartSpeed();
@@ -231,15 +229,6 @@ public abstract class FurnaceMinecartMixin implements Inventory, NamedScreenHand
 
     @Override
     public int burnFuelTrain() {
-        if (modernminecarts$isActivelyPoweredRail(modernminecarts$self())) {
-            AbstractMinecartEntity child = modernminecarts$getChild(modernminecarts$self());
-            if (child instanceof FurnaceMinecartEntity
-                    && child instanceof ContainerMinecartInteface furnaceChild) {
-                return furnaceChild.burnFuelTrain();
-            }
-            return 0;
-        }
-
         int burnTime = modernminecarts$consumeFuelItem();
         if (burnTime <= 0) {
             return 0;
@@ -515,6 +504,8 @@ public abstract class FurnaceMinecartMixin implements Inventory, NamedScreenHand
 
         double railSpeed = modernminecarts$getParent(cart) != null
                 ? MinecartTuning.copperRailSpeed()
+                : fuel > 0 && modernminecarts$isActivelyPoweredRail(cart)
+                ? MinecartTuning.furnaceMinecartSpeed()
                 : modernminecarts$getSpeedForRail(cart, railPos, railState);
         if (cart.isTouchingWater() && !railState.isOf(Blocks.POWERED_RAIL)) {
             railSpeed /= 2.0D;
