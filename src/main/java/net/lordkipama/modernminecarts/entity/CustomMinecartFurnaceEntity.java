@@ -130,7 +130,7 @@ public class CustomMinecartFurnaceEntity extends CustomAbstractMinecartContainer
             boolean isRailPowered = (isPoweredRail || isDetectorRail) && railState.getValue(PoweredRailBlock.POWERED);
             boolean consumeFuel = railState.is(BlockTags.RAILS)
                     && this.getLinkedParent() == null
-                    && !isRailPowered
+                    && (!(isPoweredRail || isDetectorRail) || isRailPowered)
                     && (hasChild || isMoving);
             if (fuel > 0) {
                 --fuel;
@@ -281,15 +281,21 @@ public class CustomMinecartFurnaceEntity extends CustomAbstractMinecartContainer
         if(getLinkedParent()!=null){
             return getLinkedParent().getMaxCartSpeedOnRail();
         }
+        if (fuel <= 0) {
+            return super.getMaxCartSpeedOnRail();
+        }
         return (float) getTrainLimitedSpeed(ModernMinecartsConfig.furnaceMinecartSpeed(), false);
     }
 
     @Override
     public double getMaxSpeedWithRail() {
-        double maxSpeed = Math.min(super.getMaxSpeedWithRail(), ModernMinecartsConfig.furnaceMinecartSpeed());
         if(getLinkedParent()!=null){
             return getLinkedParent().getMaxSpeedWithRail();
         }
+        if (fuel <= 0) {
+            return super.getMaxSpeedWithRail();
+        }
+        double maxSpeed = ModernMinecartsConfig.furnaceMinecartSpeed();
         double trainLimitedSpeed = getTrainLimitedSpeed(maxSpeed, true);
         maxSpeedForDisplay = trainLimitedSpeed;
         return trainLimitedSpeed;
@@ -309,7 +315,6 @@ public class CustomMinecartFurnaceEntity extends CustomAbstractMinecartContainer
             if(!pState.getValue(PoweredRailBlock.POWERED)){
                 this.xPush = 0;
                 this.zPush = 0;
-                this.setDeltaMovement(0,0,0);
             }
         }
         super.moveAlongTrack(pPos, pState);
@@ -340,7 +345,7 @@ public class CustomMinecartFurnaceEntity extends CustomAbstractMinecartContainer
             double maxSpeed = getMaxCartSpeedOnRail();
             this.setDeltaMovement(new Vec3(Math.max(Math.min(vec3.x,maxSpeed),-maxSpeed),vec3.y, Math.max(Math.min(vec3.z,getMaxCartSpeedOnRail()),-maxSpeed)));
         } else {
-            this.setDeltaMovement(this.getDeltaMovement().multiply(0.98D, 0.0D, 0.98D));
+            this.setDeltaMovement(this.getDeltaMovement());
         }
 
         super.applyNaturalSlowdown();
