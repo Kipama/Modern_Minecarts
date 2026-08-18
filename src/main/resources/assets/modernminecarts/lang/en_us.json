@@ -25,5 +25,6 @@
   "upgrade.modernminecarts.chipped_copper_upgrade": "Chipped Copper Upgrade",
   "upgrade.modernminecarts.damaged_copper_upgrade": "Damaged Copper Upgrade",
 
-  "block.modernminecarts.powered_detector_rail": "Powered Detector Rail"
+  "block.modernminecarts.powered_detector_rail": "Powered Detector Rail",
+  "block.modernminecarts.directed_powered_rail": "Directed Powered Rail"
 }

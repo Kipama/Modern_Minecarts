@@ -8,6 +8,9 @@ import net.lordkipama.modernminecarts.block.ModBlocks;
 import net.lordkipama.modernminecarts.block.VanillaBlocks;
 import net.lordkipama.modernminecarts.entity.*;
 import net.lordkipama.modernminecarts.inventory.ModMenus;
+import net.lordkipama.modernminecarts.recipe.FeatureEnabledCondition;
+import net.lordkipama.modernminecarts.recipe.ModRecipeSerializers;
+import net.lordkipama.modernminecarts.client.ModernMinecartsClient;
 import net.minecraft.world.item.CreativeModeTabs;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.common.MinecraftForge;
@@ -29,9 +32,12 @@ public class ModernMinecarts {
     public ModernMinecarts() {
         IEventBus modEventBus = FMLJavaModLoadingContext.get().getModEventBus();
         ModLoadingContext.get().registerConfig(ModConfig.Type.COMMON, ModernMinecartsConfig.SPEC);
+        DistExecutor.unsafeRunWhenOn(Dist.CLIENT, () -> ModernMinecartsClient::register);
 
         ModItems.register(modEventBus);
         ModBlocks.register(modEventBus);
+        ModRecipeSerializers.register(modEventBus);
+        FeatureEnabledCondition.register(modEventBus);
         ModEntities.register(modEventBus);
         VanillaEntities.register(modEventBus);
         VanillaItems.register(modEventBus);
@@ -49,42 +55,40 @@ public class ModernMinecarts {
     }
 
     private void commonSetup(final FMLCommonSetupEvent event) {
-
     }
 
     private void addCreative(BuildCreativeModeTabContentsEvent event) {
         if (event.getTabKey() == CreativeModeTabs.REDSTONE_BLOCKS) {
-            event.accept(ModBlocks.COPPER_RAIL);
-            event.accept(ModBlocks.EXPOSED_COPPER_RAIL);
-            event.accept(ModBlocks.WEATHERED_COPPER_RAIL);
-            event.accept(ModBlocks.OXIDIZED_COPPER_RAIL);
-
-            event.accept(ModBlocks.WAXED_COPPER_RAIL);
-            event.accept(ModBlocks.WAXED_EXPOSED_COPPER_RAIL);
-            event.accept(ModBlocks.WAXED_WEATHERED_COPPER_RAIL);
-            event.accept(ModBlocks.WAXED_OXIDIZED_COPPER_RAIL);
-
-            event.accept(ModBlocks.RAIL_CROSSING);
-
-            event.accept(ModBlocks.POWERED_DETECTOR_RAIL);
-
-            event.accept(ModBlocks.SLOPED_RAIL);
+            acceptCopperRailsIfEnabled(event);
+            acceptIfEnabled(event, ModBlocks.RAIL_CROSSING, ModernMinecartsConfig.enableRailCrossing());
+            acceptIfEnabled(event, ModBlocks.POWERED_DETECTOR_RAIL, ModernMinecartsConfig.enablePoweredDetectorRail());
+            acceptIfEnabled(event, ModBlocks.DIRECTED_POWERED_RAIL, ModernMinecartsConfig.enableDirectedPoweredRail());
+            acceptIfEnabled(event, ModBlocks.SLOPED_RAIL, ModernMinecartsConfig.enableRailJump());
 
         }
         else if (event.getTabKey() == CreativeModeTabs.TOOLS_AND_UTILITIES) {
-            event.accept(ModBlocks.COPPER_RAIL);
-            event.accept(ModBlocks.EXPOSED_COPPER_RAIL);
-            event.accept(ModBlocks.WEATHERED_COPPER_RAIL);
-            event.accept(ModBlocks.OXIDIZED_COPPER_RAIL);
+            acceptCopperRailsIfEnabled(event);
+            acceptIfEnabled(event, ModBlocks.RAIL_CROSSING, ModernMinecartsConfig.enableRailCrossing());
+            acceptIfEnabled(event, ModBlocks.POWERED_DETECTOR_RAIL, ModernMinecartsConfig.enablePoweredDetectorRail());
+            acceptIfEnabled(event, ModBlocks.DIRECTED_POWERED_RAIL, ModernMinecartsConfig.enableDirectedPoweredRail());
+        }
+    }
 
-            event.accept(ModBlocks.WAXED_COPPER_RAIL);
-            event.accept(ModBlocks.WAXED_EXPOSED_COPPER_RAIL);
-            event.accept(ModBlocks.WAXED_WEATHERED_COPPER_RAIL);
-            event.accept(ModBlocks.WAXED_OXIDIZED_COPPER_RAIL);
+    private static void acceptCopperRailsIfEnabled(BuildCreativeModeTabContentsEvent event) {
+        boolean enabled = ModernMinecartsConfig.enableCopperRails();
+        acceptIfEnabled(event, ModBlocks.COPPER_RAIL, enabled);
+        acceptIfEnabled(event, ModBlocks.EXPOSED_COPPER_RAIL, enabled);
+        acceptIfEnabled(event, ModBlocks.WEATHERED_COPPER_RAIL, enabled);
+        acceptIfEnabled(event, ModBlocks.OXIDIZED_COPPER_RAIL, enabled);
+        acceptIfEnabled(event, ModBlocks.WAXED_COPPER_RAIL, enabled);
+        acceptIfEnabled(event, ModBlocks.WAXED_EXPOSED_COPPER_RAIL, enabled);
+        acceptIfEnabled(event, ModBlocks.WAXED_WEATHERED_COPPER_RAIL, enabled);
+        acceptIfEnabled(event, ModBlocks.WAXED_OXIDIZED_COPPER_RAIL, enabled);
+    }
 
-            event.accept(ModBlocks.RAIL_CROSSING);
-
-            event.accept(ModBlocks.POWERED_DETECTOR_RAIL);
+    private static void acceptIfEnabled(BuildCreativeModeTabContentsEvent event, net.minecraftforge.registries.RegistryObject<? extends net.minecraft.world.level.block.Block> block, boolean enabled) {
+        if (enabled) {
+            event.accept(block);
         }
     }
 

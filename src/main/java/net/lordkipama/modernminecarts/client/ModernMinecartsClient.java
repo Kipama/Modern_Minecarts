@@ -4,6 +4,7 @@ import net.lordkipama.modernminecarts.ModernMinecarts;
 import net.lordkipama.modernminecarts.entity.*;
 import net.lordkipama.modernminecarts.inventory.FurnaceMinecartScreen;
 import net.lordkipama.modernminecarts.inventory.ModMenus;
+import net.lordkipama.modernminecarts.inventory.ModernMinecartsConfigScreen;
 import net.minecraft.client.gui.screens.MenuScreens;
 import net.lordkipama.modernminecarts.renderer.CustomMinecartRenderer;
 import net.minecraft.client.model.geom.ModelLayers;
@@ -11,12 +12,19 @@ import net.minecraft.client.renderer.entity.EntityRenderer;
 import net.minecraft.client.renderer.entity.EntityRendererProvider;
 import net.minecraft.client.renderer.entity.EntityRenderers;
 import net.minecraftforge.api.distmarker.Dist;
+import net.minecraftforge.client.ConfigScreenHandler;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
+import net.minecraftforge.fml.ModLoadingContext;
 import net.minecraftforge.fml.event.lifecycle.FMLClientSetupEvent;
 
 public final class ModernMinecartsClient {
     private ModernMinecartsClient() {
+    }
+
+    public static void register() {
+        ModLoadingContext.get().registerExtensionPoint(ConfigScreenHandler.ConfigScreenFactory.class,
+                () -> new ConfigScreenHandler.ConfigScreenFactory((minecraft, parent) -> new ModernMinecartsConfigScreen(parent)));
     }
 
     @Mod.EventBusSubscriber(modid = ModernMinecarts.MOD_ID, bus = Mod.EventBusSubscriber.Bus.MOD, value = Dist.CLIENT)
