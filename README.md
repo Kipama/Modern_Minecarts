@@ -113,7 +113,6 @@ The following values can be tweaked:
 - Fixed modded item names on Fabric 1.21.11.
 - Fixed bug that let Furnace Minecarts continue to drive off rails while burning fuel.
 - Furnace Minecarts now stop on unpowered copper/powered rails across all versions.
-- 
 - Powered Rails and Copper Rails now share redstone signals with each other on Fabric (Parity with Forge versions)
 
 
