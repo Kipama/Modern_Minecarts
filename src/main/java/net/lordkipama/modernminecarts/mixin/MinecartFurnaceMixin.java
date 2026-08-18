@@ -19,8 +19,10 @@ abstract class MinecartFurnaceMixin {
     private void modernminecarts$applyFinalFurnaceSpeed(ServerLevel level, CallbackInfoReturnable<Double> cir) {
         MinecartFurnace minecart = (MinecartFurnace) (Object) this;
         BlockState railState = level.getBlockState(minecart.getCurrentBlockPosOrRailBelow());
+        boolean usesPoweredRailLogic = FurnaceMinecartHelper.usesPoweredRailLogic(railState);
+        boolean isRailPowered = usesPoweredRailLogic && railState.getValue(net.minecraft.world.level.block.PoweredRailBlock.POWERED);
 
-        if (FurnaceMinecartHelper.getFuel(minecart) > 0) {
+        if (FurnaceMinecartHelper.getFuel(minecart) > 0 && (!usesPoweredRailLogic || isRailPowered)) {
             // MinecartFurnace halves its superclass result, so its final return value
             // must be overridden after that reduction.
             cir.setReturnValue(FurnaceMinecartHelper.getAppliedRailSpeed(minecart));
@@ -36,6 +38,9 @@ abstract class MinecartFurnaceMixin {
     @ModifyConstant(method = "applyNaturalSlowdown", constant = @Constant(doubleValue = 0.98D))
     private double modernminecarts$removeUnlitFurnaceDrag(double original) {
         MinecartFurnace minecart = (MinecartFurnace) (Object) this;
-        return FurnaceMinecartHelper.getFuel(minecart) > 0 ? original : 1.0D;
+        BlockState railState = minecart.level().getBlockState(minecart.getCurrentBlockPosOrRailBelow());
+        boolean isUnpoweredPoweredRail = FurnaceMinecartHelper.usesPoweredRailLogic(railState)
+                && !railState.getValue(net.minecraft.world.level.block.PoweredRailBlock.POWERED);
+        return FurnaceMinecartHelper.getFuel(minecart) > 0 && !isUnpoweredPoweredRail ? original : 1.0D;
     }
 }

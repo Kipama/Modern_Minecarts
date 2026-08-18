@@ -52,7 +52,9 @@ abstract class AbstractMinecartMixin {
         BlockState railState = level.getBlockState(railPos);
 
         if ((Object) this instanceof MinecartFurnace furnaceMinecart
-                && FurnaceMinecartHelper.getFuel(furnaceMinecart) > 0) {
+                && FurnaceMinecartHelper.getFuel(furnaceMinecart) > 0
+                && (!FurnaceMinecartHelper.usesPoweredRailLogic(railState)
+                || railState.getValue(net.minecraft.world.level.block.PoweredRailBlock.POWERED))) {
             cir.setReturnValue(FurnaceMinecartHelper.getAppliedRailSpeed(furnaceMinecart));
             return;
         }

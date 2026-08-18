@@ -103,11 +103,11 @@ public final class FurnaceMinecartHelper {
         Vec3 movement = minecart.getDeltaMovement();
         boolean isMoving = movement.horizontalDistanceSqr() > 0.001D;
         boolean hasChild = MinecartLinkHelper.getLinkedChild(minecart) != null;
-        boolean isPoweredRail = block instanceof PoweredRailBlock poweredRail && !poweredRail.isActivatorRail();
-        boolean isDetectorRail = ModernMinecartsConfig.enablePoweredDetectorRail() && block instanceof PoweredDetectorRailBlock;
-        boolean isRailPowered = (isPoweredRail || isDetectorRail) && railState.getValue(PoweredRailBlock.POWERED);
+        boolean usesPoweredRailLogic = usesPoweredRailLogic(railState);
+        boolean isRailPowered = usesPoweredRailLogic && railState.getValue(PoweredRailBlock.POWERED);
         boolean consumeFuel = railState.is(BlockTags.RAILS)
                 && MinecartLinkHelper.getLinkedParent(minecart) == null
+                && (!usesPoweredRailLogic || isRailPowered)
                 && (hasChild || isMoving);
 
         if (fuel <= 0 && consumeFuel) {
@@ -129,9 +129,15 @@ public final class FurnaceMinecartHelper {
             }
         }
 
+        if (fuel > 0 && usesPoweredRailLogic) {
+            // Let the rail control movement. This keeps burning through its current
+            // fuel while an unpowered powered rail brakes like a normal rail.
+            minecart.push = Vec3.ZERO;
+        }
+
         if (fuel <= 0 || !isOnRail) {
             minecart.push = Vec3.ZERO;
-        } else if (MinecartLinkHelper.getLinkedParent(minecart) == null && !isRailPowered) {
+        } else if (MinecartLinkHelper.getLinkedParent(minecart) == null && !usesPoweredRailLogic) {
             applyTargetSpeed(minecart, getTargetSpeed(minecart, stats), hasChild || isMoving);
         }
 
@@ -229,6 +235,12 @@ public final class FurnaceMinecartHelper {
             return getAppliedRailSpeed(parentFurnace);
         }
         return getTargetSpeed(minecart, getTrainStats(minecart));
+    }
+
+    public static boolean usesPoweredRailLogic(BlockState railState) {
+        Block block = railState.getBlock();
+        return (block instanceof PoweredRailBlock poweredRail && !poweredRail.isActivatorRail())
+                || (ModernMinecartsConfig.enablePoweredDetectorRail() && block instanceof PoweredDetectorRailBlock);
     }
 
     public static double getTargetSpeed(MinecartFurnace minecart, TrainStats stats) {
