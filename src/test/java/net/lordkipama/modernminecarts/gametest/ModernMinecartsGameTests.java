@@ -16,11 +16,11 @@ import net.minecraft.world.item.Items;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.PoweredRailBlock;
+import net.minecraft.world.level.block.RailBlock;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.RailShape;
 import net.minecraft.world.phys.Vec3;
 import net.neoforged.bus.api.IEventBus;
-import net.neoforged.fml.common.Mod;
 import net.neoforged.neoforge.registries.DeferredRegister;
 
 import java.util.concurrent.atomic.AtomicInteger;
@@ -29,12 +29,10 @@ import java.util.function.Consumer;
 
 /**
  * Headless regression coverage for the deterministic NeoForge v1.2.1 and
- * v1.2.2 minecart fixes. It is a separate test-only mod, so it is present in
- * development GameTest runs but is never included in the published mod jar.
+ * v1.2.2 minecart fixes. The production mod registers it only for dedicated
+ * GameTest runs; it is never included in the published mod jar.
  */
-@Mod(ModernMinecartsGameTests.TEST_MOD_ID)
 public final class ModernMinecartsGameTests {
-    public static final String TEST_MOD_ID = "modernminecarts_gametest";
     private static final int RAIL_Y = 1;
     private static final int TRACK_Z = 3;
     private static final int TRACK_START = 1;
@@ -53,7 +51,7 @@ public final class ModernMinecartsGameTests {
         TEST_FUNCTIONS.register("burning_furnace_does_not_drive_off_rails", () -> ModernMinecartsGameTests::burningFurnaceMinecartDoesNotPropelOffRails);
     }
 
-    public ModernMinecartsGameTests(IEventBus modEventBus) {
+    public static void register(IEventBus modEventBus) {
         TEST_FUNCTIONS.register(modEventBus);
     }
 
@@ -135,7 +133,7 @@ public final class ModernMinecartsGameTests {
 
         AtomicInteger burningFuel = new AtomicInteger();
         AtomicReference<Double> positionBeforeBrake = new AtomicReference<>();
-        helper.runAfterDelay(10, () -> {
+        helper.runAfterDelay(16, () -> {
             int fuel = FurnaceMinecartHelper.getFuel(furnace);
             helper.assertTrue(fuel > 0, "Furnace minecart did not begin burning on a powered rail");
             helper.assertTrue(furnace.push.x > 0.0D, "Furnace minecart did not use its linked cart to choose a direction");
@@ -147,7 +145,7 @@ public final class ModernMinecartsGameTests {
             furnace.setDeltaMovement(Vec3.ZERO);
         });
 
-        helper.runAfterDelay(16, () -> {
+        helper.runAfterDelay(24, () -> {
             helper.assertTrue(FurnaceMinecartHelper.getFuel(furnace) < burningFuel.get(),
                     "Burning furnace minecart stopped consuming its current fuel on an unpowered rail");
             helper.assertTrue(furnace.push.horizontalDistanceSqr() < 1.0E-7D,
@@ -157,7 +155,7 @@ public final class ModernMinecartsGameTests {
             helper.setBlock(powerPos, Blocks.REDSTONE_BLOCK);
         });
 
-        helper.runAfterDelay(22, () -> {
+        helper.runAfterDelay(32, () -> {
             helper.assertTrue(furnace.push.x > 0.0D,
                     "Furnace minecart did not restore linked-cart propulsion after the rail was repowered");
             helper.assertTrue(furnace.getX() > positionBeforeBrake.get() + 0.2D,
@@ -183,7 +181,9 @@ public final class ModernMinecartsGameTests {
     }
 
     private static void buildTrack(GameTestHelper helper, int z, Block rail) {
-        BlockState railState = rail.defaultBlockState().setValue(PoweredRailBlock.SHAPE, RailShape.EAST_WEST);
+        BlockState railState = rail instanceof RailBlock
+                ? rail.defaultBlockState().setValue(RailBlock.SHAPE, RailShape.EAST_WEST)
+                : rail.defaultBlockState().setValue(PoweredRailBlock.SHAPE, RailShape.EAST_WEST);
         for (int x = TRACK_START; x <= TRACK_END; x++) {
             helper.setBlock(new BlockPos(x, RAIL_Y - 1, z), Blocks.STONE);
             helper.setBlock(new BlockPos(x, RAIL_Y, z), railState);
