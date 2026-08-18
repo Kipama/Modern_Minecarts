@@ -44,7 +44,9 @@ import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
+import org.spongepowered.asm.mixin.injection.Constant;
 import org.spongepowered.asm.mixin.injection.Inject;
+import org.spongepowered.asm.mixin.injection.ModifyConstant;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
@@ -215,6 +217,11 @@ public abstract class FurnaceMinecartMixin implements Inventory, NamedScreenHand
         );
     }
 
+    @ModifyConstant(method = "applySlowdown", constant = @Constant(doubleValue = 0.98D))
+    private double modernminecarts$removeInactiveFurnaceDrag(double original) {
+        return fuel > 0 && modernminecarts$railAllowsMovement(modernminecarts$self()) ? original : 1.0D;
+    }
+
     @Inject(method = "getMaxSpeed", at = @At("RETURN"), cancellable = true)
     private void modernminecarts$useForgeFurnaceSpeed(CallbackInfoReturnable<Double> cir) {
         AbstractMinecartEntity parent = modernminecarts$getParent(modernminecarts$self());
@@ -224,7 +231,7 @@ public abstract class FurnaceMinecartMixin implements Inventory, NamedScreenHand
         }
 
         double railSpeed = modernminecarts$getRailSpeed();
-        cir.setReturnValue(limitTrainSpeed(railSpeed));
+        cir.setReturnValue(fuel > 0 ? limitTrainSpeed(railSpeed) : railSpeed);
     }
 
     @Override
