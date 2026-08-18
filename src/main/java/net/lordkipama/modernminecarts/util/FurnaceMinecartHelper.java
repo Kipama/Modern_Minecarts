@@ -108,7 +108,6 @@ public final class FurnaceMinecartHelper {
         boolean isRailPowered = (isPoweredRail || isDetectorRail) && railState.getValue(PoweredRailBlock.POWERED);
         boolean consumeFuel = railState.is(BlockTags.RAILS)
                 && MinecartLinkHelper.getLinkedParent(minecart) == null
-                && !isRailPowered
                 && (hasChild || isMoving);
 
         if (fuel <= 0 && consumeFuel) {
@@ -132,7 +131,7 @@ public final class FurnaceMinecartHelper {
 
         if (fuel <= 0 || !isOnRail) {
             minecart.push = Vec3.ZERO;
-        } else if (MinecartLinkHelper.getLinkedParent(minecart) == null) {
+        } else if (MinecartLinkHelper.getLinkedParent(minecart) == null && !isRailPowered) {
             applyTargetSpeed(minecart, getTargetSpeed(minecart, stats), hasChild || isMoving);
         }
 
@@ -247,8 +246,8 @@ public final class FurnaceMinecartHelper {
         BlockPos railPos = minecart.getOnPos();
         BlockState railState = minecart.level().getBlockState(railPos);
         if (railState.getBlock() instanceof BaseRailBlock railBlock) {
-            if (railState.is(Blocks.POWERED_RAIL)) {
-                return ModernMinecartsConfig.poweredRailSpeed();
+            if (railBlock instanceof PoweredRailBlock poweredRail && !poweredRail.isActivatorRail()) {
+                return ModernMinecartsConfig.furnaceMinecartSpeed();
             }
             if (usesDefaultFurnaceRailSpeed(railBlock)) {
                 double furnaceSpeed = ModernMinecartsConfig.furnaceMinecartSpeed();
