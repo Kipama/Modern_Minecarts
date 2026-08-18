@@ -1,0 +1,16 @@
+modLoader="javafml"
+loaderVersion="[1,)"
+license="All Rights Reserved"
+
+[[mods]]
+modId="modernminecarts_gametest"
+version="1.0"
+displayName="Modern Minecarts Game Tests"
+description="Test-only entry point for headless Modern Minecarts GameTests."
+
+[[dependencies.modernminecarts_gametest]]
+modId="modernminecarts"
+type="required"
+versionRange="[1.2.2,)"
+ordering="AFTER"
+side="BOTH"

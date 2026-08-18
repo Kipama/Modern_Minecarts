@@ -52,6 +52,7 @@ runs {
 
     gameTestServer {
         systemProperty 'neoforge.enabledGameTestNamespaces', project.mod_id
+        modSource project.sourceSets.test
     }
 
     def legacyDataRun = findByName('data')
@@ -71,6 +72,22 @@ configurations {
 
 dependencies {
     implementation "net.neoforged:neoforge:${neo_version}"
+    testImplementation "net.neoforged:testframework:${neo_version}"
+}
+
+def gameTestStructureSource = layout.projectDirectory.file('src/test/resources/data/modernminecarts/structure/gametest_empty.nbt.b64')
+def gameTestStructureOutput = layout.buildDirectory.file('resources/test/data/modernminecarts/structure/gametest_empty.nbt')
+
+tasks.named('processTestResources', ProcessResources).configure {
+    exclude '**/*.nbt.b64'
+    inputs.file(gameTestStructureSource)
+    outputs.file(gameTestStructureOutput)
+
+    doLast {
+        def target = gameTestStructureOutput.get().asFile
+        target.parentFile.mkdirs()
+        target.bytes = java.util.Base64.decoder.decode(gameTestStructureSource.asFile.text.trim())
+    }
 }
 
 tasks.withType(ProcessResources).configureEach {
