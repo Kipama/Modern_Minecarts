@@ -138,13 +138,9 @@ foreach ($branch in $Branches) {
         $env:GRADLE_USER_HOME = Join-Path $gradleCacheRoot ("java" + (Get-JavaMajor $javaHome))
         try {
             $gradleArguments = switch ($Mode) {
-                # Native file watching repeatedly scans a fresh detached
-                # worktree on Windows before the Gradle task graph is ready.
-                # Disable it for all isolated QA runs; it provides no value
-                # for these one-shot invocations and prevents the scan loop.
-                'Compile'  { @('compileJava', '--no-daemon', '--no-watch-fs') }
-                'GameTest' { @('runGameTestServer', '--no-daemon', '--no-watch-fs') }
-                'Client'   { @('runClient', '--no-daemon', '--no-watch-fs') }
+                'Compile'  { @('compileJava', '--no-daemon') }
+                'GameTest' { @('runGameTestServer', '--no-daemon') }
+                'Client'   { @('runClient', '--no-daemon') }
             }
 
             "[$(Get-Date -Format 's')] $branch ($Mode, JAVA_HOME=$javaHome, GRADLE_USER_HOME=$env:GRADLE_USER_HOME)" | Tee-Object -FilePath $logPath
