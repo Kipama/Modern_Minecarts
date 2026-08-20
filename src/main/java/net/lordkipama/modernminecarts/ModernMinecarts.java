@@ -40,33 +40,10 @@ public class ModernMinecarts {
         ModMenus.register(modEventBus);
         ModConditionSerializers.register(modEventBus);
 
-        registerGameTestsIfEnabled(modEventBus);
-
         modEventBus.addListener(this::addCreative);
         modEventBus.addListener(ModernMinecartsPacketHandler::register);
 
         LOGGER.info("Modern Minecarts is running on the NeoForge 1.21 architecture without legacy vanilla namespace minecart overrides.");
-    }
-
-    /**
-     * GameTest classes live in the test source set and are deliberately absent
-     * from release jars.  The GameTest run supplies that source set and enables
-     * this property, allowing the production mod to own the test functions
-     * without introducing a second development-only mod descriptor.
-     */
-    private static void registerGameTestsIfEnabled(IEventBus modEventBus) {
-        if (!Boolean.getBoolean("neoforge.enableGameTest")) {
-            return;
-        }
-
-        try {
-            Class<?> testClass = Class.forName("net.lordkipama.modernminecarts.gametest.ModernMinecartsGameTests");
-            testClass.getMethod("register", IEventBus.class).invoke(null, modEventBus);
-        } catch (ClassNotFoundException ignored) {
-            // GameTest classes are not packaged with normal mod distributions.
-        } catch (ReflectiveOperationException exception) {
-            throw new IllegalStateException("Could not register Modern Minecarts GameTests", exception);
-        }
     }
 
     private void addCreative(BuildCreativeModeTabContentsEvent event) {
