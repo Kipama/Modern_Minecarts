@@ -1,6 +1,7 @@
 {
   "pack": {
     "description": "Modern Minecarts NeoForge 1.21.11 manual QA controls",
-    "pack_format": 94
+    "min_format": [94, 1],
+    "max_format": 94
   }
 }
