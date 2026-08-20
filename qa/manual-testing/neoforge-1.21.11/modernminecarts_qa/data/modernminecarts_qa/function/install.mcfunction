@@ -26,7 +26,7 @@ setblock -7 54 0 minecraft:redstone_block replace
 # the chain block immediately to its east.
 setblock -6 56 0 minecraft:command_block[facing=east]{Command:"gamerule randomTickSpeed 3",auto:0b,TrackOutput:0b} replace
 setblock -5 56 0 minecraft:chain_command_block[facing=east]{Command:"function modernminecarts_qa:prepare/crafting",auto:0b,TrackOutput:0b} replace
-setblock -2 56 0 minecraft:command_block[facing=east]{Command:"gamerule randomTickSpeed 3000",auto:0b,TrackOutput:0b} replace
+setblock -2 56 0 minecraft:command_block[facing=east]{Command:"gamerule randomTickSpeed 2000",auto:0b,TrackOutput:0b} replace
 setblock -1 56 0 minecraft:chain_command_block[facing=east]{Command:"function modernminecarts_qa:prepare/copper_rails",auto:0b,TrackOutput:0b} replace
 setblock 2 56 0 minecraft:command_block[facing=east]{Command:"gamerule randomTickSpeed 3",auto:0b,TrackOutput:0b} replace
 setblock 3 56 0 minecraft:chain_command_block[facing=east]{Command:"function modernminecarts_qa:prepare/furnace_and_links",auto:0b,TrackOutput:0b} replace
@@ -45,6 +45,14 @@ setblock 6 57 2 minecraft:oak_sign[rotation=8]{front_text:{messages:['{"text":"R
 
 # Crafting test station.
 setblock 0 57 20 minecraft:crafting_table replace
+
+# Copper rail launch test: sixteen physically powered waxed copper rails lead
+# east into a sloped launch rail. Redstone blocks below the rails keep the
+# entire run powered without adding a separate setup step to the test.
+fill -10 56 40 5 56 40 minecraft:redstone_block
+fill -10 57 40 5 57 40 modernminecarts:waxed_copper_rail[shape=east_west]
+setblock 6 57 40 modernminecarts:sloped_rail[shape=ascending_east,const_shape=ascending_east] replace
+setblock -10 57 42 minecraft:oak_sign[rotation=8]{front_text:{messages:['{"text":"POWERED COPPER RAMP"}','{"text":"16 waxed rails east"}','{"text":"Sloped launch rail"}','{"text":""}']}} replace
 
 # Furnace and linked-minecart test: a 13-by-13 loop with regular-rail corners,
 # regular rails on three sides, and powered rails with a torch at each end on the fourth.
