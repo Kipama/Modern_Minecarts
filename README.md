@@ -114,6 +114,7 @@ The following values can be tweaked:
 - Fixed bug that let Furnace Minecarts continue to drive off rails while burning fuel.
 - Furnace Minecarts now stop on unpowered copper/powered rails across all versions.
 - Powered Rails and Copper Rails now share redstone signals with each other on Fabric (Parity with Forge versions)
+- Added language support for german, french, spanish, ukranian and russian.
 
 
 ## Curretly supported versions
