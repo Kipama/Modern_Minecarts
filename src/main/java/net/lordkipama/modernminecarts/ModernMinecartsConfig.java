@@ -28,6 +28,10 @@ public class ModernMinecartsConfig {
             .comment("Base speed for regular powered rails.", "Allowed range: 0.01 - 1.6")
             .defineInRange("powered_rail_speed", 0.4D, MIN_SPEED, MAX_SPEED);
 
+    private static final ModConfigSpec.DoubleValue DIRECTED_POWERED_RAIL_SPEED = BUILDER
+            .comment("Maximum speed for directed powered rails.", "Allowed range: 0.01 - 1.6")
+            .defineInRange("directed_powered_rail_speed", 0.4D, MIN_SPEED, MAX_SPEED);
+
     private static final ModConfigSpec.DoubleValue MAX_ASCENDING_SPEED = BUILDER
             .comment("Maximum speed while entering ascending rails.")
             .defineInRange("max_ascending_speed", 0.5D, MIN_SPEED, MAX_SPEED);
@@ -55,6 +59,10 @@ public class ModernMinecartsConfig {
     private static final ModConfigSpec.BooleanValue ENABLE_POWERED_DETECTOR_RAIL = BUILDER
             .comment("If true, powered detector rails can be placed and used.")
             .define("enable_powered_detector_rail", true);
+
+    private static final ModConfigSpec.BooleanValue ENABLE_DIRECTED_POWERED_RAIL = BUILDER
+            .comment("If true, directed powered rails can be placed and used.")
+            .define("enable_directed_powered_rail", true);
 
     private static final ModConfigSpec.BooleanValue ENABLE_RAIL_JUMP = BUILDER
             .comment("If true, rail jumps can be placed and created from rails using sticks.")
@@ -90,6 +98,10 @@ public class ModernMinecartsConfig {
         return POWERED_RAIL_SPEED.get().floatValue();
     }
 
+    public static float directedPoweredRailSpeed() {
+        return DIRECTED_POWERED_RAIL_SPEED.get().floatValue();
+    }
+
     public static float maxAscendingSpeed() {
         return MAX_ASCENDING_SPEED.get().floatValue();
     }
@@ -120,6 +132,10 @@ public class ModernMinecartsConfig {
 
     public static void setPoweredRailSpeed(double value) {
         POWERED_RAIL_SPEED.set(value);
+    }
+
+    public static void setDirectedPoweredRailSpeed(double value) {
+        DIRECTED_POWERED_RAIL_SPEED.set(value);
     }
 
     public static void setMaxAscendingSpeed(double value) {
@@ -162,8 +178,16 @@ public class ModernMinecartsConfig {
         return ENABLE_POWERED_DETECTOR_RAIL.get();
     }
 
+    public static boolean enableDirectedPoweredRail() {
+        return ENABLE_DIRECTED_POWERED_RAIL.get();
+    }
+
     public static void setEnablePoweredDetectorRail(boolean value) {
         ENABLE_POWERED_DETECTOR_RAIL.set(value);
+    }
+
+    public static void setEnableDirectedPoweredRail(boolean value) {
+        ENABLE_DIRECTED_POWERED_RAIL.set(value);
     }
 
     public static boolean enableRailJump() {

@@ -2,6 +2,8 @@ package net.lordkipama.modernminecarts.mixin;
 
 import net.lordkipama.modernminecarts.ModernMinecartsConfig;
 import net.lordkipama.modernminecarts.block.ModBlocks;
+import net.lordkipama.modernminecarts.block.Custom.DirectedPoweredRailBlock;
+import net.lordkipama.modernminecarts.block.Custom.PoweredDetectorRailBlock;
 import net.lordkipama.modernminecarts.util.FurnaceMinecartHelper;
 import net.lordkipama.modernminecarts.util.MinecartLinkHelper;
 import net.minecraft.core.BlockPos;
@@ -19,6 +21,7 @@ import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
+import org.spongepowered.asm.mixin.injection.Redirect;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
@@ -44,6 +47,8 @@ abstract class AbstractMinecartMixin {
         BlockState railState = minecart.level().getBlockState(minecart.getCurrentRailPosition());
         if (railState.is(Blocks.POWERED_RAIL)) {
             cir.setReturnValue((double) ModernMinecartsConfig.poweredRailSpeed());
+        } else if (railState.getBlock() instanceof DirectedPoweredRailBlock) {
+            cir.setReturnValue((double) ModernMinecartsConfig.directedPoweredRailSpeed());
         }
 
         if (!((Object) this instanceof MinecartFurnace furnaceMinecart)) {
@@ -76,13 +81,22 @@ abstract class AbstractMinecartMixin {
     }
 
     @Inject(method = "moveAlongTrack", at = @At("HEAD"))
-    private void modernminecarts$applyPoweredDetectorRailMotion(BlockPos pos, BlockState state, CallbackInfo ci) {
-        if (!ModernMinecartsConfig.enablePoweredDetectorRail() || !(state.getBlock() instanceof BaseRailBlock railBlock) || !(railBlock instanceof net.lordkipama.modernminecarts.block.Custom.PoweredDetectorRailBlock detectorRail)) {
+    private void modernminecarts$applyDirectedPoweredRailMotion(BlockPos pos, BlockState state, CallbackInfo ci) {
+        AbstractMinecart minecart = (AbstractMinecart) (Object) this;
+        if (MinecartLinkHelper.getLinkedParent(minecart) != null) {
             return;
         }
 
-        AbstractMinecart minecart = (AbstractMinecart) (Object) this;
-        if (MinecartLinkHelper.getLinkedParent(minecart) != null) {
+        if (ModernMinecartsConfig.enableDirectedPoweredRail()
+                && state.getBlock() instanceof DirectedPoweredRailBlock) {
+            if (!state.getValue(PoweredRailBlock.POWERED)) {
+                applyDirectedPoweredRailBraking(minecart);
+            }
+            return;
+        }
+
+        if (!ModernMinecartsConfig.enablePoweredDetectorRail()
+                || !(state.getBlock() instanceof PoweredDetectorRailBlock detectorRail)) {
             return;
         }
 
@@ -126,6 +140,51 @@ abstract class AbstractMinecartMixin {
                 minecart.setDeltaMovement(motion.x / 7.0D, motion.y, motion.z);
             }
         }
+    }
+
+    @Unique
+    private static void applyDirectedPoweredRailBraking(AbstractMinecart minecart) {
+        Vec3 motion = minecart.getDeltaMovement();
+        if (motion.horizontalDistance() < 0.03D) {
+            minecart.setDeltaMovement(0.0D, motion.y, 0.0D);
+        } else {
+            minecart.setDeltaMovement(motion.x * 0.5D, motion.y, motion.z * 0.5D);
+        }
+    }
+
+    @Inject(method = "moveAlongTrack", at = @At("TAIL"))
+    private void modernminecarts$accelerateOnDirectedPoweredRail(BlockPos pos, BlockState state, CallbackInfo ci) {
+        if (!ModernMinecartsConfig.enableDirectedPoweredRail()
+                || !(state.getBlock() instanceof DirectedPoweredRailBlock rail)
+                || !state.getValue(PoweredRailBlock.POWERED)
+                || MinecartLinkHelper.getLinkedParent((AbstractMinecart) (Object) this) != null) {
+            return;
+        }
+
+        AbstractMinecart minecart = (AbstractMinecart) (Object) this;
+        Vec3 motion = minecart.getDeltaMovement();
+        RailShape shape = rail.getRailDirection(state, minecart.level(), minecart.getOnPos(), minecart);
+        boolean northSouth = shape == RailShape.NORTH_SOUTH || shape == RailShape.ASCENDING_NORTH || shape == RailShape.ASCENDING_SOUTH;
+        boolean inverted = rail.isDirectionInverted(state);
+        double direction = inverted ? -1.0D : 1.0D;
+        double maxSpeed = ModernMinecartsConfig.directedPoweredRailSpeed();
+
+        if (northSouth) {
+            // The default texture direction is north; inversion turns it south.
+            direction = -direction;
+            minecart.setDeltaMovement(motion.x, motion.y, Mth.clamp(motion.z + direction * 0.06D, -maxSpeed, maxSpeed));
+        } else {
+            minecart.setDeltaMovement(Mth.clamp(motion.x + direction * 0.06D, -maxSpeed, maxSpeed), motion.y, motion.z);
+        }
+    }
+
+    @Redirect(
+            method = "moveAlongTrack",
+            at = @At(value = "INVOKE", target = "Lnet/minecraft/world/level/block/PoweredRailBlock;isActivatorRail()Z")
+    )
+    private boolean modernminecarts$skipVanillaPoweredRailMotion(PoweredRailBlock rail) {
+        return ModernMinecartsConfig.enableDirectedPoweredRail() && rail instanceof DirectedPoweredRailBlock
+                || rail.isActivatorRail();
     }
 
     @Inject(method = "moveMinecartOnRail", at = @At("HEAD"))

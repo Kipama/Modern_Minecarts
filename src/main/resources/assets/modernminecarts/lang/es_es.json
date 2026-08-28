@@ -14,5 +14,6 @@
   "upgrade.modernminecarts.copper_upgrade": "Mejora de cobre",
   "upgrade.modernminecarts.chipped_copper_upgrade": "Mejora de cobre astillado",
   "upgrade.modernminecarts.damaged_copper_upgrade": "Mejora de cobre dañada",
-  "block.modernminecarts.powered_detector_rail": "Raíl detector propulsor"
+  "block.modernminecarts.powered_detector_rail": "Raíl detector propulsor",
+  "block.modernminecarts.directed_powered_rail": "Raíl propulsor dirigido"
 }

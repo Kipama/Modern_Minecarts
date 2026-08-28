@@ -14,5 +14,6 @@
   "upgrade.modernminecarts.copper_upgrade": "Мідне поліпшення",
   "upgrade.modernminecarts.chipped_copper_upgrade": "Сколоте мідне поліпшення",
   "upgrade.modernminecarts.damaged_copper_upgrade": "Пошкоджене мідне поліпшення",
-  "block.modernminecarts.powered_detector_rail": "Енергорейковий датчик"
+  "block.modernminecarts.powered_detector_rail": "Енергорейковий датчик",
+  "block.modernminecarts.directed_powered_rail": "Спрямована енергорейка"
 }

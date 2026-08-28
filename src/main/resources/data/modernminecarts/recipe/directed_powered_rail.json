@@ -1,0 +1,30 @@
+{
+  "neoforge:conditions": [
+    {
+      "type": "modernminecarts:feature_enabled",
+      "feature": "directed_powered_rail"
+    }
+  ],
+  "type": "minecraft:crafting_shaped",
+  "category": "transportation",
+  "key": {
+    "G": {
+      "item": "minecraft:gold_ingot"
+    },
+    "R": {
+      "item": "minecraft:redstone"
+    },
+    "S": {
+      "item": "minecraft:stick"
+    }
+  },
+  "pattern": [
+    "GRG",
+    "GSG",
+    "GRG"
+  ],
+  "result": {
+    "count": 6,
+    "id": "modernminecarts:directed_powered_rail"
+  }
+}

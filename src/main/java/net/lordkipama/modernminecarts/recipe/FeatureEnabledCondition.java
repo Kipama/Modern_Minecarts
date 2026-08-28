@@ -17,6 +17,7 @@ public record FeatureEnabledCondition(String feature) implements ICondition {
             case "copper_rails" -> ModernMinecartsConfig.enableCopperRails();
             case "rail_crossing" -> ModernMinecartsConfig.enableRailCrossing();
             case "powered_detector_rail" -> ModernMinecartsConfig.enablePoweredDetectorRail();
+            case "directed_powered_rail" -> ModernMinecartsConfig.enableDirectedPoweredRail();
             case "rail_jump" -> ModernMinecartsConfig.enableRailJump();
             default -> false;
         };

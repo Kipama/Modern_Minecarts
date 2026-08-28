@@ -14,5 +14,6 @@
   "upgrade.modernminecarts.copper_upgrade": "Amélioration en cuivre",
   "upgrade.modernminecarts.chipped_copper_upgrade": "Amélioration en cuivre ébréché",
   "upgrade.modernminecarts.damaged_copper_upgrade": "Amélioration en cuivre endommagé",
-  "block.modernminecarts.powered_detector_rail": "Rail détecteur propulsé"
+  "block.modernminecarts.powered_detector_rail": "Rail détecteur propulsé",
+  "block.modernminecarts.directed_powered_rail": "Rail propulseur dirigé"
 }

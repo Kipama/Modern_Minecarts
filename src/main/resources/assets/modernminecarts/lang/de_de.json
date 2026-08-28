@@ -14,5 +14,6 @@
   "upgrade.modernminecarts.copper_upgrade": "Kupfer-Upgrade",
   "upgrade.modernminecarts.chipped_copper_upgrade": "Abgesplittertes Kupfer-Upgrade",
   "upgrade.modernminecarts.damaged_copper_upgrade": "Beschädigtes Kupfer-Upgrade",
-  "block.modernminecarts.powered_detector_rail": "Antriebssensorschiene"
+  "block.modernminecarts.powered_detector_rail": "Antriebssensorschiene",
+  "block.modernminecarts.directed_powered_rail": "Gerichtete Antriebsschiene"
 }
