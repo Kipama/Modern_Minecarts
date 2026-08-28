@@ -10,5 +10,6 @@
   "block.modernminecarts.waxed_oxidized_copper_rail": "Raíl de cobre oxidado encerado",
   "block.modernminecarts.rail_crossing": "Paso a nivel",
   "block.modernminecarts.sloped_rail": "Rampa de raíles",
-  "block.modernminecarts.powered_detector_rail": "Raíl detector propulsor"
+  "block.modernminecarts.powered_detector_rail": "Raíl detector propulsor",
+  "block.modernminecarts.directed_powered_rail": "Raíl propulsor dirigido"
 }

@@ -10,5 +10,6 @@
   "block.modernminecarts.waxed_oxidized_copper_rail": "Вощена окиснена мідна рейка",
   "block.modernminecarts.rail_crossing": "Залізничний переїзд",
   "block.modernminecarts.sloped_rail": "Рейковий трамплін",
-  "block.modernminecarts.powered_detector_rail": "Енергорейковий датчик"
+  "block.modernminecarts.powered_detector_rail": "Енергорейковий датчик",
+  "block.modernminecarts.directed_powered_rail": "Спрямована енергорейка"
 }
