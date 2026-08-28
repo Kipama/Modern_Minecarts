@@ -10,5 +10,6 @@
   "block.modernminecarts.waxed_oxidized_copper_rail": "Rail en cuivre oxydé ciré",
   "block.modernminecarts.rail_crossing": "Passage à niveau",
   "block.modernminecarts.sloped_rail": "Tremplin ferroviaire",
-  "block.modernminecarts.powered_detector_rail": "Rail détecteur propulsé"
+  "block.modernminecarts.powered_detector_rail": "Rail détecteur propulsé",
+  "block.modernminecarts.directed_powered_rail": "Rail propulseur dirigé"
 }

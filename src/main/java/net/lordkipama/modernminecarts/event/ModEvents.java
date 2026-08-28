@@ -247,6 +247,8 @@ public final class ModEvents {
         HolderLookup.Provider registries = event.getServer().registryAccess();
         replaceRecipe(recipeManager, registries, Identifier.fromNamespaceAndPath("minecraft", "powered_rail"), "/data/minecraft/recipe/powered_rail.json", ModernMinecartsConfig.poweredRailRecipeYield());
         replaceRecipe(recipeManager, registries, Identifier.fromNamespaceAndPath(ModernMinecarts.MOD_ID, "copper_rail"), "/data/modernminecarts/recipe/copper_rail.json", ModernMinecartsConfig.copperRailRecipeYield());
+        replaceRecipe(recipeManager, registries, Identifier.fromNamespaceAndPath(ModernMinecarts.MOD_ID, "directed_powered_rail"), "/data/modernminecarts/recipe/directed_powered_rail.json", ModernMinecartsConfig.directedPoweredRailRecipeYield());
+        recipeManager.finalizeRecipeLoading(event.getServer().getWorldData().enabledFeatures());
     }
 
     private static void replaceRecipe(RecipeManager recipeManager, HolderLookup.Provider registries, Identifier recipeId, String resourcePath, int resultCount) {

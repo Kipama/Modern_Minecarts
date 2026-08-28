@@ -10,5 +10,6 @@
   "block.modernminecarts.waxed_oxidized_copper_rail": "Gewachste oxidierte Kupferschiene",
   "block.modernminecarts.rail_crossing": "Bahnübergang",
   "block.modernminecarts.sloped_rail": "Schienenrampe",
-  "block.modernminecarts.powered_detector_rail": "Antriebssensorschiene"
+  "block.modernminecarts.powered_detector_rail": "Antriebssensorschiene",
+  "block.modernminecarts.directed_powered_rail": "Gerichtete Antriebsschiene"
 }

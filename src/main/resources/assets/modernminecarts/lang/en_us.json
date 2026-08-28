@@ -16,5 +16,6 @@
 
 
   "block.modernminecarts.sloped_rail": "Rail Jump",
-  "block.modernminecarts.powered_detector_rail": "Powered Detector Rail"
+  "block.modernminecarts.powered_detector_rail": "Powered Detector Rail",
+  "block.modernminecarts.directed_powered_rail": "Directed Powered Rail"
 }

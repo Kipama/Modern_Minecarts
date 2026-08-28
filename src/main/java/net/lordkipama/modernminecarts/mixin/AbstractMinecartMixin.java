@@ -4,6 +4,7 @@ import net.lordkipama.modernminecarts.ModernMinecarts;
 import net.lordkipama.modernminecarts.ModernMinecartsConfig;
 import net.lordkipama.modernminecarts.block.Custom.ModernMinecartRailSpeed;
 import net.lordkipama.modernminecarts.block.ModBlocks;
+import net.lordkipama.modernminecarts.block.Custom.DirectedPoweredRailBlock;
 import net.lordkipama.modernminecarts.util.FurnaceMinecartHelper;
 import net.lordkipama.modernminecarts.util.MinecartLinkHelper;
 import net.lordkipama.modernminecarts.util.PoweredDetectorRailHelper;
@@ -66,6 +67,11 @@ abstract class AbstractMinecartMixin {
                 railMaxSpeed = modernminecarts$legacyAirLateralSpeed;
             }
             cir.setReturnValue(railMaxSpeed);
+            return;
+        }
+
+        if (railState.getBlock() instanceof DirectedPoweredRailBlock) {
+            cir.setReturnValue((double) ModernMinecartsConfig.directedPoweredRailSpeed());
             return;
         }
 
