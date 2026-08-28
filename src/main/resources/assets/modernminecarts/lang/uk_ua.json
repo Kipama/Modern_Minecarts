@@ -1,0 +1,19 @@
+{
+  "modmenu.descriptionTranslation.modernminecarts": "Розширює можливості перевезення вагонетками завдяки швидшим рейкам, автоматичним зчепленням, двигунам вагонеток, рейковим трамплінам та енергорейковим датчикам.",
+  "block.modernminecarts.copper_rail": "Мідна рейка",
+  "block.modernminecarts.waxed_copper_rail": "Вощена мідна рейка",
+  "block.modernminecarts.exposed_copper_rail": "Відкрита мідна рейка",
+  "block.modernminecarts.waxed_exposed_copper_rail": "Вощена відкрита мідна рейка",
+  "block.modernminecarts.weathered_copper_rail": "Вивітрена мідна рейка",
+  "block.modernminecarts.waxed_weathered_copper_rail": "Вощена вивітрена мідна рейка",
+  "block.modernminecarts.oxidized_copper_rail": "Окиснена мідна рейка",
+  "block.modernminecarts.waxed_oxidized_copper_rail": "Вощена окиснена мідна рейка",
+  "block.modernminecarts.rail_crossing": "Залізничний переїзд",
+  "block.modernminecarts.sloped_rail": "Рейковий трамплін",
+  "entity.modernminecarts.chest_minecart": "Вагонетка зі скринею",
+  "upgrade.modernminecarts.copper_upgrade": "Мідне поліпшення",
+  "upgrade.modernminecarts.chipped_copper_upgrade": "Сколоте мідне поліпшення",
+  "upgrade.modernminecarts.damaged_copper_upgrade": "Пошкоджене мідне поліпшення",
+  "block.modernminecarts.powered_detector_rail": "Енергорейковий датчик",
+  "block.modernminecarts.directed_powered_rail": "Спрямована енергорейка"
+}

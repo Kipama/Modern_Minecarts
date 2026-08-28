@@ -2,6 +2,7 @@ package net.lordkipama.modernminecarts.mixin;
 
 import net.lordkipama.modernminecarts.ModernMinecarts;
 import net.lordkipama.modernminecarts.ModernMinecartsConfig;
+import net.lordkipama.modernminecarts.block.Custom.DirectedPoweredRailBlock;
 import net.lordkipama.modernminecarts.block.Custom.ModernMinecartRailSpeed;
 import net.lordkipama.modernminecarts.block.ModBlocks;
 import net.lordkipama.modernminecarts.util.FurnaceMinecartHelper;
@@ -14,8 +15,8 @@ import net.minecraft.util.Mth;
 import net.minecraft.world.entity.MoverType;
 import net.minecraft.world.entity.vehicle.minecart.AbstractMinecart;
 import net.minecraft.world.entity.vehicle.minecart.MinecartFurnace;
-import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.BaseRailBlock;
+import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.RailShape;
 import net.minecraft.world.phys.Vec3;
@@ -62,6 +63,11 @@ abstract class AbstractMinecartMixin {
         if (railState.is(Blocks.POWERED_RAIL)) {
             double railMaxSpeed = ModernMinecartsConfig.poweredRailSpeed();
             cir.setReturnValue(railMaxSpeed);
+            return;
+        }
+
+        if (railState.getBlock() instanceof DirectedPoweredRailBlock) {
+            cir.setReturnValue((double) ModernMinecartsConfig.directedPoweredRailSpeed());
             return;
         }
 

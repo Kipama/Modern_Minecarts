@@ -23,6 +23,9 @@ public class ModernMinecartsConfig {
     private static final ModConfigSpec.DoubleValue POWERED_RAIL_SPEED = BUILDER
             .comment("Base speed for regular powered rails.", "Allowed range: 0.01 - 1.6")
             .defineInRange("powered_rail_speed", 0.4D, MIN_SPEED, MAX_SPEED);
+    private static final ModConfigSpec.DoubleValue DIRECTED_POWERED_RAIL_SPEED = BUILDER
+            .comment("Maximum speed for directed powered rails.", "Allowed range: 0.01 - 1.6")
+            .defineInRange("directed_powered_rail_speed", 0.4D, MIN_SPEED, MAX_SPEED);
     private static final ModConfigSpec.DoubleValue MAX_ASCENDING_SPEED = BUILDER
             .comment("Maximum speed while entering ascending rails.")
             .defineInRange("max_ascending_speed", 0.5D, MIN_SPEED, MAX_SPEED);
@@ -44,6 +47,9 @@ public class ModernMinecartsConfig {
     private static final ModConfigSpec.BooleanValue ENABLE_POWERED_DETECTOR_RAIL = BUILDER
             .comment("If true, powered detector rails can be placed and used.")
             .define("enable_powered_detector_rail", true);
+    private static final ModConfigSpec.BooleanValue ENABLE_DIRECTED_POWERED_RAIL = BUILDER
+            .comment("If true, directed powered rails can be placed and used.")
+            .define("enable_directed_powered_rail", true);
     private static final ModConfigSpec.BooleanValue ENABLE_RAIL_JUMP = BUILDER
             .comment("If true, rail jumps can be placed and created from rails using sticks.")
             .define("enable_rail_jump", true);
@@ -53,6 +59,9 @@ public class ModernMinecartsConfig {
     private static final ModConfigSpec.IntValue POWERED_RAIL_RECIPE_YIELD = BUILDER
             .comment("How many powered rails the recipe crafts.")
             .defineInRange("powered_rail_recipe_yield", 12, 1, 64);
+    private static final ModConfigSpec.IntValue DIRECTED_POWERED_RAIL_RECIPE_YIELD = BUILDER
+            .comment("How many directed powered rails the recipe crafts.")
+            .defineInRange("directed_powered_rail_recipe_yield", 12, 1, 64);
 
     public static final ModConfigSpec SPEC = BUILDER.build();
 
@@ -61,6 +70,7 @@ public class ModernMinecartsConfig {
     public static float weatheredCopperSpeed() { return WEATHERED_COPPER_SPEED.get().floatValue(); }
     public static float oxidizedCopperSpeed() { return OXIDIZED_COPPER_SPEED.get().floatValue(); }
     public static float poweredRailSpeed() { return POWERED_RAIL_SPEED.get().floatValue(); }
+    public static float directedPoweredRailSpeed() { return DIRECTED_POWERED_RAIL_SPEED.get().floatValue(); }
     public static float maxAscendingSpeed() { return MAX_ASCENDING_SPEED.get().floatValue(); }
     public static float furnaceMinecartSpeed() { return FURNACE_MINECART_SPEED.get().floatValue(); }
     public static boolean enableFurnaceMinecartChunkloading() { return ENABLE_FURNACE_MINECART_CHUNKLOADING.get(); }
@@ -68,15 +78,18 @@ public class ModernMinecartsConfig {
     public static boolean enableCopperRails() { return ENABLE_COPPER_RAILS.get(); }
     public static boolean enableRailCrossing() { return ENABLE_RAIL_CROSSING.get(); }
     public static boolean enablePoweredDetectorRail() { return ENABLE_POWERED_DETECTOR_RAIL.get(); }
+    public static boolean enableDirectedPoweredRail() { return ENABLE_DIRECTED_POWERED_RAIL.get(); }
     public static boolean enableRailJump() { return ENABLE_RAIL_JUMP.get(); }
     public static int copperRailRecipeYield() { return COPPER_RAIL_RECIPE_YIELD.get(); }
     public static int poweredRailRecipeYield() { return POWERED_RAIL_RECIPE_YIELD.get(); }
+    public static int directedPoweredRailRecipeYield() { return DIRECTED_POWERED_RAIL_RECIPE_YIELD.get(); }
 
     public static void setCopperSpeed(double value) { COPPER_SPEED.set(value); }
     public static void setExposedCopperSpeed(double value) { EXPOSED_COPPER_SPEED.set(value); }
     public static void setWeatheredCopperSpeed(double value) { WEATHERED_COPPER_SPEED.set(value); }
     public static void setOxidizedCopperSpeed(double value) { OXIDIZED_COPPER_SPEED.set(value); }
     public static void setPoweredRailSpeed(double value) { POWERED_RAIL_SPEED.set(value); }
+    public static void setDirectedPoweredRailSpeed(double value) { DIRECTED_POWERED_RAIL_SPEED.set(value); }
     public static void setMaxAscendingSpeed(double value) { MAX_ASCENDING_SPEED.set(value); }
     public static void setFurnaceMinecartSpeed(double value) { FURNACE_MINECART_SPEED.set(value); }
     public static void setEnableFurnaceMinecartChunkloading(boolean value) { ENABLE_FURNACE_MINECART_CHUNKLOADING.set(value); }
@@ -84,8 +97,10 @@ public class ModernMinecartsConfig {
     public static void setEnableCopperRails(boolean value) { ENABLE_COPPER_RAILS.set(value); }
     public static void setEnableRailCrossing(boolean value) { ENABLE_RAIL_CROSSING.set(value); }
     public static void setEnablePoweredDetectorRail(boolean value) { ENABLE_POWERED_DETECTOR_RAIL.set(value); }
+    public static void setEnableDirectedPoweredRail(boolean value) { ENABLE_DIRECTED_POWERED_RAIL.set(value); }
     public static void setEnableRailJump(boolean value) { ENABLE_RAIL_JUMP.set(value); }
     public static void setCopperRailRecipeYield(int value) { COPPER_RAIL_RECIPE_YIELD.set(value); }
     public static void setPoweredRailRecipeYield(int value) { POWERED_RAIL_RECIPE_YIELD.set(value); }
+    public static void setDirectedPoweredRailRecipeYield(int value) { DIRECTED_POWERED_RAIL_RECIPE_YIELD.set(value); }
     public static void save() { SPEC.save(); }
 }

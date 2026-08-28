@@ -1,0 +1,19 @@
+{
+  "modmenu.descriptionTranslation.modernminecarts": "Améliore le transport en wagonnet grâce à des rails plus rapides, des attelages automatiques, des moteurs de wagonnets, des tremplins ferroviaires et des rails détecteurs propulsés.",
+  "block.modernminecarts.copper_rail": "Rail en cuivre",
+  "block.modernminecarts.waxed_copper_rail": "Rail en cuivre ciré",
+  "block.modernminecarts.exposed_copper_rail": "Rail en cuivre exposé",
+  "block.modernminecarts.waxed_exposed_copper_rail": "Rail en cuivre exposé ciré",
+  "block.modernminecarts.weathered_copper_rail": "Rail en cuivre érodé",
+  "block.modernminecarts.waxed_weathered_copper_rail": "Rail en cuivre érodé ciré",
+  "block.modernminecarts.oxidized_copper_rail": "Rail en cuivre oxydé",
+  "block.modernminecarts.waxed_oxidized_copper_rail": "Rail en cuivre oxydé ciré",
+  "block.modernminecarts.rail_crossing": "Passage à niveau",
+  "block.modernminecarts.sloped_rail": "Tremplin ferroviaire",
+  "entity.modernminecarts.chest_minecart": "Wagonnet à coffre",
+  "upgrade.modernminecarts.copper_upgrade": "Amélioration en cuivre",
+  "upgrade.modernminecarts.chipped_copper_upgrade": "Amélioration en cuivre ébréché",
+  "upgrade.modernminecarts.damaged_copper_upgrade": "Amélioration en cuivre endommagé",
+  "block.modernminecarts.powered_detector_rail": "Rail détecteur propulsé",
+  "block.modernminecarts.directed_powered_rail": "Rail propulseur dirigé"
+}

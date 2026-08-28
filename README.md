@@ -104,8 +104,16 @@ The following values can be tweaked:
 - Fixed Server side issues on Forge versions.
 - Removed more debug statements.
 
-## v1.2.2 Changelog
+## v1.3.0 Changelog
 
+Main addition: Directed Powered Rail.
+The directed powered rail always accelerates minecarts in the same direction.
+This includes stationary minecarts, allowing you to build redstone controlled trainstations
+as well as one-way rails.
+It is crafted like a powered rail with an additional redstone dust at the top.
+Its base speed is the same as powered rails, but this can be changed in the configs.
+
+Other changes:
 - Added config option for furnace minecart speed.
 - Linked minecarts now correctly use the max speed set by the configs.
 - Fixed compatibility issue with Porting Lib on Fabric.

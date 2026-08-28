@@ -7,6 +7,7 @@ import net.minecraft.world.entity.vehicle.minecart.AbstractMinecart;
 import net.minecraft.world.entity.vehicle.minecart.OldMinecartBehavior;
 import net.minecraft.world.phys.Vec3;
 import net.lordkipama.modernminecarts.util.PoweredDetectorRailHelper;
+import net.lordkipama.modernminecarts.util.DirectedPoweredRailHelper;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
@@ -19,7 +20,9 @@ abstract class OldMinecartBehaviorMixin {
 
     @Inject(method = "moveAlongTrack", at = @At("HEAD"))
     private void modernminecarts$applyPoweredDetectorRailMotion(ServerLevel level, CallbackInfo ci) {
-        PoweredDetectorRailHelper.applyMotion(((MinecartBehaviorAccessor) this).modernminecarts$getMinecart(), level);
+        AbstractMinecart minecart = ((MinecartBehaviorAccessor) this).modernminecarts$getMinecart();
+        DirectedPoweredRailHelper.applyMotion(minecart, level);
+        PoweredDetectorRailHelper.applyMotion(minecart, level);
     }
 
     @Redirect(
