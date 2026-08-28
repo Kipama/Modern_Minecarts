@@ -76,6 +76,10 @@ public class ModernMinecartsConfig {
             .comment("How many powered rails the recipe crafts.")
             .defineInRange("powered_rail_recipe_yield", 12, 1, 64);
 
+    private static final ModConfigSpec.IntValue DIRECTED_POWERED_RAIL_RECIPE_YIELD = BUILDER
+            .comment("How many directed powered rails the recipe crafts.")
+            .defineInRange("directed_powered_rail_recipe_yield", 12, 1, 64);
+
     public static final ModConfigSpec SPEC = BUILDER.build();
 
     public static float copperSpeed() {
@@ -212,6 +216,14 @@ public class ModernMinecartsConfig {
 
     public static void setPoweredRailRecipeYield(int value) {
         POWERED_RAIL_RECIPE_YIELD.set(value);
+    }
+
+    public static int directedPoweredRailRecipeYield() {
+        return DIRECTED_POWERED_RAIL_RECIPE_YIELD.get();
+    }
+
+    public static void setDirectedPoweredRailRecipeYield(int value) {
+        DIRECTED_POWERED_RAIL_RECIPE_YIELD.set(value);
     }
 
     public static void save() {
