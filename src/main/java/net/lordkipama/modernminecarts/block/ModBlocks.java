@@ -58,6 +58,8 @@ public class ModBlocks {
 
     public static final RegistryObject<Block> POWERED_DETECTOR_RAIL = registerBlock("powered_detector_rail",
             () -> new PoweredDetectorRailBlock(BlockBehaviour.Properties.copy(Blocks.DETECTOR_RAIL)));
+    public static final RegistryObject<Block> DIRECTED_POWERED_RAIL = registerBlock("directed_powered_rail",
+            () -> new DirectedPoweredRailBlock(BlockBehaviour.Properties.copy(Blocks.POWERED_RAIL)));
 
 
     //END NEW BLOCKS
@@ -80,6 +82,9 @@ public class ModBlocks {
         }
         if ("powered_detector_rail".equals(name)) {
             return ModItems.ITEMS.register(name, () -> new FeatureToggleBlockItem(block.get(), new Item.Properties(), ModernMinecartsConfig::enablePoweredDetectorRail));
+        }
+        if ("directed_powered_rail".equals(name)) {
+            return ModItems.ITEMS.register(name, () -> new FeatureToggleBlockItem(block.get(), new Item.Properties(), ModernMinecartsConfig::enableDirectedPoweredRail));
         }
 
         return ModItems.ITEMS.register(name, () -> new BlockItem(block.get(), new Item.Properties()));
