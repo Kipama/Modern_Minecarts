@@ -5,8 +5,10 @@ import com.google.common.collect.Maps;
 import com.mojang.datafixers.util.Pair;
 import net.lordkipama.modernminecarts.Proxy.ModernMinecartsPacketHandler;
 import net.lordkipama.modernminecarts.ModernMinecartsConfig;
+import net.lordkipama.modernminecarts.block.Custom.DirectedPoweredRailBlock;
 import net.lordkipama.modernminecarts.block.Custom.PoweredDetectorRailBlock;
 import net.lordkipama.modernminecarts.block.ModBlocks;
+import net.lordkipama.modernminecarts.util.DirectedPoweredRailHelper;
 import net.minecraft.Util;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -205,6 +207,8 @@ public abstract class CustomAbstractMinecartEntity extends AbstractMinecart impl
         float railMaxSpeed = ((BaseRailBlock)state.getBlock()).getRailMaxSpeed(state, this.level, pos, this);
         if (state.is(Blocks.POWERED_RAIL)) {
             railMaxSpeed = ModernMinecartsConfig.poweredRailSpeed();
+        } else if (state.getBlock() instanceof DirectedPoweredRailBlock) {
+            railMaxSpeed = ModernMinecartsConfig.directedPoweredRailSpeed();
         }
         if(this.isInWater() && !state.is(Blocks.POWERED_RAIL)){
             railMaxSpeed = railMaxSpeed/2;
@@ -541,7 +545,12 @@ public abstract class CustomAbstractMinecartEntity extends AbstractMinecart impl
         boolean flag = false;
         boolean flag1 = false;
         BaseRailBlock baserailblock = (BaseRailBlock) pState.getBlock();
-        if ((baserailblock instanceof PoweredRailBlock && !((PoweredRailBlock) baserailblock).isActivatorRail())) {
+        boolean directedRail = ModernMinecartsConfig.enableDirectedPoweredRail() && baserailblock instanceof DirectedPoweredRailBlock;
+        boolean directedPowered = directedRail && pState.getValue(PoweredRailBlock.POWERED);
+        if (directedRail) {
+            flag1 = !directedPowered;
+        }
+        else if ((baserailblock instanceof PoweredRailBlock && !((PoweredRailBlock) baserailblock).isActivatorRail())) {
             flag = pState.getValue(PoweredRailBlock.POWERED);
             flag1 = !flag;
         }
@@ -598,6 +607,10 @@ public abstract class CustomAbstractMinecartEntity extends AbstractMinecart impl
 
         Vec3 vec31 = this.getDeltaMovement();
         RailShape railshape = ((BaseRailBlock)pState.getBlock()).getRailDirection(pState, this.level, pPos, this);
+        if (directedPowered) {
+            DirectedPoweredRailHelper.applyMotion(this, this.level, pPos, pState);
+            vec31 = this.getDeltaMovement();
+        }
         switch (railshape) {
             case ASCENDING_EAST -> {
                 this.setDeltaMovement(vec31.add(-d3, 0.0D, 0.0D));
