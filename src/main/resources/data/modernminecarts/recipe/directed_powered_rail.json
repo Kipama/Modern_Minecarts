@@ -6,7 +6,7 @@
     }
   ],
   "type": "minecraft:crafting_shaped",
-  "category": "transportation",
+  "category": "misc",
   "key": {
     "G": "minecraft:gold_ingot",
     "R": "minecraft:redstone",
