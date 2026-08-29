@@ -64,3 +64,4 @@ fill 20 57 24 35 57 24 modernminecarts:directed_powered_rail[shape=east_west,inv
 setblock 20 57 22 minecraft:oak_sign[rotation=8]{Text1:'{"text":"DIRECTED POWERED RAIL"}',Text2:'{"text":"East line / west line"}',Text3:'{"text":"Stationary + reversal"}'} replace
 
 tellraw @a [{"text":"Modern Minecarts manual QA world is ready. ","color":"gold"},{"text":"Use the four labeled buttons at spawn; pressing any button clears and reprovisions your inventory and gamemode for that scenario.","color":"white"}]
+data modify storage modernminecarts_qa:state installed set value 1b
