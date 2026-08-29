@@ -1,6 +1,5 @@
 # Builds the permanent control station and fixed rail tests at ground level.
 # Redstone Ready's exposed grass is Y=55; test structures begin at Y=56.
-op @p
 fill -7 56 -6 7 56 6 minecraft:smooth_stone
 fill -8 56 17 8 56 23 minecraft:smooth_stone
 fill -12 56 34 12 56 46 minecraft:smooth_stone

@@ -9,7 +9,8 @@ gamemode, and gives its materials. The copper test sets random tick speed to
 directed-powered-rail area contains opposing powered lines for stationary-cart
 starts and direction reversal checks.
 
-The datapack installs the station once on the first world tick. If the station
+The datapack installs the station once on the first world tick. The world must
+have commands enabled so the player can run the reset and repair functions. If the station
 is damaged, run:
 
 ```mcfunction
