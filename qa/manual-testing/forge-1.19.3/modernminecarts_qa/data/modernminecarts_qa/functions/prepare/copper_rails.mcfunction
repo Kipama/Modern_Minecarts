@@ -1,7 +1,7 @@
 # Exercise copper rail weathering, waxing, unwaxing, and minecart behavior.
 clear @p
 gamemode survival @p
-tp @p -10.5 121 38.5
+tp @p -10.5 57 38.5
 give @p minecraft:diamond_axe 1
 give @p minecraft:honeycomb 64
 give @p modernminecarts:copper_rail 16
