@@ -33,6 +33,7 @@ public class ModernMinecartsConfigScreen extends Screen {
     private static final double DEFAULT_WEATHERED_COPPER_SPEED = 0.3D;
     private static final double DEFAULT_OXIDIZED_COPPER_SPEED = 0.2D;
     private static final double DEFAULT_POWERED_RAIL_SPEED = 0.4D;
+    private static final double DEFAULT_DIRECTED_POWERED_RAIL_SPEED = 0.4D;
     private static final double DEFAULT_MAX_ASCENDING_SPEED = 0.5D;
     private static final double DEFAULT_FURNACE_MINECART_SPEED = 0.4D;
     private static final boolean DEFAULT_ENABLE_FURNACE_MINECART_CHUNKLOADING = true;
@@ -40,9 +41,11 @@ public class ModernMinecartsConfigScreen extends Screen {
     private static final boolean DEFAULT_ENABLE_COPPER_RAILS = true;
     private static final boolean DEFAULT_ENABLE_RAIL_CROSSING = true;
     private static final boolean DEFAULT_ENABLE_POWERED_DETECTOR_RAIL = true;
+    private static final boolean DEFAULT_ENABLE_DIRECTED_POWERED_RAIL = true;
     private static final boolean DEFAULT_ENABLE_RAIL_JUMP = true;
     private static final int DEFAULT_COPPER_RAIL_RECIPE_YIELD = 6;
     private static final int DEFAULT_POWERED_RAIL_RECIPE_YIELD = 12;
+    private static final int DEFAULT_DIRECTED_POWERED_RAIL_RECIPE_YIELD = 12;
 
     private final Screen parent;
 
@@ -53,6 +56,7 @@ public class ModernMinecartsConfigScreen extends Screen {
     private EditBox weatheredCopperSpeed;
     private EditBox oxidizedCopperSpeed;
     private EditBox poweredRailSpeed;
+    private EditBox directedPoweredRailSpeed;
     private EditBox maxAscendingSpeed;
     private EditBox furnaceMinecartSpeed;
 
@@ -61,10 +65,12 @@ public class ModernMinecartsConfigScreen extends Screen {
     private ToggleButton enableCopperRails;
     private ToggleButton enableRailCrossing;
     private ToggleButton enablePoweredDetectorRail;
+    private ToggleButton enableDirectedPoweredRail;
     private ToggleButton enableRailJump;
 
     private EditBox copperRailRecipeYield;
     private EditBox poweredRailRecipeYield;
+    private EditBox directedPoweredRailRecipeYield;
 
     private Component statusMessage;
 
@@ -105,6 +111,9 @@ public class ModernMinecartsConfigScreen extends Screen {
         this.poweredRailSpeed = createNumberField(ModernMinecartsConfig.poweredRailSpeed());
         this.configList.addConfigEntry(new NumberEntry("Powered Rail Speed", this.poweredRailSpeed, DEFAULT_POWERED_RAIL_SPEED));
 
+        this.directedPoweredRailSpeed = createNumberField(ModernMinecartsConfig.directedPoweredRailSpeed());
+        this.configList.addConfigEntry(new NumberEntry("Directed Powered Rail Speed", this.directedPoweredRailSpeed, DEFAULT_DIRECTED_POWERED_RAIL_SPEED));
+
         this.maxAscendingSpeed = createNumberField(ModernMinecartsConfig.maxAscendingSpeed());
         this.configList.addConfigEntry(new NumberEntry("Max Ascending Speed", this.maxAscendingSpeed, DEFAULT_MAX_ASCENDING_SPEED));
 
@@ -128,6 +137,9 @@ public class ModernMinecartsConfigScreen extends Screen {
         this.enablePoweredDetectorRail = createToggleButton(ModernMinecartsConfig.enablePoweredDetectorRail());
         this.configList.addConfigEntry(new ToggleEntry("Enable Powered Detector Rail", this.enablePoweredDetectorRail, DEFAULT_ENABLE_POWERED_DETECTOR_RAIL));
 
+        this.enableDirectedPoweredRail = createToggleButton(ModernMinecartsConfig.enableDirectedPoweredRail());
+        this.configList.addConfigEntry(new ToggleEntry("Enable Directed Powered Rail", this.enableDirectedPoweredRail, DEFAULT_ENABLE_DIRECTED_POWERED_RAIL));
+
         this.enableRailJump = createToggleButton(ModernMinecartsConfig.enableRailJump());
         this.configList.addConfigEntry(new ToggleEntry("Enable Rail Jump", this.enableRailJump, DEFAULT_ENABLE_RAIL_JUMP));
 
@@ -138,6 +150,9 @@ public class ModernMinecartsConfigScreen extends Screen {
 
         this.poweredRailRecipeYield = createIntegerField(ModernMinecartsConfig.poweredRailRecipeYield());
         this.configList.addConfigEntry(new IntegerEntry("Powered Rail Recipe Yield", this.poweredRailRecipeYield, DEFAULT_POWERED_RAIL_RECIPE_YIELD));
+
+        this.directedPoweredRailRecipeYield = createIntegerField(ModernMinecartsConfig.directedPoweredRailRecipeYield());
+        this.configList.addConfigEntry(new IntegerEntry("Directed Powered Rail Recipe Yield", this.directedPoweredRailRecipeYield, DEFAULT_DIRECTED_POWERED_RAIL_RECIPE_YIELD));
     }
 
     private EditBox createNumberField(float value) {
@@ -171,6 +186,7 @@ public class ModernMinecartsConfigScreen extends Screen {
             ModernMinecartsConfig.setWeatheredCopperSpeed(parseRanged(this.weatheredCopperSpeed.getValue(), "weathered_copper_speed"));
             ModernMinecartsConfig.setOxidizedCopperSpeed(parseRanged(this.oxidizedCopperSpeed.getValue(), "oxidized_copper_speed"));
             ModernMinecartsConfig.setPoweredRailSpeed(parseRanged(this.poweredRailSpeed.getValue(), "powered_rail_speed"));
+            ModernMinecartsConfig.setDirectedPoweredRailSpeed(parseRanged(this.directedPoweredRailSpeed.getValue(), "directed_powered_rail_speed"));
             ModernMinecartsConfig.setMaxAscendingSpeed(parseRanged(this.maxAscendingSpeed.getValue(), "max_ascending_speed"));
             ModernMinecartsConfig.setFurnaceMinecartSpeed(parseRanged(this.furnaceMinecartSpeed.getValue(), "furnace_minecart_speed"));
 
@@ -179,9 +195,11 @@ public class ModernMinecartsConfigScreen extends Screen {
             ModernMinecartsConfig.setEnableCopperRails(toggleValue(this.enableCopperRails));
             ModernMinecartsConfig.setEnableRailCrossing(toggleValue(this.enableRailCrossing));
             ModernMinecartsConfig.setEnablePoweredDetectorRail(toggleValue(this.enablePoweredDetectorRail));
+            ModernMinecartsConfig.setEnableDirectedPoweredRail(toggleValue(this.enableDirectedPoweredRail));
             ModernMinecartsConfig.setEnableRailJump(toggleValue(this.enableRailJump));
             ModernMinecartsConfig.setCopperRailRecipeYield(parseRecipeYield(this.copperRailRecipeYield.getValue(), "copper_rail_recipe_yield"));
             ModernMinecartsConfig.setPoweredRailRecipeYield(parseRecipeYield(this.poweredRailRecipeYield.getValue(), "powered_rail_recipe_yield"));
+            ModernMinecartsConfig.setDirectedPoweredRailRecipeYield(parseRecipeYield(this.directedPoweredRailRecipeYield.getValue(), "directed_powered_rail_recipe_yield"));
 
             ModernMinecartsConfig.save();
             this.minecraft.setScreen(this.parent);
