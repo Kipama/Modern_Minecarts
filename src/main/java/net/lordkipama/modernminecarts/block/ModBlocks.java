@@ -5,6 +5,7 @@ import net.lordkipama.modernminecarts.Item.ModItems;
 import net.lordkipama.modernminecarts.ModernMinecarts;
 import net.lordkipama.modernminecarts.ModernMinecartsConfig;
 import net.lordkipama.modernminecarts.block.Custom.CopperRailBlock;
+import net.lordkipama.modernminecarts.block.Custom.DirectedPoweredRailBlock;
 import net.lordkipama.modernminecarts.block.Custom.PoweredDetectorRailBlock;
 import net.lordkipama.modernminecarts.block.Custom.RailCrossingBlock;
 import net.lordkipama.modernminecarts.block.Custom.SlopedRailBlock;
@@ -56,6 +57,8 @@ public class ModBlocks {
 
     public static final RegistryObject<Block> POWERED_DETECTOR_RAIL = registerBlock("powered_detector_rail",
             () -> new PoweredDetectorRailBlock(BlockBehaviour.Properties.copy(Blocks.DETECTOR_RAIL)), CreativeModeTab.TAB_TRANSPORTATION);
+    public static final RegistryObject<Block> DIRECTED_POWERED_RAIL = registerBlock("directed_powered_rail",
+            () -> new DirectedPoweredRailBlock(BlockBehaviour.Properties.copy(Blocks.POWERED_RAIL)), CreativeModeTab.TAB_TRANSPORTATION);
 
     private static <T extends Block> RegistryObject<T> registerBlock(String name, Supplier<T> block, CreativeModeTab tab) {
         RegistryObject<T> toReturn = BLOCKS.register(name, block);
@@ -75,6 +78,9 @@ public class ModBlocks {
         }
         if ("powered_detector_rail".equals(name)) {
             return ModItems.ITEMS.register(name, () -> new FeatureToggleBlockItem(block.get(), new Item.Properties().tab(tab), ModernMinecartsConfig::enablePoweredDetectorRail));
+        }
+        if ("directed_powered_rail".equals(name)) {
+            return ModItems.ITEMS.register(name, () -> new FeatureToggleBlockItem(block.get(), new Item.Properties().tab(tab), ModernMinecartsConfig::enableDirectedPoweredRail));
         }
 
         return ModItems.ITEMS.register(name, () -> new BlockItem(block.get(), new Item.Properties().tab(tab)));

@@ -115,6 +115,12 @@ The following values can be tweaked:
 - Furnace Minecarts now stop on unpowered copper/powered rails across all versions.
 - Powered Rails and Copper Rails now share redstone signals with each other on Fabric (Parity with Forge versions)
 
+## v1.3.0 Changelog
+
+- Added Directed Powered Rail, which propels minecarts in its placement direction when powered.
+- Added configurable directed powered rail speed and crafting yield.
+- Added language support for german, french, spanish, ukranian and russian.
+
 
 ## Curretly supported versions
 
