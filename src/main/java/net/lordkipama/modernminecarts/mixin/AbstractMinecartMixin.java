@@ -3,6 +3,7 @@ package net.lordkipama.modernminecarts.mixin;
 import net.lordkipama.modernminecarts.ModernMinecarts;
 import net.lordkipama.modernminecarts.ModernMinecartsConfig;
 import net.lordkipama.modernminecarts.block.ModBlocks;
+import net.lordkipama.modernminecarts.block.Custom.DirectedPoweredRailBlock;
 import net.lordkipama.modernminecarts.util.FurnaceMinecartHelper;
 import net.lordkipama.modernminecarts.util.MinecartLinkHelper;
 import net.minecraft.core.BlockPos;
@@ -61,6 +62,11 @@ abstract class AbstractMinecartMixin {
         if (railState.is(Blocks.POWERED_RAIL)) {
             double railMaxSpeed = ModernMinecartsConfig.poweredRailSpeed();
             cir.setReturnValue(railMaxSpeed);
+            return;
+        }
+
+        if (railState.getBlock() instanceof DirectedPoweredRailBlock) {
+            cir.setReturnValue((double) ModernMinecartsConfig.directedPoweredRailSpeed());
             return;
         }
 

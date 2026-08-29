@@ -5,6 +5,7 @@ import net.lordkipama.modernminecarts.Item.ModItems;
 import net.lordkipama.modernminecarts.ModernMinecarts;
 import net.lordkipama.modernminecarts.ModernMinecartsConfig;
 import net.lordkipama.modernminecarts.block.Custom.CopperRailBlock;
+import net.lordkipama.modernminecarts.block.Custom.DirectedPoweredRailBlock;
 import net.lordkipama.modernminecarts.block.Custom.PoweredDetectorRailBlock;
 import net.lordkipama.modernminecarts.block.Custom.RailCrossingBlock;
 import net.lordkipama.modernminecarts.block.Custom.SlopedRailBlock;
@@ -79,6 +80,11 @@ public class ModBlocks {
             PoweredDetectorRailBlock::new,
             BlockBehaviour.Properties.ofFullCopy(Blocks.DETECTOR_RAIL)
     );
+    public static final DeferredBlock<DirectedPoweredRailBlock> DIRECTED_POWERED_RAIL = registerBlock(
+            "directed_powered_rail",
+            DirectedPoweredRailBlock::new,
+            BlockBehaviour.Properties.ofFullCopy(Blocks.POWERED_RAIL)
+    );
 
     private static <T extends Block> DeferredBlock<T> registerBlock(
             String name,
@@ -109,6 +115,10 @@ public class ModBlocks {
         }
         if ("powered_detector_rail".equals(name)) {
             ModItems.ITEMS.register(name, () -> new FeatureToggleBlockItem(block.get(), properties, ModernMinecartsConfig::enablePoweredDetectorRail));
+            return;
+        }
+        if ("directed_powered_rail".equals(name)) {
+            ModItems.ITEMS.register(name, () -> new FeatureToggleBlockItem(block.get(), properties, ModernMinecartsConfig::enableDirectedPoweredRail));
             return;
         }
         ModItems.ITEMS.registerSimpleBlockItem(block);

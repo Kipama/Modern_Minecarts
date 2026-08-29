@@ -4,14 +4,33 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.vehicle.AbstractMinecart;
 import net.minecraft.world.entity.vehicle.OldMinecartBehavior;
+import net.minecraft.world.level.block.PoweredRailBlock;
 import net.minecraft.world.phys.Vec3;
+import net.lordkipama.modernminecarts.ModernMinecartsConfig;
+import net.lordkipama.modernminecarts.block.Custom.DirectedPoweredRailBlock;
+import net.lordkipama.modernminecarts.util.DirectedPoweredRailHelper;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
+import org.spongepowered.asm.mixin.injection.Redirect;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 @Mixin(OldMinecartBehavior.class)
 abstract class OldMinecartBehaviorMixin {
+    @Inject(method = "moveAlongTrack", at = @At("HEAD"))
+    private void modernminecarts$applyDirectedPoweredRailMotion(ServerLevel level, CallbackInfo ci) {
+        DirectedPoweredRailHelper.applyMotion(((MinecartBehaviorAccessor) this).modernminecarts$getMinecart(), level);
+    }
+
+    @Redirect(
+            method = "moveAlongTrack",
+            at = @At(value = "INVOKE", target = "Lnet/minecraft/world/level/block/PoweredRailBlock;isActivatorRail()Z")
+    )
+    private boolean modernminecarts$skipVanillaDirectedPoweredRailMotion(PoweredRailBlock rail) {
+        return (ModernMinecartsConfig.enableDirectedPoweredRail() && rail instanceof DirectedPoweredRailBlock)
+                || rail.isActivatorRail();
+    }
+
     @Inject(
             method = "moveAlongTrack",
             at = @At(

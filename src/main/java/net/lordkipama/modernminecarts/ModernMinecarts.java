@@ -53,11 +53,13 @@ public class ModernMinecarts {
             acceptCopperRailsIfEnabled(event);
             acceptIfEnabled(event, ModBlocks.RAIL_CROSSING, ModernMinecartsConfig.enableRailCrossing());
             acceptIfEnabled(event, ModBlocks.POWERED_DETECTOR_RAIL, ModernMinecartsConfig.enablePoweredDetectorRail());
+            acceptIfEnabled(event, ModBlocks.DIRECTED_POWERED_RAIL, ModernMinecartsConfig.enableDirectedPoweredRail());
             acceptIfEnabled(event, ModBlocks.SLOPED_RAIL, ModernMinecartsConfig.enableRailJump());
         } else if (event.getTabKey() == CreativeModeTabs.TOOLS_AND_UTILITIES) {
             acceptCopperRailsIfEnabled(event);
             acceptIfEnabled(event, ModBlocks.RAIL_CROSSING, ModernMinecartsConfig.enableRailCrossing());
             acceptIfEnabled(event, ModBlocks.POWERED_DETECTOR_RAIL, ModernMinecartsConfig.enablePoweredDetectorRail());
+            acceptIfEnabled(event, ModBlocks.DIRECTED_POWERED_RAIL, ModernMinecartsConfig.enableDirectedPoweredRail());
         }
     }
 

@@ -104,7 +104,16 @@ The following values can be tweaked:
 - Fixed Server side issues on Forge versions.
 - Removed more debug statements.
 
-## v1.2.2 Changelog
+## v1.3.0 Changelog
+
+Main addition: Directed Powered Rail.
+The directed powered rail always accelerates minecarts in the same direction.
+This includes stationary minecarts, allowing you to build redstone controlled trainstations
+as well as one-way rails.
+It is crafted like a powered rail with an additional redstone dust at the top.
+Its base speed is the same as powered rails, but this can be changed in the configs.
+
+Other changes:
 
 - Added config option for furnace minecart speed.
 - Linked minecarts now correctly use the max speed set by the configs.
@@ -114,6 +123,7 @@ The following values can be tweaked:
 - Fixed bug that let Furnace Minecarts continue to drive off rails while burning fuel.
 - Furnace Minecarts now stop on unpowered copper/powered rails across all versions.
 - Powered Rails and Copper Rails now share redstone signals with each other on Fabric (Parity with Forge versions)
+- Added language support for german, french, spanish, ukranian and russian.
 
 
 ## Curretly supported versions

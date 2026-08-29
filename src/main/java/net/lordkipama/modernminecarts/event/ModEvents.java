@@ -258,6 +258,7 @@ public final class ModEvents {
                 HolderLookup.Provider registries = event.getServerResources().getRegistryLookup();
                 replaceRecipe(recipeManager, registries, ResourceLocation.withDefaultNamespace("powered_rail"), "/data/minecraft/recipe/powered_rail.json", ModernMinecartsConfig.poweredRailRecipeYield());
                 replaceRecipe(recipeManager, registries, ResourceLocation.fromNamespaceAndPath(ModernMinecarts.MOD_ID, "copper_rail"), "/data/modernminecarts/recipe/copper_rail.json", ModernMinecartsConfig.copperRailRecipeYield());
+                replaceRecipe(recipeManager, registries, ResourceLocation.fromNamespaceAndPath(ModernMinecarts.MOD_ID, "directed_powered_rail"), "/data/modernminecarts/recipe/directed_powered_rail.json", ModernMinecartsConfig.directedPoweredRailRecipeYield());
             }
         });
     }
