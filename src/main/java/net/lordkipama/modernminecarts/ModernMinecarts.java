@@ -63,6 +63,7 @@ public class ModernMinecarts {
 
             acceptIfEnabled(event, ModBlocks.RAIL_CROSSING, ModernMinecartsConfig.enableRailCrossing());
             acceptIfEnabled(event, ModBlocks.POWERED_DETECTOR_RAIL, ModernMinecartsConfig.enablePoweredDetectorRail());
+            acceptIfEnabled(event, ModBlocks.DIRECTED_POWERED_RAIL, ModernMinecartsConfig.enableDirectedPoweredRail());
             acceptIfEnabled(event, ModBlocks.SLOPED_RAIL, ModernMinecartsConfig.enableRailJump());
 
         }
@@ -71,6 +72,7 @@ public class ModernMinecarts {
 
             acceptIfEnabled(event, ModBlocks.RAIL_CROSSING, ModernMinecartsConfig.enableRailCrossing());
             acceptIfEnabled(event, ModBlocks.POWERED_DETECTOR_RAIL, ModernMinecartsConfig.enablePoweredDetectorRail());
+            acceptIfEnabled(event, ModBlocks.DIRECTED_POWERED_RAIL, ModernMinecartsConfig.enableDirectedPoweredRail());
         }
     }
 
