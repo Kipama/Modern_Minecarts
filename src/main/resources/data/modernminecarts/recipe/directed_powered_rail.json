@@ -19,7 +19,7 @@
   ],
   "result": {
     "count": 12,
-    "item": "modernminecarts:directed_powered_rail"
+    "id": "modernminecarts:directed_powered_rail"
   },
   "yield_config": "directed_powered_rail_recipe_yield",
   "show_notification": true

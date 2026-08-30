@@ -85,10 +85,7 @@ public abstract class FurnaceMinecartMixin implements Inventory, NamedScreenHand
     private boolean modernminecarts$suspendEngineThisTick;
 
     @Unique
-    private double modernminecarts$suspendedPushX;
-
-    @Unique
-    private double modernminecarts$suspendedPushZ;
+    private Vec3d modernminecarts$suspendedPushVec = Vec3d.ZERO;
 
     @Unique
     private final PropertyDelegate modernminecarts$properties = new PropertyDelegate() {
@@ -129,7 +126,8 @@ public abstract class FurnaceMinecartMixin implements Inventory, NamedScreenHand
         boolean isMoving = cart.getVelocity().horizontalLengthSquared() > 0.001D;
         boolean isRoot = modernminecarts$getParent(cart) == null;
         boolean hasDirection = pushVec.horizontalLengthSquared() > 1.0E-7D;
-        boolean mayStart = modernminecarts$railAllowsMovement(cart)
+        boolean railAllowsMovement = modernminecarts$railAllowsMovement(cart);
+        boolean mayStart = railAllowsMovement
                 && isRoot
                 && (hasChild || isMoving);
 
@@ -148,7 +146,8 @@ public abstract class FurnaceMinecartMixin implements Inventory, NamedScreenHand
 
         boolean waitingForDirection = fuel > 0
                 && pushVec.horizontalLengthSquared() <= 1.0E-7D
-                && modernminecarts$getParent(cart) == null;
+                && modernminecarts$getParent(cart) == null
+                && railAllowsMovement;
         if (waitingForDirection) {
             fuel++;
         }
@@ -158,10 +157,8 @@ public abstract class FurnaceMinecartMixin implements Inventory, NamedScreenHand
         // without pausing that burn or consuming a new item.
         modernminecarts$suspendEngineThisTick = !railAllowsMovement;
         if (modernminecarts$suspendEngineThisTick) {
-            modernminecarts$suspendedPushX = pushX;
-            modernminecarts$suspendedPushZ = pushZ;
-            pushX = 0.0D;
-            pushZ = 0.0D;
+            modernminecarts$suspendedPushVec = pushVec;
+            pushVec = Vec3d.ZERO;
         }
     }
 
@@ -175,8 +172,10 @@ public abstract class FurnaceMinecartMixin implements Inventory, NamedScreenHand
                 ChunkPos chunkPos = new ChunkPos(BlockPos.ofFloored(cart.getX(), cart.getY(), cart.getZ()));
                 serverWorld.getChunkManager().addTicket(ChunkTicketType.PORTAL, chunkPos, 3);
             }
-            if (!modernminecarts$railAllowsMovement(cart)) {
-                pushVec = Vec3d.ZERO;
+            if (modernminecarts$suspendEngineThisTick) {
+                if (fuel > 0) {
+                    pushVec = modernminecarts$suspendedPushVec;
+                }
             } else {
                 Vec3d velocity = cart.getVelocity();
                 double maxSpeed = MinecartTuning.furnaceMinecartSpeed();

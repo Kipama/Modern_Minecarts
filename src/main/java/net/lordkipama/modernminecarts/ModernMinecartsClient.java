@@ -38,7 +38,8 @@ public class ModernMinecartsClient implements ClientModInitializer {
                 ModBlocks.WAXED_OXIDIZED_COPPER_RAIL,
                 ModBlocks.RAIL_CROSSING,
                 ModBlocks.RAIL_JUMP,
-                ModBlocks.POWERED_DETECTOR_RAIL
+                ModBlocks.POWERED_DETECTOR_RAIL,
+                ModBlocks.DIRECTED_POWERED_RAIL
         );
     }
 }

@@ -77,7 +77,8 @@ public class ModBlocks {
             Blocks.DETECTOR_RAIL,
             ModernMinecartsConfig::enablePoweredDetectorRail);
     public static final Block DIRECTED_POWERED_RAIL = registerBlock("directed_powered_rail",
-            new DirectedPoweredRailBlock(AbstractBlock.Settings.copy(Blocks.POWERED_RAIL)),
+            DirectedPoweredRailBlock::new,
+            Blocks.POWERED_RAIL,
             ModernMinecartsConfig::enableDirectedPoweredRail);
 
 
