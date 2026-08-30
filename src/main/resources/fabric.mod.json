@@ -3,7 +3,7 @@
 	"id": "modernminecarts",
 	"version": "${version}",
 	"name": "ModernMinecarts",
-	"description": "Expands minecart transport with faster rails, linked trains, furnace engines, cargo routing, crossings, jumps, and powered detectors.",
+	"description": "Expands minecart transport with faster rails, linked trains, furnace engines, cargo routing, crossings, jumps, powered detectors, and directed powered rails.",
 	"authors": [
 		"LordKipama"
 	],

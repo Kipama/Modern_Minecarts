@@ -78,6 +78,9 @@ public class ModernMinecarts implements ModInitializer {
 			if (ModernMinecartsConfig.enablePoweredDetectorRail()) {
 				entries.add(ModBlocks.POWERED_DETECTOR_RAIL);
 			}
+			if (ModernMinecartsConfig.enableDirectedPoweredRail()) {
+				entries.add(ModBlocks.DIRECTED_POWERED_RAIL);
+			}
 		});
 
 		//Event handler stick

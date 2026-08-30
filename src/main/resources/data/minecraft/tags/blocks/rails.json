@@ -11,6 +11,7 @@
     "modernminecarts:waxed_oxidized_copper_rail",
     "modernminecarts:rail_crossing",
     "modernminecarts:rail_jump",
-    "modernminecarts:powered_detector_rail"
+    "modernminecarts:powered_detector_rail",
+    "modernminecarts:directed_powered_rail"
   ]
 }

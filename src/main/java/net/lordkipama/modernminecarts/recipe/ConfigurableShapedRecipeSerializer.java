@@ -44,6 +44,7 @@ public class ConfigurableShapedRecipeSerializer implements RecipeSerializer<Shap
         return switch (yieldConfig) {
             case "copper_rail_recipe_yield" -> ModernMinecartsConfig.copperRailRecipeYield();
             case "powered_rail_recipe_yield" -> ModernMinecartsConfig.poweredRailRecipeYield();
+            case "directed_powered_rail_recipe_yield" -> ModernMinecartsConfig.directedPoweredRailRecipeYield();
             default -> throw new IllegalArgumentException("Unknown configurable recipe yield: " + yieldConfig);
         };
     }
