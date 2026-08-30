@@ -8,9 +8,9 @@
   ],
   "category": "misc",
   "key": {
-    "G": { "item": "minecraft:gold_ingot" },
-    "R": { "item": "minecraft:redstone" },
-    "S": { "item": "minecraft:stick" }
+    "G": "minecraft:gold_ingot",
+    "R": "minecraft:redstone",
+    "S": "minecraft:stick"
   },
   "pattern": [
     "GRG",
