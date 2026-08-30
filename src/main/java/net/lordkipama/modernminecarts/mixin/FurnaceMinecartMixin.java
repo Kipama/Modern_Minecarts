@@ -89,6 +89,15 @@ public abstract class FurnaceMinecartMixin implements Inventory, NamedScreenHand
     private int modernminecarts$speedForDisplay;
 
     @Unique
+    private boolean modernminecarts$suspendEngineThisTick;
+
+    @Unique
+    private double modernminecarts$suspendedPushX;
+
+    @Unique
+    private double modernminecarts$suspendedPushZ;
+
+    @Unique
     private final PropertyDelegate modernminecarts$properties = new PropertyDelegate() {
         @Override
         public int get(int index) {
@@ -127,7 +136,8 @@ public abstract class FurnaceMinecartMixin implements Inventory, NamedScreenHand
         boolean isMoving = cart.getVelocity().horizontalLengthSquared() > 0.001D;
         boolean isRoot = modernminecarts$getParent(cart) == null;
         boolean hasDirection = pushX * pushX + pushZ * pushZ > 1.0E-7D;
-        boolean mayStart = modernminecarts$railAllowsMovement(cart)
+        boolean railAllowsMovement = modernminecarts$railAllowsMovement(cart);
+        boolean mayStart = railAllowsMovement
                 && isRoot
                 && (hasChild || isMoving);
 
@@ -148,9 +158,21 @@ public abstract class FurnaceMinecartMixin implements Inventory, NamedScreenHand
 
         boolean waitingForDirection = fuel > 0
                 && pushX * pushX + pushZ * pushZ <= 1.0E-7D
-                && modernminecarts$getParent(cart) == null;
+                && modernminecarts$getParent(cart) == null
+                && railAllowsMovement;
         if (waitingForDirection) {
             fuel++;
+        }
+
+        // Vanilla decrements an already burning fuel item in its tick method. Temporarily
+        // removing the push lets normal minecart physics handle unpowered rails and ground
+        // without pausing that burn or consuming a new item.
+        modernminecarts$suspendEngineThisTick = !railAllowsMovement;
+        if (modernminecarts$suspendEngineThisTick) {
+            modernminecarts$suspendedPushX = pushX;
+            modernminecarts$suspendedPushZ = pushZ;
+            pushX = 0.0D;
+            pushZ = 0.0D;
         }
     }
 
@@ -165,9 +187,11 @@ public abstract class FurnaceMinecartMixin implements Inventory, NamedScreenHand
                 serverWorld.getChunkManager().addTicket(ChunkTicketType.PORTAL, chunkPos, 3, cart.getBlockPos());
             }
 
-            if (!modernminecarts$railAllowsMovement(cart)) {
-                pushX = 0;
-                pushZ = 0;
+            if (modernminecarts$suspendEngineThisTick) {
+                if (fuel > 0) {
+                    pushX = modernminecarts$suspendedPushX;
+                    pushZ = modernminecarts$suspendedPushZ;
+                }
             } else {
                 Vec3d velocity = cart.getVelocity();
                 double maxSpeed = MinecartTuning.furnaceMinecartSpeed();
@@ -177,6 +201,7 @@ public abstract class FurnaceMinecartMixin implements Inventory, NamedScreenHand
                         Math.max(-maxSpeed, Math.min(maxSpeed, velocity.z))
                 );
             }
+            modernminecarts$suspendEngineThisTick = false;
             setLit(fuel > 0);
         }
     }

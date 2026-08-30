@@ -55,7 +55,7 @@
     "frame": "task",
     "hidden": false,
     "icon": {
-      "item": "minecraft:honeycomb"
+      "id": "minecraft:honeycomb"
     },
     "show_toast": true,
     "title": {

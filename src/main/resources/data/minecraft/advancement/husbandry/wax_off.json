@@ -60,8 +60,7 @@
     "frame": "task",
     "hidden": false,
     "icon": {
-      "item": "minecraft:stone_axe",
-      "nbt": "{Damage:0}"
+      "id": "minecraft:stone_axe"
     },
     "show_toast": true,
     "title": {
