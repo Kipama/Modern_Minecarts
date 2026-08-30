@@ -4,6 +4,7 @@
   "compatibilityLevel": "JAVA_21",
   "mixins": [
     "MinecartInvoker",
+    "MinecartControllerAccessor",
     "MinecartMixin",
     "PoweredRailBlockMixin",
     "DefaultMinecartControllerMixin",
