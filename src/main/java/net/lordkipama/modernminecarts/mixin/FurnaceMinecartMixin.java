@@ -82,6 +82,15 @@ public abstract class FurnaceMinecartMixin implements Inventory, NamedScreenHand
     private int modernminecarts$speedForDisplay;
 
     @Unique
+    private boolean modernminecarts$suspendEngineThisTick;
+
+    @Unique
+    private double modernminecarts$suspendedPushX;
+
+    @Unique
+    private double modernminecarts$suspendedPushZ;
+
+    @Unique
     private final PropertyDelegate modernminecarts$properties = new PropertyDelegate() {
         @Override
         public int get(int index) {
@@ -143,6 +152,17 @@ public abstract class FurnaceMinecartMixin implements Inventory, NamedScreenHand
         if (waitingForDirection) {
             fuel++;
         }
+
+        // Vanilla decrements an already burning fuel item in its tick method. Temporarily
+        // removing the push lets normal minecart physics handle unpowered rails and ground
+        // without pausing that burn or consuming a new item.
+        modernminecarts$suspendEngineThisTick = !railAllowsMovement;
+        if (modernminecarts$suspendEngineThisTick) {
+            modernminecarts$suspendedPushX = pushX;
+            modernminecarts$suspendedPushZ = pushZ;
+            pushX = 0.0D;
+            pushZ = 0.0D;
+        }
     }
 
     @Inject(method = "tick", at = @At("TAIL"))
@@ -166,6 +186,7 @@ public abstract class FurnaceMinecartMixin implements Inventory, NamedScreenHand
                         Math.max(-maxSpeed, Math.min(maxSpeed, velocity.z))
                 );
             }
+            modernminecarts$suspendEngineThisTick = false;
             setLit(fuel > 0);
         }
     }
