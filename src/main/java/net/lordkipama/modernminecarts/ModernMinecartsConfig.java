@@ -28,6 +28,7 @@ public final class ModernMinecartsConfig {
     private static double weatheredCopperSpeed = 0.3D;
     private static double oxidizedCopperSpeed = 0.2D;
     private static double poweredRailSpeed = 0.4D;
+    private static double directedPoweredRailSpeed = 0.4D;
     private static double maxAscendingSpeed = 0.5D;
     private static double furnaceMinecartSpeed = 0.4D;
 
@@ -36,10 +37,12 @@ public final class ModernMinecartsConfig {
     private static boolean enableCopperRails = true;
     private static boolean enableRailCrossing = true;
     private static boolean enablePoweredDetectorRail = true;
+    private static boolean enableDirectedPoweredRail = true;
     private static boolean enableRailJump = true;
 
     private static int copperRailRecipeYield = 6;
     private static int poweredRailRecipeYield = 12;
+    private static int directedPoweredRailRecipeYield = 12;
 
     private ModernMinecartsConfig() {
     }
@@ -60,6 +63,7 @@ public final class ModernMinecartsConfig {
         weatheredCopperSpeed = readDouble(properties, "weathered_copper_speed", 0.3D, MIN_SPEED, MAX_SPEED, logger);
         oxidizedCopperSpeed = readDouble(properties, "oxidized_copper_speed", 0.2D, MIN_SPEED, MAX_SPEED, logger);
         poweredRailSpeed = readDouble(properties, "powered_rail_speed", 0.4D, MIN_SPEED, MAX_SPEED, logger);
+        directedPoweredRailSpeed = readDouble(properties, "directed_powered_rail_speed", 0.4D, MIN_SPEED, MAX_SPEED, logger);
         maxAscendingSpeed = readDouble(properties, "max_ascending_speed", 0.5D, MIN_SPEED, MAX_SPEED, logger);
         furnaceMinecartSpeed = readDouble(properties, "furnace_minecart_speed", 0.4D, MIN_SPEED, MAX_SPEED, logger);
 
@@ -73,6 +77,7 @@ public final class ModernMinecartsConfig {
         enableCopperRails = readBoolean(properties, "enable_copper_rails", true, logger);
         enableRailCrossing = readBoolean(properties, "enable_rail_crossing", true, logger);
         enablePoweredDetectorRail = readBoolean(properties, "enable_powered_detector_rail", true, logger);
+        enableDirectedPoweredRail = readBoolean(properties, "enable_directed_powered_rail", true, logger);
         enableRailJump = readBoolean(properties, "enable_rail_jump", true, logger);
 
         copperRailRecipeYield = readInt(
@@ -86,6 +91,14 @@ public final class ModernMinecartsConfig {
         poweredRailRecipeYield = readInt(
                 properties,
                 "powered_rail_recipe_yield",
+                12,
+                MIN_RECIPE_YIELD,
+                MAX_RECIPE_YIELD,
+                logger
+        );
+        directedPoweredRailRecipeYield = readInt(
+                properties,
+                "directed_powered_rail_recipe_yield",
                 12,
                 MIN_RECIPE_YIELD,
                 MAX_RECIPE_YIELD,
@@ -109,6 +122,7 @@ public final class ModernMinecartsConfig {
                 writer.write("weathered_copper_speed=" + weatheredCopperSpeed + "\n");
                 writer.write("oxidized_copper_speed=" + oxidizedCopperSpeed + "\n");
                 writer.write("powered_rail_speed=" + poweredRailSpeed + "\n");
+                writer.write("directed_powered_rail_speed=" + directedPoweredRailSpeed + "\n");
                 writer.write("max_ascending_speed=" + maxAscendingSpeed + "\n");
                 writer.write("furnace_minecart_speed=" + furnaceMinecartSpeed + "\n\n");
 
@@ -118,12 +132,14 @@ public final class ModernMinecartsConfig {
                 writer.write("enable_copper_rails=" + enableCopperRails + "\n");
                 writer.write("enable_rail_crossing=" + enableRailCrossing + "\n");
                 writer.write("enable_powered_detector_rail=" + enablePoweredDetectorRail + "\n");
+                writer.write("enable_directed_powered_rail=" + enableDirectedPoweredRail + "\n");
                 writer.write("enable_rail_jump=" + enableRailJump + "\n\n");
 
                 writer.write("# Crafting Recipes\n");
                 writer.write("# Allowed range for recipe yields: 1 - 64\n");
                 writer.write("copper_rail_recipe_yield=" + copperRailRecipeYield + "\n");
                 writer.write("powered_rail_recipe_yield=" + poweredRailRecipeYield + "\n");
+                writer.write("directed_powered_rail_recipe_yield=" + directedPoweredRailRecipeYield + "\n");
             }
         } catch (IOException exception) {
             logger.warn("Failed to write config file {}.", CONFIG_PATH, exception);
@@ -148,6 +164,10 @@ public final class ModernMinecartsConfig {
 
     public static double poweredRailSpeed() {
         return poweredRailSpeed;
+    }
+
+    public static double directedPoweredRailSpeed() {
+        return directedPoweredRailSpeed;
     }
 
     public static double maxAscendingSpeed() {
@@ -178,6 +198,10 @@ public final class ModernMinecartsConfig {
         return enablePoweredDetectorRail;
     }
 
+    public static boolean enableDirectedPoweredRail() {
+        return enableDirectedPoweredRail;
+    }
+
     public static boolean enableRailJump() {
         return enableRailJump;
     }
@@ -188,6 +212,10 @@ public final class ModernMinecartsConfig {
 
     public static int poweredRailRecipeYield() {
         return poweredRailRecipeYield;
+    }
+
+    public static int directedPoweredRailRecipeYield() {
+        return directedPoweredRailRecipeYield;
     }
 
     private static double readDouble(

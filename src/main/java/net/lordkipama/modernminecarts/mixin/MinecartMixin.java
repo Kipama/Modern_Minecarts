@@ -9,7 +9,9 @@ import net.lordkipama.modernminecarts.interfaces.ContainerMinecartInteface;
 import net.lordkipama.modernminecarts.logic.MinecartTuning;
 import net.lordkipama.modernminecarts.logic.PoweredDetectorMotion;
 import net.lordkipama.modernminecarts.ModernMinecarts;
+import net.lordkipama.modernminecarts.ModernMinecartsConfig;
 import net.lordkipama.modernminecarts.block.Custom.CopperRailBlock;
+import net.lordkipama.modernminecarts.block.Custom.DirectedPoweredRailBlock;
 import net.lordkipama.modernminecarts.block.Custom.PoweredDetectorRailBlock;
 import net.lordkipama.modernminecarts.block.Custom.SlopedRailBlock;
 import net.lordkipama.modernminecarts.block.Custom.WaxedCopperRailBlock;
@@ -82,7 +84,14 @@ public class MinecartMixin implements ChainMinecartInterface {
         boolean bl = false;
         boolean bl2 = false;
         //if (state.isOf(Blocks.POWERED_RAIL) || state.isOf(ModBlocks.COPPER_RAIL) || state.isOf(ModBlocks.COPPER_RAIL) || state.isOf(ModBlocks.EXPOSED_COPPER_RAIL) || state.isOf(ModBlocks.WEATHERED_COPPER_RAIL) || state.isOf(ModBlocks.OXIDIZED_COPPER_RAIL)) {
-        if(state.getBlock()  instanceof PoweredRailBlock){
+        if (ModernMinecartsConfig.enableDirectedPoweredRail()
+                && state.getBlock() instanceof DirectedPoweredRailBlock directedRail) {
+            boolean powered = state.get(PoweredRailBlock.POWERED);
+            bl2 = !powered;
+            if (powered) {
+                modernminecarts$applyDirectedPoweredRailMotion(thisObject, state, directedRail);
+            }
+        } else if(state.getBlock()  instanceof PoweredRailBlock){
             bl = state.get(PoweredRailBlock.POWERED);
             bl2 = !bl;
         } else if (state.getBlock() instanceof PoweredDetectorRailBlock detectorRail) {
@@ -267,7 +276,9 @@ public class MinecartMixin implements ChainMinecartInterface {
 
 
         if (thisObject.isOnRail()){
-            if (block.isOf(Blocks.POWERED_RAIL)) {
+            if (block.isOf(ModBlocks.DIRECTED_POWERED_RAIL)) {
+                cir.setReturnValue(MinecartTuning.directedPoweredRailSpeed());
+            } else if (block.isOf(Blocks.POWERED_RAIL)) {
                 cir.setReturnValue(MinecartTuning.poweredRailSpeed());
             }
 
@@ -423,6 +434,37 @@ public class MinecartMixin implements ChainMinecartInterface {
                 powered
         );
         cart.setVelocity(adjusted.x(), velocity.y, adjusted.z());
+    }
+
+    @Unique
+    private void modernminecarts$applyDirectedPoweredRailMotion(
+            AbstractMinecartEntity cart,
+            BlockState state,
+            DirectedPoweredRailBlock rail
+    ) {
+        if (getLinkedParent() != null) {
+            return;
+        }
+
+        Vec3d velocity = cart.getVelocity();
+        RailShape shape = state.get(PoweredRailBlock.SHAPE);
+        boolean northSouth = shape == RailShape.NORTH_SOUTH
+                || shape == RailShape.ASCENDING_NORTH
+                || shape == RailShape.ASCENDING_SOUTH;
+        double acceleration = 0.06D;
+        double maxSpeed = MinecartTuning.directedPoweredRailSpeed();
+
+        if (northSouth) {
+            double z = velocity.z + (state.get(DirectedPoweredRailBlock.INVERTED)
+                    ? acceleration
+                    : -acceleration);
+            cart.setVelocity(velocity.x, velocity.y, MathHelper.clamp(z, -maxSpeed, maxSpeed));
+        } else {
+            double x = velocity.x + (state.get(DirectedPoweredRailBlock.INVERTED)
+                    ? -acceleration
+                    : acceleration);
+            cart.setVelocity(MathHelper.clamp(x, -maxSpeed, maxSpeed), velocity.y, velocity.z);
+        }
     }
 
     /**

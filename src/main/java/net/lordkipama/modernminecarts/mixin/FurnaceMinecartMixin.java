@@ -6,6 +6,7 @@ import net.lordkipama.modernminecarts.interfaces.ContainerMinecartInteface;
 import net.lordkipama.modernminecarts.logic.MinecartTuning;
 import net.lordkipama.modernminecarts.logic.TrainEngineLogic;
 import net.lordkipama.modernminecarts.block.Custom.CopperRailBlock;
+import net.lordkipama.modernminecarts.block.Custom.DirectedPoweredRailBlock;
 import net.lordkipama.modernminecarts.block.Custom.PoweredDetectorRailBlock;
 import net.lordkipama.modernminecarts.block.Custom.SlopedRailBlock;
 import net.lordkipama.modernminecarts.block.Custom.WaxedCopperRailBlock;
@@ -514,7 +515,7 @@ public abstract class FurnaceMinecartMixin implements Inventory, NamedScreenHand
                 : fuel > 0 && modernminecarts$isActivelyPoweredRail(cart)
                 ? MinecartTuning.furnaceMinecartSpeed()
                 : modernminecarts$getSpeedForRail(cart, railPos, railState);
-        if (cart.isTouchingWater() && !railState.isOf(Blocks.POWERED_RAIL)) {
+        if (cart.isTouchingWater() && !(railState.getBlock() instanceof PoweredRailBlock)) {
             railSpeed /= 2.0D;
         }
 
@@ -543,6 +544,10 @@ public abstract class FurnaceMinecartMixin implements Inventory, NamedScreenHand
     ) {
         if (state.isOf(ModBlocks.RAIL_CROSSING)) {
             return MinecartTuning.copperRailSpeed();
+        }
+
+        if (state.isOf(ModBlocks.DIRECTED_POWERED_RAIL)) {
+            return MinecartTuning.directedPoweredRailSpeed();
         }
 
         if (state.isOf(Blocks.POWERED_RAIL)) {
