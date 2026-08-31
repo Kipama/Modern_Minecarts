@@ -1,5 +1,11 @@
 # ModernMinecarts
 
+## v1.3.0 Changelog
+
+- Added Directed Powered Rail, which propels minecarts in its placement direction when powered.
+- Added configurable directed powered rail speed and crafting yield.
+- Added language support for german, french, spanish, ukranian and russian.
+
 ## Description
 
 ModernMinecarts is all about rekindling your love for Minecarts.

@@ -79,6 +79,9 @@ public class ModernMinecarts implements ModInitializer {
             if (ModernMinecartsConfig.enablePoweredDetectorRail()) {
                 output.accept(ModBlocks.POWERED_DETECTOR_RAIL);
             }
+            if (ModernMinecartsConfig.enableDirectedPoweredRail()) {
+                output.accept(ModBlocks.DIRECTED_POWERED_RAIL);
+            }
         });
 
         UseBlockCallback.EVENT.register((player, world, hand, hitResult) -> {

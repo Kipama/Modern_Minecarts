@@ -1,0 +1,15 @@
+{
+  "modmenu.descriptionTranslation.modernminecarts": "Erweitert den Transport mit Loren durch schnellere Schienen, automatische Kupplungen, Antriebe für Güterloren, Schienenrampen und Antriebssensorschienen.",
+  "block.modernminecarts.copper_rail": "Kupferschiene",
+  "block.modernminecarts.waxed_copper_rail": "Gewachste Kupferschiene",
+  "block.modernminecarts.exposed_copper_rail": "Angelaufene Kupferschiene",
+  "block.modernminecarts.waxed_exposed_copper_rail": "Gewachste angelaufene Kupferschiene",
+  "block.modernminecarts.weathered_copper_rail": "Verwitterte Kupferschiene",
+  "block.modernminecarts.waxed_weathered_copper_rail": "Gewachste verwitterte Kupferschiene",
+  "block.modernminecarts.oxidized_copper_rail": "Oxidierte Kupferschiene",
+  "block.modernminecarts.waxed_oxidized_copper_rail": "Gewachste oxidierte Kupferschiene",
+  "block.modernminecarts.rail_crossing": "Bahnübergang",
+  "block.modernminecarts.rail_jump": "Schienenrampe",
+  "block.modernminecarts.powered_detector_rail": "Antriebssensorschiene",
+  "block.modernminecarts.directed_powered_rail": "Gerichtete Antriebsschiene"
+}

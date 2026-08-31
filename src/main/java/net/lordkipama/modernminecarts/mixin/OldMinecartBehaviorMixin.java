@@ -2,11 +2,13 @@ package net.lordkipama.modernminecarts.mixin;
 
 import com.mojang.datafixers.util.Pair;
 import net.lordkipama.modernminecarts.block.Custom.PoweredDetectorRailBlock;
+import net.lordkipama.modernminecarts.block.Custom.DirectedPoweredRailBlock;
 import net.lordkipama.modernminecarts.block.Custom.SlopedRailBlock;
 import net.lordkipama.modernminecarts.block.ModBlocks;
 import net.lordkipama.modernminecarts.interfaces.ChainMinecartInterface;
 import net.lordkipama.modernminecarts.interfaces.TrackedMinecartSpeed;
 import net.lordkipama.modernminecarts.logic.PoweredDetectorMotion;
+import net.lordkipama.modernminecarts.logic.MinecartTuning;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.Vec3i;
@@ -61,7 +63,13 @@ public abstract class OldMinecartBehaviorMixin extends MinecartBehavior {
 
         boolean poweredRail = false;
         boolean shouldBrake = false;
-        if (state.getBlock() instanceof PoweredRailBlock && !state.is(Blocks.ACTIVATOR_RAIL)) {
+        if (state.getBlock() instanceof DirectedPoweredRailBlock) {
+            boolean directedRailPowered = state.getValue(PoweredRailBlock.POWERED);
+            shouldBrake = !directedRailPowered;
+            if (directedRailPowered) {
+                modernminecarts$applyDirectedPoweredRailMotion(cart, state);
+            }
+        } else if (state.getBlock() instanceof PoweredRailBlock && !state.is(Blocks.ACTIVATOR_RAIL)) {
             poweredRail = state.getValue(PoweredRailBlock.POWERED);
             shouldBrake = !poweredRail;
         } else if (state.getBlock() instanceof PoweredDetectorRailBlock) {
@@ -242,6 +250,30 @@ public abstract class OldMinecartBehaviorMixin extends MinecartBehavior {
                 powered
         );
         cart.setDeltaMovement(adjusted.x(), velocity.y, adjusted.z());
+    }
+
+    @Unique
+    private void modernminecarts$applyDirectedPoweredRailMotion(AbstractMinecart cart, BlockState state) {
+        if (((ChainMinecartInterface) cart).getLinkedParent() != null) {
+            return;
+        }
+
+        Vec3 velocity = cart.getDeltaMovement();
+        RailShape shape = state.getValue(PoweredRailBlock.SHAPE);
+        boolean northSouth = shape == RailShape.NORTH_SOUTH
+                || shape == RailShape.ASCENDING_NORTH
+                || shape == RailShape.ASCENDING_SOUTH;
+        boolean inverted = state.getValue(DirectedPoweredRailBlock.INVERTED);
+        double acceleration = 0.06D;
+        double maxSpeed = MinecartTuning.directedPoweredRailSpeed();
+
+        if (northSouth) {
+            double z = velocity.z + (inverted ? acceleration : -acceleration);
+            cart.setDeltaMovement(velocity.x, velocity.y, Mth.clamp(z, -maxSpeed, maxSpeed));
+        } else {
+            double x = velocity.x + (inverted ? -acceleration : acceleration);
+            cart.setDeltaMovement(Mth.clamp(x, -maxSpeed, maxSpeed), velocity.y, velocity.z);
+        }
     }
 
     @Unique

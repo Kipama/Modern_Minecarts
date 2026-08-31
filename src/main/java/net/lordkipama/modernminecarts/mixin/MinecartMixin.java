@@ -271,7 +271,9 @@ public class MinecartMixin implements ChainMinecartInterface, TrackedMinecartSpe
         BlockState blockUnder = cart.level().getBlockState(pos.below());
 
         if (cart.isOnRails()) {
-            if (block.is(Blocks.POWERED_RAIL)) {
+            if (block.is(ModBlocks.DIRECTED_POWERED_RAIL)) {
+                cir.setReturnValue(MinecartTuning.directedPoweredRailSpeed());
+            } else if (block.is(Blocks.POWERED_RAIL)) {
                 cir.setReturnValue(MinecartTuning.poweredRailSpeed());
             }
 

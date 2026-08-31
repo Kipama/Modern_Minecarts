@@ -63,6 +63,8 @@ public abstract class FurnaceMinecartMixin implements Container, MenuProvider, C
     @Unique private int modernminecarts$numberOfChildren;
     @Unique private int modernminecarts$burningFurnaces = 1;
     @Unique private int modernminecarts$speedForDisplay;
+    @Unique private boolean modernminecarts$suspendEngineThisTick;
+    @Unique private Vec3 modernminecarts$suspendedPush = Vec3.ZERO;
     @Unique
     private final ContainerData modernminecarts$properties = new ContainerData() {
         @Override
@@ -102,7 +104,8 @@ public abstract class FurnaceMinecartMixin implements Container, MenuProvider, C
         boolean isMoving = cart.getDeltaMovement().horizontalDistanceSqr() > 0.001D;
         boolean isRoot = modernminecarts$getParent(cart) == null;
         boolean hasDirection = push.horizontalDistanceSqr() > 1.0E-7D;
-        boolean mayStart = modernminecarts$railAllowsMovement(cart) && isRoot && (hasChild || isMoving);
+        boolean railAllowsMovement = modernminecarts$railAllowsMovement(cart);
+        boolean mayStart = railAllowsMovement && isRoot && (hasChild || isMoving);
 
         if (fuel <= 0 && mayStart) {
             modernminecarts$burningFurnaces = burnFuelTrain();
@@ -117,9 +120,21 @@ public abstract class FurnaceMinecartMixin implements Container, MenuProvider, C
             }
         }
 
-        boolean waitingForDirection = fuel > 0 && push.horizontalDistanceSqr() <= 1.0E-7D && isRoot;
+        boolean waitingForDirection = fuel > 0
+                && push.horizontalDistanceSqr() <= 1.0E-7D
+                && isRoot
+                && railAllowsMovement;
         if (waitingForDirection) {
             fuel++;
+        }
+
+        // Vanilla decrements active fuel in its tick method. Remove the engine's
+        // push for this tick when minecart physics must take over (an unpowered
+        // powered rail or no rail), then restore the stored direction afterwards.
+        modernminecarts$suspendEngineThisTick = !railAllowsMovement;
+        if (modernminecarts$suspendEngineThisTick) {
+            modernminecarts$suspendedPush = push;
+            push = Vec3.ZERO;
         }
     }
 
@@ -135,14 +150,17 @@ public abstract class FurnaceMinecartMixin implements Container, MenuProvider, C
             serverLevel.getChunkSource().addTicketWithRadius(TicketType.PORTAL, chunkPos, 3);
         }
 
-        if (!modernminecarts$railAllowsMovement(cart)) {
-            push = Vec3.ZERO;
+        if (modernminecarts$suspendEngineThisTick) {
+            if (fuel > 0) {
+                push = modernminecarts$suspendedPush;
+            }
         } else {
             Vec3 movement = cart.getDeltaMovement();
             double maxSpeed = MinecartTuning.furnaceMinecartSpeed();
             cart.setDeltaMovement(Mth.clamp(movement.x, -maxSpeed, maxSpeed), movement.y, Mth.clamp(movement.z, -maxSpeed, maxSpeed));
         }
 
+        modernminecarts$suspendEngineThisTick = false;
         setHasFuel(fuel > 0);
     }
 
@@ -406,7 +424,9 @@ public abstract class FurnaceMinecartMixin implements Container, MenuProvider, C
         if (state == null) {
             return false;
         }
-        if (state.is(Blocks.POWERED_RAIL) && state.hasProperty(PoweredRailBlock.POWERED)) {
+        if (state.getBlock() instanceof PoweredRailBlock
+                && !state.is(Blocks.ACTIVATOR_RAIL)
+                && state.hasProperty(PoweredRailBlock.POWERED)) {
             return state.getValue(PoweredRailBlock.POWERED);
         }
         if (state.getBlock() instanceof PoweredDetectorRailBlock) {
@@ -421,7 +441,9 @@ public abstract class FurnaceMinecartMixin implements Container, MenuProvider, C
         if (state == null) {
             return false;
         }
-        if (state.is(Blocks.POWERED_RAIL) && state.hasProperty(PoweredRailBlock.POWERED)) {
+        if (state.getBlock() instanceof PoweredRailBlock
+                && !state.is(Blocks.ACTIVATOR_RAIL)
+                && state.hasProperty(PoweredRailBlock.POWERED)) {
             return state.getValue(PoweredRailBlock.POWERED);
         }
         return state.getBlock() instanceof PoweredDetectorRailBlock && state.getValue(PoweredDetectorRailBlock.POWERED);

@@ -1,0 +1,15 @@
+{
+  "modmenu.descriptionTranslation.modernminecarts": "Mejora el transporte en vagoneta con raíles más rápidos, acoplamientos automáticos, motores de vagoneta, rampas de raíles y raíles detectores propulsores.",
+  "block.modernminecarts.copper_rail": "Raíl de cobre",
+  "block.modernminecarts.waxed_copper_rail": "Raíl de cobre encerado",
+  "block.modernminecarts.exposed_copper_rail": "Raíl de cobre expuesto",
+  "block.modernminecarts.waxed_exposed_copper_rail": "Raíl de cobre expuesto encerado",
+  "block.modernminecarts.weathered_copper_rail": "Raíl de cobre desgastado",
+  "block.modernminecarts.waxed_weathered_copper_rail": "Raíl de cobre desgastado encerado",
+  "block.modernminecarts.oxidized_copper_rail": "Raíl de cobre oxidado",
+  "block.modernminecarts.waxed_oxidized_copper_rail": "Raíl de cobre oxidado encerado",
+  "block.modernminecarts.rail_crossing": "Paso a nivel",
+  "block.modernminecarts.rail_jump": "Rampa de raíles",
+  "block.modernminecarts.powered_detector_rail": "Raíl detector propulsor",
+  "block.modernminecarts.directed_powered_rail": "Raíl propulsor dirigido"
+}
