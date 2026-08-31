@@ -88,6 +88,9 @@ public abstract class FurnaceMinecartMixin implements Inventory, NamedScreenHand
     private Vec3d modernminecarts$suspendedPushVec = Vec3d.ZERO;
 
     @Unique
+    private boolean modernminecarts$wasDerailed;
+
+    @Unique
     private final PropertyDelegate modernminecarts$properties = new PropertyDelegate() {
         @Override
         public int get(int index) {
@@ -125,7 +128,7 @@ public abstract class FurnaceMinecartMixin implements Inventory, NamedScreenHand
         boolean hasChild = modernminecarts$getChild(cart) != null;
         boolean isMoving = cart.getVelocity().horizontalLengthSquared() > 0.001D;
         boolean isRoot = modernminecarts$getParent(cart) == null;
-        boolean hasDirection = pushVec.horizontalLengthSquared() > 1.0E-7D;
+        boolean isDerailed = modernminecarts$getCurrentRailState(cart) == null;
         boolean railAllowsMovement = modernminecarts$railAllowsMovement(cart);
         boolean mayStart = railAllowsMovement
                 && isRoot
@@ -135,12 +138,26 @@ public abstract class FurnaceMinecartMixin implements Inventory, NamedScreenHand
             modernminecarts$burningFurnaces = burnFuelTrain();
         }
 
+        // Keep the engine direction while it is useful, but replace it when a
+        // derailed cart is returned to rails in the opposite direction.
+        Vec3d movement = cart.getVelocity();
+        boolean pushOpposesMovement = pushVec.x * movement.x + pushVec.z * movement.z < 0.0D;
+        if (fuel > 0
+                && isRoot
+                && !hasChild
+                && !isDerailed
+                && isMoving
+                && (modernminecarts$wasDerailed || pushOpposesMovement)) {
+            pushVec = modernminecarts$enginePushAlong(movement);
+        }
+
+        boolean hasDirection = pushVec.horizontalLengthSquared() > 1.0E-7D;
         if (fuel > 0 && !hasDirection) {
             AbstractMinecartEntity child = modernminecarts$getChild(cart);
             if (child != null) {
                 pushVec = new Vec3d(cart.getX() - child.getX(), 0.0D, cart.getZ() - child.getZ());
             } else if (isMoving) {
-                pushVec = new Vec3d(cart.getVelocity().x, 0.0D, cart.getVelocity().z);
+                pushVec = modernminecarts$enginePushAlong(movement);
             }
         }
 
@@ -186,6 +203,14 @@ public abstract class FurnaceMinecartMixin implements Inventory, NamedScreenHand
                 );
             }
             modernminecarts$suspendEngineThisTick = false;
+            boolean isDerailed = modernminecarts$getCurrentRailState(cart) == null;
+            // A stopped derailed cart has no meaningful engine direction. Its
+            // next push onto rails will establish a fresh direction, while an
+            // unpowered rail still preserves the direction for later power.
+            if (isDerailed && cart.getVelocity().horizontalLengthSquared() <= 1.0E-7D) {
+                pushVec = Vec3d.ZERO;
+            }
+            modernminecarts$wasDerailed = isDerailed;
             setLit(fuel > 0);
         }
     }
@@ -637,6 +662,13 @@ public abstract class FurnaceMinecartMixin implements Inventory, NamedScreenHand
     @Unique
     private static @Nullable AbstractMinecartEntity modernminecarts$getChild(AbstractMinecartEntity cart) {
         return ((ChainMinecartInterface) cart).getLinkedChild();
+    }
+
+    @Unique
+    private static Vec3d modernminecarts$enginePushAlong(Vec3d movement) {
+        return new Vec3d(movement.x, 0.0D, movement.z)
+                .normalize()
+                .multiply(MinecartTuning.furnaceMinecartSpeed());
     }
 
     @Unique
