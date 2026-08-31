@@ -1,0 +1,7 @@
+{
+  "pack": {
+    "description": "Modern Minecarts Fabric 26.2 manual QA controls",
+    "min_format": [101, 1],
+    "max_format": 101
+  }
+}

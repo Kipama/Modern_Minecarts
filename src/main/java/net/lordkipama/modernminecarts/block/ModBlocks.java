@@ -3,6 +3,7 @@ package net.lordkipama.modernminecarts.block;
 import net.lordkipama.modernminecarts.ModernMinecarts;
 import net.lordkipama.modernminecarts.ModernMinecartsConfig;
 import net.lordkipama.modernminecarts.block.Custom.CopperRailBlock;
+import net.lordkipama.modernminecarts.block.Custom.DirectedPoweredRailBlock;
 import net.lordkipama.modernminecarts.block.Custom.PoweredDetectorRailBlock;
 import net.lordkipama.modernminecarts.block.Custom.RailCrossingBlock;
 import net.lordkipama.modernminecarts.block.Custom.SlopedRailBlock;
@@ -87,6 +88,12 @@ public class ModBlocks {
             PoweredDetectorRailBlock::new,
             BlockBehaviour.Properties.ofFullCopy(Blocks.DETECTOR_RAIL),
             ModernMinecartsConfig::enablePoweredDetectorRail
+    );
+    public static final Block DIRECTED_POWERED_RAIL = registerBlock(
+            "directed_powered_rail",
+            DirectedPoweredRailBlock::new,
+            BlockBehaviour.Properties.ofFullCopy(Blocks.POWERED_RAIL),
+            ModernMinecartsConfig::enableDirectedPoweredRail
     );
 
     private static <T extends Block> T registerBlock(
