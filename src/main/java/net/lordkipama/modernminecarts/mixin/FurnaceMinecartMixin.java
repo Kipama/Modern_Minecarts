@@ -65,6 +65,7 @@ public abstract class FurnaceMinecartMixin implements Container, MenuProvider, C
     @Unique private int modernminecarts$speedForDisplay;
     @Unique private boolean modernminecarts$suspendEngineThisTick;
     @Unique private Vec3 modernminecarts$suspendedPush = Vec3.ZERO;
+    @Unique private boolean modernminecarts$wasDerailed;
     @Unique
     private final ContainerData modernminecarts$properties = new ContainerData() {
         @Override
@@ -103,7 +104,7 @@ public abstract class FurnaceMinecartMixin implements Container, MenuProvider, C
         boolean hasChild = modernminecarts$getChild(cart) != null;
         boolean isMoving = cart.getDeltaMovement().horizontalDistanceSqr() > 0.001D;
         boolean isRoot = modernminecarts$getParent(cart) == null;
-        boolean hasDirection = push.horizontalDistanceSqr() > 1.0E-7D;
+        boolean isDerailed = modernminecarts$getCurrentRailState(cart) == null;
         boolean railAllowsMovement = modernminecarts$railAllowsMovement(cart);
         boolean mayStart = railAllowsMovement && isRoot && (hasChild || isMoving);
 
@@ -111,12 +112,28 @@ public abstract class FurnaceMinecartMixin implements Container, MenuProvider, C
             modernminecarts$burningFurnaces = burnFuelTrain();
         }
 
+        // A furnace engine keeps its own direction while it burns. After it
+        // leaves the rails, however, the player may put it back down moving in
+        // the opposite direction. A rail snap can happen before the derailment
+        // state is observed, so also replace a push that opposes real movement.
+        Vec3 movement = cart.getDeltaMovement();
+        boolean pushOpposesMovement = push.x * movement.x + push.z * movement.z < 0.0D;
+        if (fuel > 0
+                && isRoot
+                && !hasChild
+                && !isDerailed
+                && isMoving
+                && (modernminecarts$wasDerailed || pushOpposesMovement)) {
+            push = modernminecarts$enginePushAlong(cart.getDeltaMovement());
+        }
+
+        boolean hasDirection = push.horizontalDistanceSqr() > 1.0E-7D;
         if (fuel > 0 && !hasDirection) {
             AbstractMinecart child = modernminecarts$getChild(cart);
             if (child != null) {
                 push = new Vec3(cart.getX() - child.getX(), 0.0D, cart.getZ() - child.getZ());
             } else if (isMoving) {
-                push = new Vec3(cart.getDeltaMovement().x, 0.0D, cart.getDeltaMovement().z);
+                push = modernminecarts$enginePushAlong(cart.getDeltaMovement());
             }
         }
 
@@ -161,6 +178,15 @@ public abstract class FurnaceMinecartMixin implements Container, MenuProvider, C
         }
 
         modernminecarts$suspendEngineThisTick = false;
+        boolean isDerailed = modernminecarts$getCurrentRailState(cart) == null;
+        // Once a derailed cart stops, its old engine direction is no longer
+        // meaningful. The next push onto rails will therefore establish the
+        // direction again. Keep the direction on unpowered rails instead, so
+        // restoring rail power can resume the existing journey.
+        if (isDerailed && cart.getDeltaMovement().horizontalDistanceSqr() <= 1.0E-7D) {
+            push = Vec3.ZERO;
+        }
+        modernminecarts$wasDerailed = isDerailed;
         setHasFuel(fuel > 0);
     }
 
@@ -553,6 +579,13 @@ public abstract class FurnaceMinecartMixin implements Container, MenuProvider, C
     @Unique
     private static @Nullable AbstractMinecart modernminecarts$getChild(AbstractMinecart cart) {
         return ((ChainMinecartInterface) cart).getLinkedChild();
+    }
+
+    @Unique
+    private static Vec3 modernminecarts$enginePushAlong(Vec3 movement) {
+        return new Vec3(movement.x, 0.0D, movement.z)
+                .normalize()
+                .scale(MinecartTuning.furnaceMinecartSpeed());
     }
 
     @Unique
